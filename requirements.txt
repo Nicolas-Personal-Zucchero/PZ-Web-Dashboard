@@ -1,0 +1,8 @@
+Flask
+mysql-connector-python
+pytz
+requests
+firebase_admin
+reportlab
+qrcode[pil]
+pillow

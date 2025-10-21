@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Assegna agente - Personal Zucchero{% endblock %}
+
+{% block content %}
+<div class="p-2">
+    <h1>Assegnamento contatto ad agente</h1>
+    <div class="mb-3">
+        <textarea class="form-control" rows="5" readonly>
+Dopo aver cliccato sul pulsante:
+- Viene inviata una mail al contatto con il ringraziamento e le informazioni dell'agente.
+- Viene inviata una mail all'agente con le info del contatto.
+- Il contatto viene associato all'agente su HubSpot.
+- Viene creata una trattativa per l'agente.</textarea>
+    </div>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="selectMittente" class="form-label">Nome mittente</label>
+            <select class="form-select" name="nome_mittente" id="selectMittente" required>
+                <option value="" disabled selected>Seleziona il mittente</option>
+                <option value="Arianna">Arianna</option>
+                <option value="Barbara">Barbara</option>
+                <option value="Denis">Denis</option>
+                <option value="Elena">Elena</option>
+                <option value="Elisa">Elisa</option>
+                <option value="Erika">Erika</option>
+                <option value="Marco">Marco</option>
+                <option value="Marilena">Marilena</option>
+                <option value="Nazzareno">Nazzareno</option>
+                <option value="Nicolas">Nicolas</option>
+                <option value="Sabrina">Sabrina</option>
+                <option value="Silvia">Silvia</option>
+                <option value="Staff Personal Zucchero">Staff Personal Zucchero</option>
+            </select>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-header">Agente</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <select class="form-select" name="id_agente" id="selectAgente" required>
+                                <option value="" disabled selected>Selezionare un agente</option>
+                                {% for a in agents %}
+                                    <option value="{{ a.id }}">
+                                        {{ a.lastname or '' }} {{ a.firstname or '' }} ({{ a.email }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <textarea class="form-control" rows="3" name="note_agente" id="note_agente" placeholder="Note per l'agente"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="card" id="contactCard">
+                    <div class="card-header">Contatto</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email del cliente*</label>
+                            <input type="email" class="form-control" name="email" id="email"required>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="nome_cliente" class="form-label">Nome cliente</label>
+                                <input type="text" class="form-control" name="nome_cliente" id="nome_cliente">
+                            </div>
+                            <div class="col">
+                                <label for="cognome_cliente" class="form-label">Cognome cliente</label>
+                                <input type="text" class="form-control" name="cognome_cliente" id="cognome_cliente">
+                            </div>
+                            <div class="col">
+                                <label for="telefono" class="form-label">Telefono</label>
+                                <input type="tel" class="form-control" name="telefono" id="telefono">
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="societa" class="form-label">Nome società</label>
+                                <input type="text" class="form-control" name="societa" id="societa">
+                            </div>
+                            <div class="col">
+                                <label for="partita_iva" class="form-label">Partita IVA</label>
+                                <input type="text" class="form-control" name="partita_iva" id="partita_iva">
+                            </div>
+                            <div class="col">
+                                <label for="categoria_mexal" class="form-label">Categoria</label>
+                                <select class="form-select" name="categoria_mexal" id="categoria_mexal">
+                                    <option value="" disabled selected></option>
+                                    <option value="BAR / PAST">Bar / Pasticceria</option>
+                                    <option value="RIST / PIZZ">Ristorante / Pizzeria</option>
+                                    <option value="FAST FOOD">Fast Food</option>
+                                    <option value="GROSS CATERING">Catering</option>
+                                    <option value="HOTEL">Hotel</option>
+                                    <option value="GELATERIA">Gelateria</option>
+                                    <option value="SALE DA GIOCO">Sala da gioco</option>
+                                    <option value="AVIS-AIDO-FRATRES">Avis / Aido / Fratres</option>
+                                    <option value="ASSOC. SPORTIVE">Associazioni sportive</option>
+                                    <option value="ASSOCIAZIONI VARIE">Associazioni varie</option>
+                                    <option value="COLLEZIONISTA">Collezionista</option>
+                                    <option value="PRIVATO">Privato</option>
+                                    <option value="ALTRO B2C">ALTRO</option>
+                                    <option value="ALTRO - HORECA">Altro HORECA</option>
+                                    <option value="GROSS HORECA">Rivendita HORECA</option>
+                                    <option value="GROSS TORREFAZIONE">Torrefazione</option>
+                                    <option value="RIVENDITA CAFFE">Rivendita caffè</option>
+                                    <option value="ALTRO B2B">Rivendita altro</option>
+                                    <option value="AG.PUBBLICITARIA">Agenzia Pubblicitaria</option>
+                                    <option value="WEDDING PLANNER">Wedding planner</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="citta" class="form-label">Città</label>
+                                <input type="text" class="form-control" name="citta" id="citta">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="provincia" class="form-label">Provincia</label>
+                                <input type="text" class="form-control" name="provincia" id="provincia">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="prodotto_di_interesse" class="form-label">Prodotto di interesse</label>
+                                <select class="form-select" name="prodotto_di_interesse" id="prodotto_di_interesse">
+                                    <option value="" disabled selected></option>
+                                    <option value="Zucchero">Zucchero</option>
+                                    <option value="Dolcificante">Dolcificante</option>
+                                    <option value="Zucchero e Dolcificante">Zucchero e Dolcificante</option>
+                                    <option value="Tovagliette">Tovagliette</option>
+                                    <option value="Buste portaposate">Buste portaposate</option>
+                                    <option value="Salviette profumate">Salviette profumate</option>
+                                    <option value="Caramelle">Caramelle</option>
+                                    <option value="Bicchieri">Bicchieri</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary mb-3">Assegna contatto all'agente</button>
+    </form>
+
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+</div>
+
+<style>
+    .form-control.filled,
+    .form-select.filled {
+        border-color: #198754; /* verde per evidenziare */
+        background-color: #e6f4ea; /* leggero sfondo verde */
+    }
+
+    /* Campi obbligatori vuoti */
+    .form-control:required:invalid,
+    .form-select:required:invalid {
+        border-color: #dc3545 !important; /* rosso bootstrap */
+        background-color: #fff5f5;
+    }
+
+</style>
+
+<script>
+    const selectMittente = document.getElementById("selectMittente");
+    const savedMittente = localStorage.getItem("mittente");
+    const emailInput = document.getElementById('email');
+
+    if (savedMittente) {
+        selectMittente.value = savedMittente;
+    }
+
+    // Salva valore ogni volta che cambia
+    selectMittente.addEventListener("change", function () {
+        localStorage.setItem("mittente", selectMittente.value);
+    });
+
+    // Funzione per evidenziare i campi valorizzati
+    function highlightFilledFields() {
+        document.querySelectorAll('#contactCard .form-control, #contactCard .form-select').forEach(el => {
+            if (el.value && el.value.trim() !== "") {
+                el.classList.add('filled');
+            } else {
+                el.classList.remove('filled');
+            }
+        });
+    }
+
+    // Esegui al caricamento pagina
+    highlightFilledFields();
+
+    // Aggiorna dinamicamente quando l'utente digita o seleziona
+    document.querySelectorAll('#contactCard .form-control, #contactCard .form-select').forEach(el => {
+        el.addEventListener('input', highlightFilledFields);
+        el.addEventListener('change', highlightFilledFields);
+    });
+
+    // Funzione debounce
+    function debounce(fn, delay) {
+        let timeoutId;
+        return function(...args) {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => fn.apply(this, args), delay);
+        };
+    }
+
+    // Funzione da eseguire al termine del debounce
+    function fetchContact() {
+        const email = emailInput.value.trim();
+
+        fetch(`/assegna-agente/get_contact?email=${encodeURIComponent(email)}`)
+            .then(response => response.json())
+            .then(data => {
+                const contactFields = {
+                    nome_cliente: data.contact?.firstname,
+                    cognome_cliente: data.contact?.lastname,
+                    telefono: data.contact?.phone
+                };
+
+                const companyFields = {
+                    societa: data.company?.name,
+                    partita_iva: data.company?.partita_iva,
+                    categoria_mexal: data.company?.categoria_mexal,
+                    citta: data.company?.city,
+                    provincia: data.company?.provincia,
+                    prodotto_di_interesse: data.company?.prodotto_di_interesse
+                };
+
+                const updateFields = (fields) => {
+                    for (const [id, value] of Object.entries(fields)) {
+                        const el = document.getElementById(id);
+                        el.value = value || "";
+                        el.dispatchEvent(new Event('input'));
+                        el.dispatchEvent(new Event('change'));
+                    }
+                };
+
+                updateFields(contactFields);
+                updateFields(companyFields);
+            })
+            .catch(err => console.error(err));
+    }
+
+    // Applica debounce alla funzione di fetch
+    const debouncedFetch = debounce(fetchContact, 300); // 500ms di ritardo
+
+    // Trigger su input invece che su blur
+    emailInput.addEventListener('input', debouncedFetch);
+
+</script>
+{% endblock %}

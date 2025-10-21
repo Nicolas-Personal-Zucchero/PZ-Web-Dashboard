@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Recensioni - Personal Zucchero{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <h1>Invia una mail automatica ai clienti richiedendo una recensione</h1>
+    <form method="POST">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="email" class="form-label">Email cliente</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="col-md-4">
+                <label for="nome_cliente" class="form-label">Nome cliente</label>
+                <input type="text" class="form-control" id="nome_cliente" name="nome_cliente" required>
+            </div>
+            <div class="col-md-4">
+                <label for="lingua_email" class="form-label">Lingua cliente</label>
+                <select class="form-select" id="lingua_email" name="lingua_email" id="selectLingua" required>
+                    <option value="ITA" selected>Italiano</option>
+                    <option value="ENG">Inglese</option>
+                </select>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="nome_mittente" class="form-label">Mittente</label>
+            <select class="form-select" id="nome_mittente" name="nome_mittente" required>
+                <option value="" disabled selected></option>
+                <option value="Arianna">Arianna</option>
+                <option value="Barbara">Barbara</option>
+                <option value="Denis">Denis</option>
+                <option value="Elena">Elena</option>
+                <option value="Elisa">Elisa</option>
+                <option value="Erika">Erika</option>
+                <option value="Marco">Marco</option>
+                <option value="Marilena">Marilena</option>
+                <option value="Nazzareno">Nazzareno</option>
+                <option value="Nicolas">Nicolas</option>
+                <option value="Sabrina">Sabrina</option>
+                <option value="Silvia">Silvia</option>
+                <option value="Staff Personal Zucchero">Staff Personal Zucchero</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Richiedi recensione</button>
+    </form>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    {% if entries %}
+    <hr>
+    <h3>Clienti che hanno già ricevuto la richiesta:</h3>
+    <div class="mb-3">
+        <input type="text" class="form-control" id="searchInput" placeholder="Cerca email...">
+    </div>
+    <div style="max-height: 500px; overflow-y: auto;">
+        <ul class="list-group" id="emailList">
+            <li class="list-group-item bg-light fw-bold static-header">
+                <div class="row">
+                    <div class="col-md-2">Cliente</div>
+                    <div class="col-md-4">Email</div>
+                    <div class="col-md-2">Mittente</div>
+                    <div class="col-md-1">Lingua</div>
+                    <div class="col-md-2">Data Invio</div>
+                    <div class="col-md-1"></div> <!-- spazio per bottone elimina -->
+                </div>
+            </li>
+
+            {% for email, customer, sender, language, created_at in entries %}
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-md-2">
+                        <strong>{{ customer }}</strong>
+                    </div>
+                    <div class="col-md-4">
+                        {{ email }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ sender }}
+                    </div>
+                    <div class="col-md-1">
+                        {{ language }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ created_at }}
+                    </div>
+                    <div class="col-md-1 text-end">
+                        <form method="POST" action="/recensioni/elimina" onsubmit="return confirm('Sei sicuro di voler eliminare la registrazione dell\'invio da questo utente? Questa operazione permetterà di inviargli nuovamente la richiesta di recensione');">
+                            <input type="hidden" name="email" value="{{ email }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Elimina</button>
+                        </form>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const selectMittente = document.getElementById("nome_mittente");
+
+    // Carica valori salvato
+    const savedMittente = localStorage.getItem("mittente");
+
+    if (savedMittente) {
+        selectMittente.value = savedMittente;
+    }
+
+    // Salva valore ogni volta che cambia
+    selectMittente.addEventListener("change", function () {
+        localStorage.setItem("mittente", selectMittente.value);
+    });
+
+    // Filtro ricerca
+    document.getElementById('searchInput')?.addEventListener('input', function () {
+        const filter = this.value.toLowerCase();
+        const items = document.querySelectorAll('#emailList .list-group-item');
+        items.forEach(item => {
+            if (!item.classList.contains('static-header')) {
+                const customerText = item.querySelector('.col-md-2 strong')?.textContent.toLowerCase() || '';
+                const emailText = item.querySelector('.col-md-4')?.textContent.toLowerCase() || '';
+                if (customerText.includes(filter) || emailText.includes(filter)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

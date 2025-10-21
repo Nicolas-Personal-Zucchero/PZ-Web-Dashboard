@@ -1,0 +1,19 @@
+services:
+  recensioni:
+    build: .
+    volumes:
+      - ./data:/app/data  # monti tutta la cartella
+    ports:
+      - "80:5000"
+    restart: unless-stopped
+    networks:
+      - backend
+    environment:
+      - INFO_EMAIL_NAME
+      - INFO_EMAIL_ADDRESS
+      - INFO_EMAIL_PASSWORD
+      - HUBSPOT_AGENT_ASSIGNMENT_TOKEN
+
+networks:
+  backend:
+    name: shared_backend

@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Registrazione Lotti - Personal Zucchero{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <h1>Registrazione Lotti</h1>
+    <h3>Inserisci i dettagli del lotto</h3>
+    <form method="POST" id="lotForm">
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label for="data" class="form-label">Data</label>
+                <input type="date" class="form-control" name="data" id="data" required>
+            </div>
+            <div class="col-md-3">
+                <label for="tipologia" class="form-label">Tipologia zucchero</label>
+                <select class="form-select" name="tipologia" id="tipologia" required>
+                    <option value="" disabled selected>Seleziona tipologia</option>
+                    <option value="Bianco">Bianco</option>
+                    <option value="Canna">Canna</option>
+                </select>
+            </div>  
+            <div class="col-md-3">
+                <label for="fornitore" class="form-label">Fornitore</label>
+                <select class="form-select" name="fornitore" id="fornitore" required>
+                    <option value="" disabled selected>Seleziona fornitore</option>
+                    <option value="ITALIAZUCCHERI">ITALIAZUCCHERI</option>
+                    <option value="INAGRA">INAGRA</option>
+                    <option value="FASTZUCCHERI">FASTZUCCHERI</option>
+                    <option value="GRANDAZUCCHERI">GRANDAZUCCHERI</option>
+                    <option value="PININPERO">PININPERO</option>
+                </select>
+            </div>    
+            <div class="col-md-3">
+                <label for="ddt" class="form-label">DDT</label>
+                <input type="text" class="form-control" name="ddt" id="ddt" placeholder="Inserisci DDT" required>
+            </div> 
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Lotti fornitore</label>
+            <div id="lottiContainer">
+                <div class="input-group mb-2">
+                    <input type="text" name="lotti[]" class="form-control" placeholder="Lotto 1" required>
+                    <button class="btn btn-outline-danger remove-btn" type="button">×</button>
+                </div>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="addLottoBtn">Aggiungi Lotto fornitore</button>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Registra Lotto</button>
+    </form>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    {% if lotti %}
+    <hr>
+    <h3>Lotti che non sono ancora stati caricati:</h3>
+    <div class="mb-3">
+        <input type="text" class="form-control" id="searchInput" placeholder="Cerca email...">
+    </div>
+    <div style="max-height: 500px; overflow-y: auto;">
+        <ul class="list-group" id="listaLotti">
+            <li class="list-group-item bg-light fw-bold static-header">
+                <div class="row">
+                    <div class="col-md-2">Lotto</div>
+                    <div class="col-md-2">Tipologia</div>
+                    <div class="col-md-2">Fornitore</div>
+                    <div class="col-md-1">DDT</div>
+                    <div class="col-md-2">Lotti fornitore</div>
+                    <div class="col-md-2">Data creazione</div>
+                    <div class="col-md-1"></div> <!-- spazio per bottone elimina -->
+                </div>
+            </li>
+
+            {% for lotto in lotti %}
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-md-2"><strong>{{ lotto.lotto }}</strong></div>
+                    <div class="col-md-2">{{ lotto.tipologia_zucchero }}</div>
+                    <div class="col-md-2">{{ lotto.fornitore }}</div>
+                    <div class="col-md-1">{{ lotto.ddt }}</div>
+                    <div class="col-md-2">{{ lotto.lotti_fornitore | join(', ') }}</div>
+                    <div class="col-md-2">{{ lotto.formatted_time }}</div>
+                    <div class="col-md-1 text-end">
+                        <form method="POST" action="/registrazione_lotti/etichetta" target="_blank">
+                            <input type="hidden" name="id_lotto" value="{{ lotto.id }}">
+                            <button type="submit" class="btn btn-success btn-sm">Etichetta</button>
+                        </form>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Imposta la data di default a oggi
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('data').value = today;
+
+    const addLottoBtn = document.getElementById('addLottoBtn');
+    const lottiContainer = document.getElementById('lottiContainer');
+    let lottoCount = 1;
+
+    addLottoBtn.addEventListener('click', function() {
+        lottoCount++;
+        const div = document.createElement('div');
+        div.classList.add('input-group', 'mb-2');
+        div.innerHTML = `
+            <input type="text" name="lotti[]" class="form-control" placeholder="Lotto ${lottoCount}" required>
+            <button class="btn btn-outline-danger remove-btn" type="button" id="btn${lottoCount}">×</button>
+        `;
+        lottiContainer.appendChild(div);
+    });
+
+    lottiContainer.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-btn') && lottoCount > 1 && e.target.id == `btn${lottoCount}`) {
+            e.target.parentElement.remove();
+            lottoCount--;
+        }
+    });
+
+    //Ricerca lotti
+    document.getElementById('searchInput')?.addEventListener('input', function () {
+        const filter = this.value.toLowerCase();
+        const items = document.querySelectorAll('#listaLotti .list-group-item');
+        items.forEach(item => {
+            if (!item.classList.contains('static-header')) {
+                const lottoId = item.querySelector('.col-md-2 strong')?.textContent.toLowerCase() || '';
+                if (lottoId.includes(filter)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

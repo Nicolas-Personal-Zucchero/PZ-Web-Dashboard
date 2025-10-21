@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Homepage{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Homepage RaspberryPi Personal Zucchero</h1>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3">
+        <div class="col">
+            <div class="card h-100 shadow-sm hover-card">
+                <div class="card-body">
+                    <h5 class="card-title">Richiesta Recensione</h5>
+                    <p class="card-text">Invia una mail di richiesta recensione ai clienti in modo rapido.</p>
+                    <a href="{{ url_for('recensioni.recensioni') }}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 shadow-sm hover-card">
+                <div class="card-body">
+                    <h5 class="card-title">Assegna Agente</h5>
+                    <p class="card-text">Assegna un agente ad un contatto specifico con pochi click.</p>
+                    <a href="{{ url_for('assegna_agente.assegnaAgente') }}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 shadow-sm hover-card">
+                <div class="card-body">
+                    <h5 class="card-title">Registrazione Lotti</h5>
+                    <p class="card-text">Registra nuovi lotti di zucchero e tieni traccia di quelli non ancora caricati.</p>
+                    <a href="{{ url_for('registrazione_lotti.registrazione_lotti') }}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block styles %}
+    <style>
+        .hover-card {
+            transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out;
+            border: 1px solid #ddd;
+        }
+
+        .hover-card:hover {
+            transform: translateY(-5px);
+            border-color: #4393C8;
+        }
+
+        .card-title {
+            color: #333;
+        }
+
+        .card-text {
+            color: #555;
+        }
+    </style>
+{% endblock %}

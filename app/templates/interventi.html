@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Interventi{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Elenco Interventi</h2>
+    <button class="btn btn-secondary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#formIntervento" aria-expanded="false" aria-controls="formIntervento">
+        Aggiungi nuovo asset
+    </button>
+
+    <div class="collapse" id="formIntervento">
+        <form method="POST">
+            <div class="mb-3">
+                <label for="nome" class="form-label">Nome dell'asset</label>
+                <input type="text" class="form-control" name="nome" id="nome" placeholder="Es: Macchina Zucchero 1" required>
+            </div>
+            <div class="mb-3">
+                <label for="selectTipologia" class="form-label">Tipologia</label>
+                <select class="form-select" name="tipologia" id="selectTipologia" required>
+                    <option value="" disabled selected>Tipologia</option>
+                    <option value="macchina">macchina</option>
+                    <option value="veicolo">veicolo</option>
+                    <option value="oggetto">oggetto</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="posizione" class="form-label">Posizione</label>
+                <input type="text" class="form-control" name="posizione"  id="posizione" placeholder="Reparto produzione" required>
+            </div>
+            <div class="mb-3">
+                <label for="intervallo_manutenzione" class="form-label">Intervallo Manutenzione (giorni)</label>
+                <input type="number" class="form-control" name="intervallo_manutenzione" id="intervallo_manutenzione" placeholder="Es: 365" required>
+            </div>
+            <div class="mb-3">
+                <label for="intervallo_pulizia" class="form-label">Intervallo Pulizia (giorni)</label>
+                <input type="number" class="form-control" name="intervallo_pulizia" id="intervallo_pulizia" placeholder="Es: 30" min="0" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Inserisci asset</button>
+        </form>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    {% if entries %}
+    <hr>
+    <h3>Asset presenti nel gestionale:</h3>
+    <div style="max-height: 500px; overflow-y: auto;">
+        <ul class="list-group" id="emailList">
+            <li class="list-group-item bg-light fw-bold static-header">
+                <div class="row">
+                    <div class="col-md-2">Nome</div>
+                    <div class="col-md-1">Tipologia</div>
+                    <div class="col-md-1">Posizione</div>
+                    <div class="col-md-1">Int. Manutenzione</div>
+                    <div class="col-md-1">Int. Pulizia</div>
+                    <div class="col-md-2">Data Ult. Manutenzione</div>
+                    <div class="col-md-2">Data Ult. Pulizia</div>
+                    <div class="col-md-1"></div> <!-- spazio per bottone elimina -->
+                    <div class="col-md-1"></div> <!-- spazio per bottone elimina -->
+                </div>
+            </li>
+
+            {% for id, nome, tipologia, posizione, intervallo_manutenzione, intervallo_pulizia, data_ultima_manutenzione, data_ultima_pulizia in entries %}
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-md-2">
+                        <strong>{{ nome }}</strong>
+                    </div>
+                    <div class="col-md-1">
+                        {{ tipologia }}
+                    </div>
+                    <div class="col-md-1">
+                        {{ posizione }}
+                    </div>
+                    <div class="col-md-1">
+                        {{ intervallo_manutenzione }}
+                    </div>
+                    <div class="col-md-1">
+                        {{ intervallo_pulizia }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ data_ultima_manutenzione }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ data_ultima_pulizia }}
+                    </div>
+                    <div class="col-md-1 text-end">
+                        <form method="POST" action="/recensioni/elimina" onsubmit="return confirm('Sei sicuro di voler eliminare la registrazione dell\'invio da questo utente? Questa operazione permetterà di inviargli nuovamente la richiesta di recensione');">
+                            <input type="hidden" name="email" value="{{ nome }}">
+                            <button type="submit" class="btn btn-primary btn-sm">Apri</button>
+                        </form>
+                    </div>
+                    <div class="col-md-1 text-end">
+                        <form method="POST" action="/recensioni/elimina" onsubmit="return confirm('Sei sicuro di voler eliminare la registrazione dell\'invio da questo utente? Questa operazione permetterà di inviargli nuovamente la richiesta di recensione');">
+                            <input type="hidden" name="email" value="{{ nome }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Elimina</button>
+                        </form>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% else %}
+    <p class="text-muted">Nessun asset registrato.</p>
+    {% endif %}
+</div>
+{% endblock %}
