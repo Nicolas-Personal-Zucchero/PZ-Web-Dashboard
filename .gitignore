@@ -63,3 +63,6 @@ yarn.lock
 *.swp
 .DS_Store
 Thumbs.db
+
+*.egg-info/
+**/serviceAccountKey.json
