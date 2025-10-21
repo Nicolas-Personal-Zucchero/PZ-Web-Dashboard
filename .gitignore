@@ -1,0 +1,65 @@
+# =======================
+# Python
+# =======================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Environment
+venv/
+.env
+.env.*
+.venv/
+
+# Logs
+*.log
+
+# =======================
+# Flask / app files
+# =======================
+instance/
+*.db
+*.sqlite3
+uploads/
+*.pyc
+
+# =======================
+# Docker
+# =======================
+# Dockerfile e docker-compose.yml non si ignorano
+*.dockerignore
+docker-compose.override.yml
+*.tar
+*.tmp
+*.env.local
+*.env.dev
+*.env.test
+
+# Docker volumes, build files
+docker-compose.override.yml
+docker-compose.override*.yml
+**/build/
+**/tmp/
+**/dist/
+
+# =======================
+# Node / JS / Frontend
+# =======================
+node_modules/
+npm-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# =======================
+# Editor / IDE
+# =======================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+.DS_Store
+Thumbs.db
