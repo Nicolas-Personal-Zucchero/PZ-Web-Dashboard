@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Mappa Agenti{% endblock %}
+
+{% block content %}
+<div class="map-container">
+    <iframe 
+        src="https://nicolas-personal-zucchero.github.io/AgentMap/" 
+        frameborder="0" 
+        allowfullscreen
+    ></iframe>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    /* Rimuove padding e margini del container */
+    .container {
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Contenitore della mappa */
+    .map-container {
+        position: fixed;
+        top: 70px; /* Altezza navbar */
+        left: 0;
+        width: 100%;
+        height: calc(100vh - 70px); /* Tutto lo schermo sotto la navbar */
+        overflow: hidden;
+    }
+
+    /* Iframe fullscreen */
+    .map-container iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    /* Navbar sempre visibile */
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+    }
+</style>
+{% endblock %}
