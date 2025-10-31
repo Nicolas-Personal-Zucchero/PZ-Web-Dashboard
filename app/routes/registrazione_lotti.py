@@ -54,6 +54,7 @@ def genera_pdf(lotto_personal_zucchero, fornitore, ddt, tipologia_zucchero, orig
     FONT_FORNITORE_DDT = ("Helvetica-Bold", 25)
     FONT_ZUCCHERO = ("Helvetica-Bold", 20)
     FONT_DATA = ("Helvetica-Bold", 30)
+    FONT_ORIGINE_TITOLO = ("Helvetica", 20)
     FONT_ORIGINE = ("Helvetica-Bold", 20)
     FONT_LOTTI_TITLE = ("Helvetica-Bold", 17)
     FONT_LOTTI_LIST = ("Helvetica-Bold", 13)
@@ -61,7 +62,7 @@ def genera_pdf(lotto_personal_zucchero, fornitore, ddt, tipologia_zucchero, orig
     SPACING_FORNITORE_DDT = 25
     SPACING_TIPOLOGIA_ZUCCHERO = 220
     SPACING_DATA = 60
-    SPACING_ORIGINE = 80
+    SPACING_ORIGINE_TITOLO = 80
     SPACING_LOTTI_TITLE = 100
     SPACING_LOTTI_LIST = 12
 
@@ -99,8 +100,11 @@ def genera_pdf(lotto_personal_zucchero, fornitore, ddt, tipologia_zucchero, orig
     c.setFont(*FONT_DATA)
     c.drawString(text_x, lotto_y - SPACING_DATA, f"{data}")
 
+    c.setFont(*FONT_ORIGINE_TITOLO)
+    c.drawString(text_x, lotto_y - SPACING_ORIGINE_TITOLO, f"Origine:")
+
     c.setFont(*FONT_ORIGINE)
-    c.drawString(text_x, lotto_y - SPACING_ORIGINE, f"Origine: {origine}")
+    c.drawString(text_x + 80, lotto_y - SPACING_ORIGINE_TITOLO, f"{origine}")
 
     c.setFont(*FONT_ZUCCHERO)
     c.drawString(text_x, lotto_y - SPACING_TIPOLOGIA_ZUCCHERO, f"{tipologia_zucchero.upper()}")
