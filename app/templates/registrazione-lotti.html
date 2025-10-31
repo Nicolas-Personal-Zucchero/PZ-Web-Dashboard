@@ -13,11 +13,15 @@
                 <input type="date" class="form-control" name="data" id="data" required>
             </div>
             <div class="col-md-3">
-                <label for="tipologia" class="form-label">Tipologia zucchero</label>
+                <label for="tipologia" class="form-label">Tipologia prodotto</label>
                 <select class="form-select" name="tipologia" id="tipologia" required>
                     <option value="" disabled selected>Seleziona tipologia</option>
-                    <option value="Bianco">Bianco</option>
-                    <option value="Canna">Canna</option>
+                    <option>Zucchero Bianco Semolato</option>
+                    <option>Zucchero Bianco Extrafine</option>
+                    <option>Zucchero Canna Grezzo</option>
+                    <option>Zucchero Canna Barbabietola</option>
+                    <option>Zucchero BIO Golden</option>
+                    <option>Zucchero BIO White</option>
                 </select>
             </div>  
             <div class="col-md-3">
@@ -37,12 +41,25 @@
             </div> 
         </div>
 
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="origine" class="form-label">Origine</label>
+                <select class="form-select" name="origine" id="origine" required>
+                    <option value="" disabled selected>Seleziona origine</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="n_etichette" class="form-label">Numero etichette</label>
+                <input type="number" class="form-control" name="n_etichette" id="n_etichette" placeholder="Numero etichette" value="24" min="1" required>
+            </div> 
+        </div>
+
         <div class="mb-3">
-            <label class="form-label">Lotti fornitore</label>
+            <label for="lottiContainer" class="form-label">Lotti fornitore</label>
             <div id="lottiContainer">
                 <div class="input-group mb-2">
                     <input type="text" name="lotti[]" class="form-control" placeholder="Lotto 1" required>
-                    <button class="btn btn-outline-danger remove-btn" type="button">×</button>
+                    <!-- <button class="btn btn-outline-danger remove-btn" type="button" tabindex="-1">×</button> -->
                 </div>
             </div>
             <button type="button" class="btn btn-secondary btn-sm" id="addLottoBtn">Aggiungi Lotto fornitore</button>
@@ -61,17 +78,19 @@
     <hr>
     <h3>Lotti che non sono ancora stati caricati:</h3>
     <div class="mb-3">
-        <input type="text" class="form-control" id="searchInput" placeholder="Cerca email...">
+        <input type="text" class="form-control" id="searchInput" placeholder="Cerca lotto...">
     </div>
     <div style="max-height: 500px; overflow-y: auto;">
         <ul class="list-group" id="listaLotti">
             <li class="list-group-item bg-light fw-bold static-header">
                 <div class="row">
-                    <div class="col-md-2">Lotto</div>
+                    <div class="col-md-1">Lotto</div>
                     <div class="col-md-2">Tipologia</div>
                     <div class="col-md-2">Fornitore</div>
                     <div class="col-md-1">DDT</div>
-                    <div class="col-md-2">Lotti fornitore</div>
+                    <div class="col-md-1">Lotti fornitore</div>
+                    <div class="col-md-1">Origine</div>
+                    <div class="col-md-1">Etichette scansionate</div>
                     <div class="col-md-2">Data creazione</div>
                     <div class="col-md-1"></div> <!-- spazio per bottone elimina -->
                 </div>
@@ -80,11 +99,13 @@
             {% for lotto in lotti %}
             <li class="list-group-item">
                 <div class="row">
-                    <div class="col-md-2"><strong>{{ lotto.lotto }}</strong></div>
+                    <div class="col-md-1"><strong>{{ lotto.lotto }}</strong></div>
                     <div class="col-md-2">{{ lotto.tipologia_zucchero }}</div>
                     <div class="col-md-2">{{ lotto.fornitore }}</div>
                     <div class="col-md-1">{{ lotto.ddt }}</div>
-                    <div class="col-md-2">{{ lotto.lotti_fornitore | join(', ') }}</div>
+                    <div class="col-md-1">{{ lotto.lotti_fornitore | join(', ') }}</div>
+                    <div class="col-md-1">{{ lotto.origine }}</div>
+                    <div class="col-md-1">{{ lotto.etichette }}</div>
                     <div class="col-md-2">{{ lotto.formatted_time }}</div>
                     <div class="col-md-1 text-end">
                         <form method="POST" action="/registrazione_lotti/etichetta" target="_blank">
@@ -106,6 +127,29 @@ document.addEventListener("DOMContentLoaded", function () {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('data').value = today;
 
+    // Popola select origine con nomi dei paesi
+    const origineSelect = document.getElementById('origine');
+    fetch('https://restcountries.com/v3.1/all?fields=name,translations')
+        .then(response => response.json())
+        .then(data => {
+            // Ordina alfabeticamente in italiano se disponibile
+            data.sort((a, b) => {
+                const nameA = a.translations?.ita?.common || a.name.common;
+                const nameB = b.translations?.ita?.common || b.name.common;
+                return nameA.localeCompare(nameB, 'it');
+            });
+
+            // Aggiungi tutti i paesi alla select
+            data.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.translations?.ita?.common || country.name.common;
+                option.textContent = country.translations?.ita?.common || country.name.common;
+                origineSelect.appendChild(option);
+            });
+        })
+        .catch(err => console.error('Errore caricamento paesi:', err));
+
+    // Gestione aggiunta/rimozione lotti
     const addLottoBtn = document.getElementById('addLottoBtn');
     const lottiContainer = document.getElementById('lottiContainer');
     let lottoCount = 1;
@@ -116,9 +160,10 @@ document.addEventListener("DOMContentLoaded", function () {
         div.classList.add('input-group', 'mb-2');
         div.innerHTML = `
             <input type="text" name="lotti[]" class="form-control" placeholder="Lotto ${lottoCount}" required>
-            <button class="btn btn-outline-danger remove-btn" type="button" id="btn${lottoCount}">×</button>
+            <button class="btn btn-outline-danger remove-btn" type="button" id="btn${lottoCount}" tabindex="-1">×</button>
         `;
         lottiContainer.appendChild(div);
+        div.querySelector("input").focus();
     });
 
     lottiContainer.addEventListener('click', function(e) {

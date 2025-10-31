@@ -16,7 +16,16 @@ PRODUCER_MAP = {
     "PININPERO": "PP"
 }
 
-def genera_pdf(lotto_personal_zucchero, fornitore, ddt, tipologia_zucchero, data, lotti_fornitore):
+PRODUCT_MAP = {
+    "Zucchero Bianco Semolato": "01",
+    "Zucchero Bianco Extrafine": "02",
+    "Zucchero Canna Grezzo": "06",
+    "Zucchero Canna Barbabietola": "07",
+    "Zucchero BIO Golden": "08",
+    "Zucchero BIO White": "09"
+}
+
+def genera_pdf(lotto_personal_zucchero, fornitore, ddt, tipologia_zucchero, origine, data, lotti_fornitore):
     """
     Genera un PDF di dimensioni 100x150 mm (verticale) con il contenuto ruotato di 90°:
     - tutti i lotti elencati
@@ -42,15 +51,17 @@ def genera_pdf(lotto_personal_zucchero, fornitore, ddt, tipologia_zucchero, data
 
     FONT_LOTTO_PERSONAL = ("Helvetica-Bold", 60)
     FONT_FORNITORE_DDT = ("Helvetica-Bold", 25)
-    FONT_ZUCCHERO = ("Helvetica-Bold", 32)
+    FONT_ZUCCHERO = ("Helvetica-Bold", 20)
     FONT_DATA = ("Helvetica-Bold", 30)
+    FONT_ORIGINE = ("Helvetica-Bold", 20)
     FONT_LOTTI_TITLE = ("Helvetica-Bold", 17)
     FONT_LOTTI_LIST = ("Helvetica-Bold", 13)
 
     SPACING_FORNITORE_DDT = 25
     SPACING_TIPOLOGIA_ZUCCHERO = 220
     SPACING_DATA = 60
-    SPACING_LOTTI_TITLE = 120
+    SPACING_ORIGINE = 80
+    SPACING_LOTTI_TITLE = 100
     SPACING_LOTTI_LIST = 12
 
     QR_SIZE = 55 * mm
@@ -78,15 +89,20 @@ def genera_pdf(lotto_personal_zucchero, fornitore, ddt, tipologia_zucchero, data
     # Lotto personal zucchero (grande)
     c.setFont(*FONT_LOTTO_PERSONAL)
     lotto_y = text_y
-    c.drawString(text_x + 10 * mm, lotto_y, f"{lotto_personal_zucchero}")
+    c.drawString(text_x + 35 * mm, lotto_y, f"{lotto_personal_zucchero}")
 
     # Dati fornitore, zucchero, data
     c.setFont(*FONT_FORNITORE_DDT)
     c.drawString(text_x, lotto_y - SPACING_FORNITORE_DDT, f"{fornitore} - DDT {ddt}")
-    c.setFont(*FONT_ZUCCHERO)
-    c.drawString(text_x, lotto_y - SPACING_TIPOLOGIA_ZUCCHERO, f"ZUCCHERO {tipologia_zucchero.upper()}")
+
     c.setFont(*FONT_DATA)
     c.drawString(text_x, lotto_y - SPACING_DATA, f"{data}")
+
+    c.setFont(*FONT_ORIGINE)
+    c.drawString(text_x, lotto_y - SPACING_ORIGINE, f"Origine: {origine}")
+
+    c.setFont(*FONT_ZUCCHERO)
+    c.drawString(text_x, lotto_y - SPACING_TIPOLOGIA_ZUCCHERO, f"{tipologia_zucchero.upper()}")
 
     # Lotti fornitore
     c.setFont(*FONT_LOTTI_TITLE)
@@ -139,7 +155,7 @@ def etichetta():
     data = doc.to_dict()
 
     uploaded_at = str(data.get("uploaded_at").date())
-    return genera_pdf(data.get("lotto"), data.get("fornitore"), data.get("ddt"), data.get("tipologia_zucchero"), uploaded_at, data.get("lotti_fornitore"))
+    return genera_pdf(data.get("lotto", ""), data.get("fornitore", ""), data.get("ddt", ""), data.get("tipologia_zucchero", ""), data.get("origine", ""), uploaded_at, data.get("lotti_fornitore", ""))
         
 
 @registrazione_lotti_bp.route("/", methods=["GET", "POST"])
@@ -157,37 +173,44 @@ def registrazione_lotti():
                 # Formatta la data in ora locale italiana
                 uploaded_at = data.get("uploaded_at")
                 if uploaded_at:
-                    data["formatted_time"] = uploaded_at.astimezone(ITALY_TZ).strftime("%Y-%m-%d %H:%M:%S")
+                    data["formatted_time"] = uploaded_at.astimezone(ITALY_TZ).strftime("%Y-%m-%d")
                 else:
                     data["formatted_time"] = "N/A"
-                lotti.append(data)
+                etichette_scansionate = len(data.get("scansioni_etichette", []))
+                totale_etichette = data.get("numero_etichette", 0)
+                data["etichette"] = '{}/{}'.format(etichette_scansionate, totale_etichette)
+                if etichette_scansionate < totale_etichette:
+                    lotti.append(data)
         return render_template("registrazione-lotti.html", lotti=lotti)
 
-    fornitore = request.form.get("fornitore", "").strip()
     data = request.form.get("data", "").strip()
-    ddt = request.form.get("ddt", "").strip()
-    lotti = request.form.getlist("lotti[]")
     tipologia = request.form.get("tipologia", "").strip()
-
-    lotto = PRODUCER_MAP.get(fornitore) + "M" + datetime.strptime(data, "%Y-%m-%d").strftime("%y%m%d")
+    fornitore = request.form.get("fornitore", "").strip()
+    ddt = request.form.get("ddt", "").strip()
+    origine = request.form.get("origine", "").strip()
+    n_etichette = int(request.form.get("n_etichette", "").strip())
+    lotti = request.form.getlist("lotti[]")
     
+    prefix = PRODUCT_MAP.get(tipologia) + "-"
+
     existing = lotti_zucchero_collection \
-        .where("lotto", "==", lotto) \
-        .where("ddt", "==", ddt) \
-        .where("tipologia_zucchero", "==", tipologia) \
+        .where("lotto", ">=", prefix) \
+        .where("lotto", "<", prefix + "\uf8ff") \
         .stream()
+    
+    count = sum(1 for _ in existing)
+    lotto = prefix + f"{count + 1:03d}"
 
-    if any(existing):
-        flash("Un lotto con lo stesso lotto, DDT e tipologia zucchero è già presente.", "warning")
-        return redirect("/registrazione_lotti")
-
-    doc_ref = lotti_zucchero_collection.document()
+    doc_ref = lotti_zucchero_collection.document(lotto)
     doc_ref.set({
         "lotto" : lotto,
         "fornitore": fornitore,
         "ddt": ddt,
         "tipologia_zucchero": tipologia,
         "lotti_fornitore": lotti,
+        "origine": origine,
+        "numero_etichette": n_etichette,
+        "scansioni_etichette": [],
         "uploaded_at": firestore.SERVER_TIMESTAMP
     })
 
