@@ -3,6 +3,7 @@ from utils.firebase_client import db
 from firebase_admin import firestore
 from datetime import datetime
 from config.config import ITALY_TZ
+import pytz
 
 lotti_zucchero_collection = db.collection("lotti_zucchero")
 
@@ -154,8 +155,14 @@ def etichetta():
     
     data = doc.to_dict()
 
-    uploaded_at = str(data.get("uploaded_at").date())
-    return genera_pdf(data.get("lotto", ""), data.get("fornitore", ""), data.get("ddt", ""), data.get("tipologia_zucchero", ""), data.get("origine", ""), uploaded_at, data.get("lotti_fornitore", ""))
+    uploaded_at = data.get("uploaded_at")
+    if uploaded_at:
+        # Convertiamo il timestamp Firestore in ora italiana
+        uploaded_at_local = uploaded_at.replace(tzinfo=pytz.UTC).astimezone(ITALY_TZ)
+        uploaded_at_str = uploaded_at_local.strftime("%Y-%m-%d")
+    else:
+        uploaded_at_str = ""
+    return genera_pdf(data.get("lotto", ""), data.get("fornitore", ""), data.get("ddt", ""), data.get("tipologia_zucchero", ""), data.get("origine", ""), uploaded_at_str, data.get("lotti_fornitore", ""))
         
 
 @registrazione_lotti_bp.route("/", methods=["GET", "POST"])
@@ -183,7 +190,13 @@ def registrazione_lotti():
                     lotti.append(data)
         return render_template("registrazione-lotti.html", lotti=lotti)
 
-    data = request.form.get("data", "").strip()
+    data_str = request.form.get("data", "").strip()
+    if data_str:
+        uploaded_at = datetime.strptime(data_str, "%Y-%m-%d")
+        # opzionale: rendi la data timezone-aware
+        uploaded_at = ITALY_TZ.localize(uploaded_at)
+    else:
+        uploaded_at = datetime.now(ITALY_TZ)
     tipologia = request.form.get("tipologia", "").strip()
     fornitore = request.form.get("fornitore", "").strip()
     ddt = request.form.get("ddt", "").strip()
@@ -211,7 +224,7 @@ def registrazione_lotti():
         "origine": origine,
         "numero_etichette": n_etichette,
         "scansioni_etichette": [],
-        "uploaded_at": firestore.SERVER_TIMESTAMP
+        "uploaded_at": uploaded_at
     })
 
     flash("Lotto caricato con successo!", "success")
