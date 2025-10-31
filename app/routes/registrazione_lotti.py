@@ -26,7 +26,7 @@ PRODUCT_MAP = {
     "Zucchero BIO White": "09"
 }
 
-def genera_pdf(lotto_personal_zucchero, fornitore, ddt, tipologia_zucchero, origine, data, lotti_fornitore):
+def genera_pdf(lotto_personal_zucchero, fornitore, ddt, tipologia_zucchero, data, note, lotti_fornitore):
     """
     Genera un PDF di dimensioni 100x150 mm (verticale) con il contenuto ruotato di 90°:
     - tutti i lotti elencati
@@ -50,23 +50,23 @@ def genera_pdf(lotto_personal_zucchero, fornitore, ddt, tipologia_zucchero, orig
     TEXT_OFFSET_X = 5 * mm
     TEXT_OFFSET_Y = 15 * mm
 
+    FONT_LOTTO_PERSONAL_TITOLO = ("Helvetica", 20)
     FONT_LOTTO_PERSONAL = ("Helvetica-Bold", 60)
     FONT_FORNITORE_DDT = ("Helvetica-Bold", 25)
     FONT_ZUCCHERO = ("Helvetica-Bold", 20)
     FONT_DATA = ("Helvetica-Bold", 30)
-    FONT_ORIGINE_TITOLO = ("Helvetica", 20)
-    FONT_ORIGINE = ("Helvetica-Bold", 20)
-    FONT_LOTTI_TITLE = ("Helvetica-Bold", 17)
+    FONT_LOTTI_TITLE = ("Helvetica", 17)
+    FONT_NOTE = ("Helvetica-Bold", 40)
     FONT_LOTTI_LIST = ("Helvetica-Bold", 13)
 
     SPACING_FORNITORE_DDT = 25
-    SPACING_TIPOLOGIA_ZUCCHERO = 220
+    SPACING_TIPOLOGIA_ZUCCHERO = 185
     SPACING_DATA = 60
-    SPACING_ORIGINE_TITOLO = 80
-    SPACING_LOTTI_TITLE = 100
+    SPACING_LOTTI_TITLE = 80
     SPACING_LOTTI_LIST = 12
+    SPACING_NOTE = 220
 
-    QR_SIZE = 55 * mm
+    QR_SIZE = 45 * mm
     QR_MARGIN = 5 * mm
     # ------------------------------
 
@@ -88,10 +88,27 @@ def genera_pdf(lotto_personal_zucchero, fornitore, ddt, tipologia_zucchero, orig
     text_x = x + TEXT_OFFSET_X
     text_y = y + usable_height - TEXT_OFFSET_Y
 
+    c.setFont(*FONT_LOTTO_PERSONAL_TITOLO)
+    c.drawString(text_x + 5 * mm, text_y + 5 * mm, f"Lotto: ")
+
     # Lotto personal zucchero (grande)
     c.setFont(*FONT_LOTTO_PERSONAL)
     lotto_y = text_y
+
+    # Calcola la larghezza del testo per il rettangolo
+    text_width = c.stringWidth(f"{lotto_personal_zucchero}", *FONT_LOTTO_PERSONAL)
+    text_height = FONT_LOTTO_PERSONAL[1]  # altezza font approssimativa
+
+    # Rettangolo nero dietro il testo
+    c.setFillColorRGB(0, 0, 0)  # nero
+    c.rect(text_x + 35 * mm - 2, lotto_y - 4, text_width + 4, text_height - 10, fill=True, stroke=False)
+
+    # Testo bianco sopra il rettangolo
+    c.setFillColorRGB(1, 1, 1)  # bianco
     c.drawString(text_x + 35 * mm, lotto_y, f"{lotto_personal_zucchero}")
+
+    # Ripristina colore nero per gli altri testi
+    c.setFillColorRGB(0, 0, 0)
 
     # Dati fornitore, zucchero, data
     c.setFont(*FONT_FORNITORE_DDT)
@@ -100,23 +117,20 @@ def genera_pdf(lotto_personal_zucchero, fornitore, ddt, tipologia_zucchero, orig
     c.setFont(*FONT_DATA)
     c.drawString(text_x, lotto_y - SPACING_DATA, f"{data}")
 
-    c.setFont(*FONT_ORIGINE_TITOLO)
-    c.drawString(text_x, lotto_y - SPACING_ORIGINE_TITOLO, f"Origine:")
-
-    c.setFont(*FONT_ORIGINE)
-    c.drawString(text_x + 80, lotto_y - SPACING_ORIGINE_TITOLO, f"{origine}")
-
     c.setFont(*FONT_ZUCCHERO)
     c.drawString(text_x, lotto_y - SPACING_TIPOLOGIA_ZUCCHERO, f"{tipologia_zucchero.upper()}")
 
     # Lotti fornitore
     c.setFont(*FONT_LOTTI_TITLE)
     c.drawString(text_x, lotto_y - SPACING_LOTTI_TITLE, "Lotti fornitori:")
-    lotto_list_y = lotto_y - SPACING_LOTTI_TITLE - 20
+    lotto_list_y = lotto_y - SPACING_LOTTI_TITLE - 15
     c.setFont(*FONT_LOTTI_LIST)
     for lotto in lotti_fornitore:
         c.drawString(text_x, lotto_list_y, f"{lotto}")
         lotto_list_y -= SPACING_LOTTI_LIST
+
+    c.setFont(*FONT_NOTE)
+    c.drawString(text_x + 20, lotto_y - SPACING_NOTE, f"{note.upper()}")
 
     # QR Code
     qr_data = f"https://nicolas-personal-zucchero.github.io/scan?lottoId={lotto_personal_zucchero}"
@@ -136,7 +150,7 @@ def genera_pdf(lotto_personal_zucchero, fornitore, ddt, tipologia_zucchero, orig
     qr_image = ImageReader(qr_buffer)
 
     qr_x = x + usable_width - QR_SIZE - QR_MARGIN
-    qr_y = y + QR_MARGIN + 10
+    qr_y = y + QR_MARGIN + 35
     c.drawImage(qr_image, qr_x, qr_y, QR_SIZE, QR_SIZE)
 
     # Chiudi
@@ -166,7 +180,7 @@ def etichetta():
         uploaded_at_str = uploaded_at_local.strftime("%Y-%m-%d")
     else:
         uploaded_at_str = ""
-    return genera_pdf(data.get("lotto", ""), data.get("fornitore", ""), data.get("ddt", ""), data.get("tipologia_zucchero", ""), data.get("origine", ""), uploaded_at_str, data.get("lotti_fornitore", ""))
+    return genera_pdf(data.get("lotto", ""), data.get("fornitore", ""), data.get("ddt", ""), data.get("tipologia_zucchero", ""), uploaded_at_str, data.get("note", ""), data.get("lotti_fornitore", ""))
         
 
 @registrazione_lotti_bp.route("/", methods=["GET", "POST"])
@@ -207,6 +221,7 @@ def registrazione_lotti():
     origine = request.form.get("origine", "").strip()
     n_etichette = int(request.form.get("n_etichette", "").strip())
     lotti = request.form.getlist("lotti[]")
+    note = request.form.get("note", "").strip()
     
     prefix = PRODUCT_MAP.get(tipologia) + "-"
 
@@ -228,6 +243,7 @@ def registrazione_lotti():
         "origine": origine,
         "numero_etichette": n_etichette,
         "scansioni_etichette": [],
+        "note": note,
         "uploaded_at": uploaded_at
     })
 

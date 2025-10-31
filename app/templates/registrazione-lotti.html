@@ -42,15 +42,19 @@
         </div>
 
         <div class="row mb-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label for="origine" class="form-label">Origine</label>
                 <select class="form-select" name="origine" id="origine" required>
                     <option value="" disabled selected>Seleziona origine</option>
                 </select>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label for="n_etichette" class="form-label">Numero etichette</label>
                 <input type="number" class="form-control" name="n_etichette" id="n_etichette" placeholder="Numero etichette" value="24" min="1" required>
+            </div> 
+            <div class="col-md-4">
+                <label for="note" class="form-label">Note</label>
+                <input type="text" class="form-control" name="note" id="note" placeholder="Inserisci note" maxlength="15">
             </div> 
         </div>
 
