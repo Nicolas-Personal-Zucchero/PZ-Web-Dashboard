@@ -70,59 +70,17 @@
         </div>
 
         <button type="submit" class="btn btn-primary">Registra Lotto</button>
+        <button type="button" class="btn btn-info" onclick="window.location.href='{{ url_for('visualizza_lotti.index') }}'">
+            Visualizza Lotti
+        </button>
     </form>
+
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% for category, message in messages %}
             <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
         {% endfor %}
     {% endwith %}
-
-    {% if lotti %}
-    <hr>
-    <h3>Lotti che non sono ancora stati caricati:</h3>
-    <div class="mb-3">
-        <input type="text" class="form-control" id="searchInput" placeholder="Cerca lotto...">
-    </div>
-    <div style="max-height: 500px; overflow-y: auto;">
-        <ul class="list-group" id="listaLotti">
-            <li class="list-group-item bg-light fw-bold static-header">
-                <div class="row">
-                    <div class="col-md-1">Lotto</div>
-                    <div class="col-md-2">Tipologia</div>
-                    <div class="col-md-2">Fornitore</div>
-                    <div class="col-md-1">DDT</div>
-                    <div class="col-md-1">Lotti fornitore</div>
-                    <div class="col-md-1">Origine</div>
-                    <div class="col-md-1">Etichette scansionate</div>
-                    <div class="col-md-2">Data creazione</div>
-                    <div class="col-md-1"></div> <!-- spazio per bottone elimina -->
-                </div>
-            </li>
-
-            {% for lotto in lotti %}
-            <li class="list-group-item">
-                <div class="row">
-                    <div class="col-md-1"><strong>{{ lotto.lotto }}</strong></div>
-                    <div class="col-md-2">{{ lotto.tipologia_zucchero }}</div>
-                    <div class="col-md-2">{{ lotto.fornitore }}</div>
-                    <div class="col-md-1">{{ lotto.ddt }}</div>
-                    <div class="col-md-1">{{ lotto.lotti_fornitore | join(', ') }}</div>
-                    <div class="col-md-1">{{ lotto.origine }}</div>
-                    <div class="col-md-1">{{ lotto.etichette }}</div>
-                    <div class="col-md-2">{{ lotto.formatted_time }}</div>
-                    <div class="col-md-1 text-end">
-                        <form method="POST" action="/registrazione_lotti/etichetta" target="_blank">
-                            <input type="hidden" name="id_lotto" value="{{ lotto.id }}">
-                            <button type="submit" class="btn btn-success btn-sm">Etichetta</button>
-                        </form>
-                    </div>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
 </div>
 
 <script>
@@ -175,22 +133,6 @@ document.addEventListener("DOMContentLoaded", function () {
             e.target.parentElement.remove();
             lottoCount--;
         }
-    });
-
-    //Ricerca lotti
-    document.getElementById('searchInput')?.addEventListener('input', function () {
-        const filter = this.value.toLowerCase();
-        const items = document.querySelectorAll('#listaLotti .list-group-item');
-        items.forEach(item => {
-            if (!item.classList.contains('static-header')) {
-                const lottoId = item.querySelector('.col-md-2 strong')?.textContent.toLowerCase() || '';
-                if (lottoId.includes(filter)) {
-                    item.style.display = '';
-                } else {
-                    item.style.display = 'none';
-                }
-            }
-        });
     });
 });
 </script>

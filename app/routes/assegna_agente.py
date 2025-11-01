@@ -13,8 +13,25 @@ assegna_agente_bp = Blueprint("assegna_agente", __name__, url_prefix="/assegna-a
 
 assegnazione_contatti_agenti_collection = db.collection("assegnazione_contatti_agenti")
 
-mailer = MailerPZ(os.getenv("INFO_EMAIL_NAME"), os.getenv("INFO_EMAIL_ADDRESS"), os.getenv("INFO_EMAIL_PASSWORD"))
-hubspot = HubspotPZ(os.getenv("HUBSPOT_AGENT_ASSIGNMENT_TOKEN"))
+INFO_EMAIL_NAME = os.getenv("INFO_EMAIL_NAME", "")
+INFO_EMAIL_ADDRESS = os.getenv("INFO_EMAIL_ADDRESS", "")
+INFO_EMAIL_PASSWORD = os.getenv("INFO_EMAIL_PASSWORD", "")
+HUBSPOT_AGENT_ASSIGNMENT_TOKEN = os.getenv("HUBSPOT_AGENT_ASSIGNMENT_TOKEN", "")
+
+if not INFO_EMAIL_NAME:
+    print("INFO_EMAIL_NAME is not set.")
+
+if not INFO_EMAIL_ADDRESS:
+    print("INFO_EMAIL_ADDRESS is not set.")
+
+if not INFO_EMAIL_PASSWORD:
+    print("INFO_EMAIL_PASSWORD is not set.")
+
+if not HUBSPOT_AGENT_ASSIGNMENT_TOKEN:
+    print("HUBSPOT_AGENT_ASSIGNMENT_TOKEN is not set.")
+
+mailer = MailerPZ(INFO_EMAIL_NAME, INFO_EMAIL_ADDRESS, INFO_EMAIL_PASSWORD)
+hubspot = HubspotPZ(HUBSPOT_AGENT_ASSIGNMENT_TOKEN)
 
 @assegna_agente_bp.route("/get_contact")
 def get_contact():

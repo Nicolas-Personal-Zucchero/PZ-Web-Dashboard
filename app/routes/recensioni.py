@@ -11,15 +11,24 @@ recensioni_collection = db.collection("recensioni")
 
 recensioni_bp = Blueprint("recensioni", __name__, url_prefix="/recensioni")
 
+INFO_EMAIL_NAME = os.getenv("INFO_EMAIL_NAME", "")
+INFO_EMAIL_ADDRESS = os.getenv("INFO_EMAIL_ADDRESS", "")
+INFO_EMAIL_PASSWORD = os.getenv("INFO_EMAIL_PASSWORD", "")
+
+if not INFO_EMAIL_NAME:
+    print("INFO_EMAIL_NAME is not set.")
+
+if not INFO_EMAIL_ADDRESS:
+    print("INFO_EMAIL_ADDRESS is not set.")
+
+if not INFO_EMAIL_PASSWORD:
+    print("INFO_EMAIL_PASSWORD is not set.")
+
+mailer = MailerPZ(INFO_EMAIL_NAME,INFO_EMAIL_ADDRESS,INFO_EMAIL_PASSWORD)
+
 @recensioni_bp.route("/", methods=["GET", "POST"])
 def recensioni():
     if request.method == "POST":
-        mailer = MailerPZ(
-            os.getenv("INFO_EMAIL_NAME"),
-            os.getenv("INFO_EMAIL_ADDRESS"),
-            os.getenv("INFO_EMAIL_PASSWORD")
-        )
-
         email = request.form.get("email", "").strip().lower()
         customer = request.form.get("nome_cliente", "").strip()
         sender = request.form.get("nome_mittente", "").strip()
