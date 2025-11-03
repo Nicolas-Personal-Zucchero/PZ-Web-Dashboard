@@ -11,7 +11,10 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('home') }}">Personal Zucchero</a>
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('home') }}">
+                <img src="{{ url_for('static', filename='favicon.png') }}" alt="Logo" height="40" class="me-2">
+                <span>Personal Zucchero</span>
+            </a>
             <div class="collapse navbar-collapse justify-content-center">
                 <ul class="navbar-nav">
                     <li class="nav-item">
