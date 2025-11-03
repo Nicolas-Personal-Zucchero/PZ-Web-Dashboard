@@ -1,5 +1,5 @@
 services:
-  recensioni:
+  pz-dashboard:
     build: .
     volumes:
       - ./data:/app/data  # monti tutta la cartella

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Visualizza Impianti - Personal Zucchero{% endblock %}
+
+{% block content %}
+    <div class="p-4">
+        <a href="javascript:history.back()" class="btn btn-light mb-3">
+            <i class="bi bi-arrow-left"></i> Torna indietro
+        </a>
+        <h1>Visualizza Impianti</h1>
+
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Lotto attuale</th>
+                <th>Data caricamento</th>
+                <th>Operatore</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for impianto, scansioni in impianti.items() %}
+                <tr>
+                    <td>{{ impianto }}</td>
+                    <td>{{ scansioni[0].lotto }}</td>
+                    <td>{{ scansioni[0].date }}</td>
+                    <td>{{ scansioni[0].operatore }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary view-scansioni-btn"
+                                data-scansioni='{{ scansioni | tojson | safe }}'>
+                            Visualizza
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Modal per le scansioni -->
+        <div class="modal fade" id="scansioniModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Scansioni Etichette</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-striped" id="scansioniTable">
+                            <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Lotto</th>
+                                <th>Operatore</th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const scansioniModal = new bootstrap.Modal(document.getElementById('scansioniModal'));
+            const scansioniTableBody = document.querySelector('#scansioniTable tbody');
+
+            document.querySelectorAll('.view-scansioni-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const scansioni = JSON.parse(this.dataset.scansioni);
+
+                    scansioniTableBody.innerHTML = '';
+                    scansioni.forEach(s => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td>${s.date}</td><td>${s.lotto}</td><td>${s.operatore}</td>`;
+                        scansioniTableBody.appendChild(row);
+                    });
+
+                    scansioniModal.show();
+                });
+            });
+        });
+    </script>
+{% endblock %}

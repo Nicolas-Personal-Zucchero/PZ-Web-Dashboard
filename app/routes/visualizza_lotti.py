@@ -30,7 +30,7 @@ def index():
             # Formatta la data in ora locale italiana
             uploaded_at = data.get("uploaded_at")
             if uploaded_at:
-                data["formatted_time"] = uploaded_at.astimezone(ITALY_TZ).strftime("%d-%m-%Y")
+                data["formatted_time"] = uploaded_at.astimezone(ITALY_TZ).strftime("%d/%m/%Y")
             else:
                 data["formatted_time"] = "N/A"
 

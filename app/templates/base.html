@@ -24,10 +24,7 @@
                         <a class="nav-link {% if request.endpoint == 'recensioni.recensioni' %}active{% endif %}" href="{{ url_for('recensioni.recensioni') }}">Recensioni</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'assegna_agente.assegnaAgentei' %}active{% endif %}" href="{{ url_for('assegna_agente.assegnaAgente') }}">Assegna agente</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'registrazione_lotti.registrazione_lotti' %}active{% endif %}" href="{{ url_for('registrazione_lotti.registrazione_lotti') }}">Registrazione lotti</a>
+                        <a class="nav-link {% if request.endpoint == 'assegna_agente.assegnaAgente' %}active{% endif %}" href="{{ url_for('assegna_agente.assegnaAgente') }}">Assegna agente</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.endpoint == 'agents_map.agents_map' %}active{% endif %}" href="{{ url_for('agents_map.agents_map') }}">Mappa agenti</a>

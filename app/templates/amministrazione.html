@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Homepage{% endblock %}
+{% block title %}Amministrazione{% endblock %}
 
 {% block content %}
     <!-- <h1 class="mb-4">Homepage RaspberryPi Personal Zucchero</h1> -->
@@ -38,6 +38,42 @@
                     </h5>
                     <p class="card-text">Visualizza la mappa degli agenti divisi per provincia.</p>
                     <a href="{{ url_for('agents_map.agents_map') }}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 shadow-sm hover-card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-box-seam me-2"></i>Gestione Lotti
+                    </h5>
+                    <p class="card-text">Registra nuovi lotti di zucchero e tieni traccia di quelli già esistenti.</p>
+                    <a href="{{ url_for('amministrazione.registrazione_lotti.registrazione_lotti') }}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 shadow-sm hover-card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-box-seam me-2"></i>Visualizza Lotti
+                    </h5>
+                    <p class="card-text">Registra nuovi lotti di zucchero e tieni traccia di quelli già esistenti.</p>
+                    <a href="{{ url_for('amministrazione.visualizza_lotti.index') }}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 shadow-sm hover-card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-box-seam me-2"></i>Visualizza Impianti
+                    </h5>
+                    <p class="card-text">Registra nuovi lotti di zucchero e tieni traccia di quelli già esistenti.</p>
+                    <a href="{{ url_for('amministrazione.visualizza_impianti.index') }}" class="stretched-link"></a>
                 </div>
             </div>
         </div>
