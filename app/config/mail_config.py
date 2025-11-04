@@ -1,8 +1,8 @@
 REVIEW_EMAIL_OBJECT_ITA = "Ci farebbe piacere la tua opinione! 🌟"
 REVIEW_EMAIL_OBJECT_ENG = "We’d love to hear your thoughts! 🌟"
 AGENT_EMAIL_OBJECT_ITA = "Nuovo contatto assegnato"
-CONTACT_EMAIL_OBJECT_ITA = "Grazie per averci scelto!"
-CONTACT_EMAIL_OBJECT_ENG = "Thank you for choosing us!"
+CONTACT_EMAIL_OBJECT_ITA = "Grazie per il Suo Interesse – Il Nostro Consulente Locale La Contatterà"
+CONTACT_EMAIL_OBJECT_ENG = "Thank You for Your Interest – Your Local Consultant Will Contact You"
 
 REVIEW_EMAIL_BODY_ITA = """
 Caro/a {customer},<br>
@@ -75,40 +75,45 @@ Note interne:<br>
 {note_interne}<br><br>
 
 Grazie e buon lavoro!<br><br>
+
 Cordiali saluti,<br>
-Personal Zucchero
+{mittente}
 """
 
 CONTACT_EMAIL_BODY_ITA = """
 Gentile <b>{nome_cliente}</b>,<br><br>
 
-grazie per averci contattato.<br><br>
+grazie per l'interesse dimostrato verso la nostra linea prodotti.<br><br>
 
-Le sue informazioni sono state inoltrate al nostro agente di zona che la assisterà personalmente. Per qualsiasi evenienza trova di seguito i suoi recapiti:<br><br>
+Abbiamo già provveduto ad inoltrare il suo contatto al nostro consulente di zona, che provvederà a contattarla il prima possibile per darle assistenza in merito.<br>
+Le anticipiamo i suoi contatti:<br><br>
 
 Nome: <b>{nome_agente}</b><br>
 Telefono: <b>{telefono_agente}</b><br>
 Email: <b>{email_agente}</b><br><br>
 
-Il nostro responsabile la contatterà al più presto.<br><br>
+Dalla nostra sede restiamo a disposizione per qualsiasi esigenza e con l'occasione anticipiamo il nostro catalogo prodotti per visionare tutte le nostre linee.<br><br>
+
 Cordiali saluti,<br>
-Personal Zucchero
+{mittente}
 """
 
 CONTACT_EMAIL_BODY_ENG = """
 Dear <b>{nome_cliente}</b>,<br><br>
 
-thank you for reaching out to us.<br><br>
+Thank you for your interest in our product range.<br><br>
 
-Your information has been forwarded to our local agent, who will personally assist you. For any needs, you can find their contact details below:<br><br>
+We have forwarded your contact details to our local consultant, who will get in touch with you shortly to provide assistance.<br>
+In the meantime, here is their contact information:<br><br>
 
 Name: <b>{nome_agente}</b><br>
 Phone: <b>{telefono_agente}</b><br>
 Email: <b>{email_agente}</b><br><br>
 
-Our agent will contact you soon.<br><br>
-Best regards,<br>
-Personal Zucchero
+Our headquarters remain at your disposal for any further inquiries. Meanwhile, we are pleased to share our product catalog so you can explore all our offerings.<br><br>
+
+Kind regards,<br>
+{mittente}
 """
 
 EMAIL_TEMPLATES = {
@@ -116,4 +121,5 @@ EMAIL_TEMPLATES = {
     "review_eng": {"object": REVIEW_EMAIL_OBJECT_ENG, "body": REVIEW_EMAIL_BODY_ENG},
     "agent_ita": {"object": AGENT_EMAIL_OBJECT_ITA, "body": AGENT_EMAIL_BODY_ITA},
     "contact_ita": {"object": CONTACT_EMAIL_OBJECT_ITA, "body": CONTACT_EMAIL_BODY_ITA},
+    "contact_eng": {"object": CONTACT_EMAIL_OBJECT_ENG, "body": CONTACT_EMAIL_BODY_ENG},
 }

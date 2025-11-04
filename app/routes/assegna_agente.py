@@ -62,6 +62,7 @@ def assegnaAgente():
     id_agente = get_field(form, "id_agente")
     agent = agents_by_id.get(id_agente)
     agent_note = get_field(form, "note_agente")
+    lingua_email = get_field(form, "lingua_email")
 
     contact_info = {
         "email": get_field(form, "email"),
@@ -94,8 +95,8 @@ def assegnaAgente():
 
     add_assignment_to_firebase(agent, updated_contact, sender)
 
-    send_agent_email(mailer, agent, updated_contact, updated_company, agent_note)
-    send_contact_email(mailer, updated_contact, agent)
+    send_agent_email(mailer, sender, agent, updated_contact, updated_company, agent_note)
+    send_contact_email(mailer, sender, lingua_email, updated_contact, agent)
 
     associate_contact_agent(hubspot, updated_contact, agent)
     create_deal_for_agent(hubspot, agent, updated_contact)
@@ -168,7 +169,7 @@ def upsert_contact_and_company(hubspot, form_contact, form_company):
 
     return get_contact_and_its_company(hubspot, form_contact["email"])
 
-def send_agent_email(mailer, agent, contact, company, note):
+def send_agent_email(mailer, sender, agent, contact, company, note):
     mailer.invia_email_singola(
         destinatari=f"{agent['email']};info@personalzucchero.com",
         oggetto=EMAIL_TEMPLATES["agent_ita"]["object"],
@@ -188,20 +189,23 @@ def send_agent_email(mailer, agent, contact, company, note):
             prodotto_di_interesse_azienda=company.get("prodotto_di_interesse") or "",
             fonte_contatto=contact.get("fonte") or "",
 
-            note_interne=note
+            note_interne=note,
+
+            mittente=sender
         ),
         hubspot_ccn=True
     )
 
-def send_contact_email(mailer, contact, agent):
+def send_contact_email(mailer, sender, language, contact, agent):
     mailer.invia_email_singola(
         destinatari=contact["email"],
-        oggetto=EMAIL_TEMPLATES["contact_ita"]["object"],
-        corpo=EMAIL_TEMPLATES["contact_ita"]["body"].format(
+        oggetto=EMAIL_TEMPLATES["contact_" + language.lower()]["object"],
+        corpo=EMAIL_TEMPLATES["contact_" + language.lower()]["body"].format(
             nome_cliente=contact.get("firstname") or "",
             nome_agente=f"{agent.get('firstname', '')} {agent.get('lastname', '')}",
             email_agente=agent.get("email") or "",
-            telefono_agente=agent.get("mobilephone") or agent.get("phone", "")
+            telefono_agente=agent.get("mobilephone") or agent.get("phone", ""),
+            mittente=sender
         ),
         hubspot_ccn=True
     )

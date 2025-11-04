@@ -18,24 +18,26 @@ Dopo aver cliccato sul pulsante:
             <label for="selectMittente" class="form-label">Nome mittente</label>
             <select class="form-select" name="nome_mittente" id="selectMittente" required>
                 <option value="" disabled selected>Seleziona il mittente</option>
-                <option value="Arianna">Arianna</option>
-                <option value="Barbara">Barbara</option>
-                <option value="Denis">Denis</option>
-                <option value="Elena">Elena</option>
-                <option value="Elisa">Elisa</option>
-                <option value="Erika">Erika</option>
-                <option value="Marco">Marco</option>
-                <option value="Marilena">Marilena</option>
-                <option value="Nazzareno">Nazzareno</option>
-                <option value="Nicolas">Nicolas</option>
-                <option value="Sabrina">Sabrina</option>
-                <option value="Silvia">Silvia</option>
-                <option value="Staff Personal Zucchero">Staff Personal Zucchero</option>
+                <option>Arianna Bazzocchi - Ufficio Grafico</option>
+                <option>Arianna Riceputi - Ufficio Commerciale</option>
+                <option>Barbara Cinarelli - Ufficio Amministrativo</option>
+                <option>Denis Severini - Direzione</option>
+                <option>Elena Sama - Ufficio Commerciale</option>
+                <option>Elisa Cappa - Ufficio Amministrativo</option>
+                <option>Erika Lionetti - Ufficio Ordini</option>
+                <option>Marco Paolini - Ufficio Grafico</option>
+                <option>Marilena Barile - Ufficio Ordini</option>
+                <option>Mauro Amadori - Direzione</option>
+                <option>Nazzareno Balducci - Ufficio Amministrativo</option>
+                <option>Nicolas Amadori</option>
+                <option>Sabrina Cappa - Ufficio Ordini</option>
+                <option>Silvia Cinarelli - Ufficio Commerciale</option>
+                <option>Staff Personal Zucchero</option>
             </select>
         </div>
 
         <div class="row mb-3">
-            <div class="col-md-5">
+            <div class="col-md-4">
                 <div class="card">
                     <div class="card-header">Agente</div>
                     <div class="card-body">
@@ -55,12 +57,12 @@ Dopo aver cliccato sul pulsante:
                     </div>
                 </div>
             </div>
-            <div class="col-md-7">
+            <div class="col-md-8">
                 <div class="card" id="contactCard">
                     <div class="card-header">Contatto</div>
                     <div class="card-body">
                         <div class="row mb-3">
-                            <div class="col col-md-8">
+                            <div class="col col-md-6">
                                 <label for="email" class="form-label">Email del cliente*</label>
                                 <input type="email" class="form-control" name="email" id="email"required>
                             </div>
@@ -71,6 +73,13 @@ Dopo aver cliccato sul pulsante:
                                     {% for source in contact_source_options %}
                                     <option value="{{ source.value }}">{{ source.label }}</option>
                                     {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col col-md-2">
+                                <label for="lingua_email" class="form-label">Lingua cliente*</label>
+                                <select class="form-select" id="lingua_email" name="lingua_email" id="selectLingua" required>
+                                    <option value="ITA" selected>Italiano</option>
+                                    <option value="ENG">Inglese</option>
                                 </select>
                             </div>
                         </div>
