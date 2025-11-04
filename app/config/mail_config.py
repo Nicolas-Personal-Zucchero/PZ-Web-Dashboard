@@ -70,6 +70,7 @@ Categoria: <b>{categoria}</b><br>
 Città: <b>{citta_azienda}</b><br>
 Provincia: <b>{provincia_azienda}</b><br>
 Prodotto di interesse: <b>{prodotto_di_interesse_azienda}</b><br>
+Fonte del contatto: <b>{fonte_contatto}</b><br>
 Note interne:<br>
 {note_interne}<br><br>
 
@@ -81,13 +82,15 @@ Personal Zucchero
 CONTACT_EMAIL_BODY_ITA = """
 Gentile <b>{nome_cliente}</b>,<br><br>
 
-grazie per averci contattato. Le sue informazioni sono state inoltrate al nostro agente di zona che la assisterà personalmente. Per qualsiasi evenienza trova di seguito i suoi recapiti:<br><br>
+grazie per averci contattato.<br><br>
+
+Le sue informazioni sono state inoltrate al nostro agente di zona che la assisterà personalmente. Per qualsiasi evenienza trova di seguito i suoi recapiti:<br><br>
 
 Nome: <b>{nome_agente}</b><br>
 Telefono: <b>{telefono_agente}</b><br>
 Email: <b>{email_agente}</b><br><br>
 
-La invitiamo a contattarlo direttamente per qualsiasi necessità.<br><br>
+Il nostro responsabile la contatterà al più presto.<br><br>
 Cordiali saluti,<br>
 Personal Zucchero
 """
@@ -95,13 +98,15 @@ Personal Zucchero
 CONTACT_EMAIL_BODY_ENG = """
 Dear <b>{nome_cliente}</b>,<br><br>
 
-thank you for reaching out to us. Your information has been forwarded to our local agent, who will personally assist you. For any needs, you can find their contact details below:<br><br>
+thank you for reaching out to us.<br><br>
+
+Your information has been forwarded to our local agent, who will personally assist you. For any needs, you can find their contact details below:<br><br>
 
 Name: <b>{nome_agente}</b><br>
 Phone: <b>{telefono_agente}</b><br>
 Email: <b>{email_agente}</b><br><br>
 
-We kindly invite you to contact them directly for any assistance.<br><br>
+Our agent will contact you soon.<br><br>
 Best regards,<br>
 Personal Zucchero
 """

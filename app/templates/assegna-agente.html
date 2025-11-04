@@ -59,9 +59,26 @@ Dopo aver cliccato sul pulsante:
                 <div class="card" id="contactCard">
                     <div class="card-header">Contatto</div>
                     <div class="card-body">
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email del cliente*</label>
-                            <input type="email" class="form-control" name="email" id="email"required>
+                        <div class="row mb-3">
+                            <div class="col col-md-8">
+                                <label for="email" class="form-label">Email del cliente*</label>
+                                <input type="email" class="form-control" name="email" id="email"required>
+                            </div>
+                            <div class="col col-md-4">
+                                <label for="fonte" class="form-label">Fonte</label>
+                                <select class="form-select" name="fonte" id="fonte" required>
+                                    <option value="" disabled selected>Seleziona fonte</option>
+                                    <option value="mexal">Mexal</option>
+                                    <option value="sigep_2025">Sigep 2025</option>
+                                    <option value="Landing_page_zucchero">Landing page zucchero</option>
+                                    <option value="host_2025">Host 2025</option>
+                                    <option value="fiera">Fiera</option>
+                                    <option value="contatto_telefonico">Contatto telefonico</option>
+                                    <option value="contatto_email">Contatto email</option>
+                                    <option value="sito_personal_zucchero">Sito Personal Zucchero</option>
+                                    <option value="altro">Altro</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div class="row mb-3">

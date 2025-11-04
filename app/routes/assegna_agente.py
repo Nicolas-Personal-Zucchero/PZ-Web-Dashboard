@@ -67,6 +67,7 @@ def assegnaAgente():
         "firstname": get_field(form, "nome_cliente"),
         "lastname": get_field(form, "cognome_cliente"),
         "phone": get_field(form, "telefono"),
+        "fonte": get_field(form, "fonte"),
     }
 
     company_info = {
@@ -184,6 +185,7 @@ def send_agent_email(mailer, agent, contact, company, note):
             citta_azienda=company.get("city") or "",
             provincia_azienda=company.get("provincia") or "",
             prodotto_di_interesse_azienda=company.get("prodotto_di_interesse") or "",
+            fonte_contatto=contact.get("fonte") or "",
 
             note_interne=note
         ),

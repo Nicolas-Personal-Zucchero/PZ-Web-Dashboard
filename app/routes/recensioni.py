@@ -67,7 +67,7 @@ def recensioni():
         created_at = data.get("created_at")
         if created_at:
             local_time = created_at.astimezone(ITALY_TZ)
-            formatted_time = local_time.strftime("%Y-%m-%d %H:%M:%S")
+            formatted_time = local_time.strftime("%d/%m/%Y, %H:%M:%S")
         else:
             formatted_time = "N/A"
         entries.append((
