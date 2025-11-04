@@ -43,9 +43,9 @@ Dopo aver cliccato sul pulsante:
                             <select class="form-select" name="id_agente" id="selectAgente" required>
                                 <option value="" disabled selected>Selezionare un agente</option>
                                 {% for a in agents %}
-                                    <option value="{{ a.id }}">
-                                        {{ a.lastname or '' }} {{ a.firstname or '' }} ({{ a.email }})
-                                    </option>
+                                <option value="{{ a.id }}">
+                                    {{ a.lastname or '' }} {{ a.firstname or '' }} ({{ a.email }})
+                                </option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -65,18 +65,12 @@ Dopo aver cliccato sul pulsante:
                                 <input type="email" class="form-control" name="email" id="email"required>
                             </div>
                             <div class="col col-md-4">
-                                <label for="fonte" class="form-label">Fonte</label>
+                                <label for="fonte" class="form-label">Fonte*</label>
                                 <select class="form-select" name="fonte" id="fonte" required>
-                                    <option value="" disabled selected>Seleziona fonte</option>
-                                    <option value="mexal">Mexal</option>
-                                    <option value="sigep_2025">Sigep 2025</option>
-                                    <option value="Landing_page_zucchero">Landing page zucchero</option>
-                                    <option value="host_2025">Host 2025</option>
-                                    <option value="fiera">Fiera</option>
-                                    <option value="contatto_telefonico">Contatto telefonico</option>
-                                    <option value="contatto_email">Contatto email</option>
-                                    <option value="sito_personal_zucchero">Sito Personal Zucchero</option>
-                                    <option value="altro">Altro</option>
+                                    <option value="" disabled selected></option>
+                                    {% for source in contact_source_options %}
+                                    <option value="{{ source.value }}">{{ source.label }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                         </div>

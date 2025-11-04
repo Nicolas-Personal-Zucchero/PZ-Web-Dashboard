@@ -1,5 +1,5 @@
 #pip install .
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, Dict, List, Tuple, Any
 import requests
 from datetime import datetime
 
@@ -30,6 +30,23 @@ class HubspotPZ:
         data = datetime.fromtimestamp(timestamp)
         return data.date()
 
+    ##########Properties############################################
+
+    def _getPropertyInfo(self, object_type: str, property_name: str) -> Any:
+        endpoint = self._BASER_URL + f'/crm/v3/properties/{object_type}/{property_name}'
+        r = requests.get(url=endpoint, headers=self._headers)
+        
+        if r.status_code != 200:
+            print(f"Error {r.status_code} during the retrieval of a property information on HubSpot.\nResponse Body: {r.text}")
+            return None
+        return r.json()
+
+    def getContactPropertyInfo(self, property_name: str) -> Any:
+        return self._getPropertyInfo("contacts", property_name)
+    
+    def getCompanyPropertyInfo(self, property_name: str) -> Any:
+        return self._getPropertyInfo("companies", property_name)
+    
     ##########All Objects############################################
 
     #Tested and working

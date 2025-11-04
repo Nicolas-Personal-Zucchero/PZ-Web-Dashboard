@@ -50,9 +50,10 @@ def get_field(form, key):
 def assegnaAgente():
     agents = get_active_agents(hubspot)
     agents_by_id = {agent['id']: agent for agent in agents}
+    contact_source_options = hubspot.getContactPropertyInfo("fonte").get("options", [])
 
     if request.method != "POST":
-        return render_template("assegna-agente.html", agents=agents)
+        return render_template("assegna-agente.html", agents=agents, contact_source_options=contact_source_options)
     
     form = request.form
 
