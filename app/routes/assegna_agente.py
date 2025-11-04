@@ -109,7 +109,7 @@ def get_active_agents(hubspot):
         "firstname", "lastname", "email", 
         "hs_additional_emails", "escluso_da_assegnazione_clienti"
     ])
-    agents = [a for a in agents if a.get("escluso_da_assegnazione_clienti") == "false"]
+    agents = [a for a in agents if a.get("escluso_da_assegnazione_clienti") == "false" and a.get("data_fine_contratto") == None]
     return sorted(agents, key=lambda x: ((x.get("lastname") or "zzzzzz").lower(), (x.get("firstname") or "").lower()))
 
 def validate_form_fields(form, required_fields):
