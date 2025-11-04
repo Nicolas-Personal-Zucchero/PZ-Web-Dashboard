@@ -94,6 +94,8 @@ Email: <b>{email_agente}</b><br><br>
 
 Dalla nostra sede restiamo a disposizione per qualsiasi esigenza e con l'occasione anticipiamo il nostro catalogo prodotti per visionare tutte le nostre linee.<br><br>
 
+<a href="https://personalzucchero.com/wp-content/uploads/2024/12/PZ_CAT_-2025-web.pdf" target="_blank">Visualizza il nostro catalogo prodotti</a><br><br>
+
 Cordiali saluti,<br>
 {mittente}
 """
@@ -111,6 +113,8 @@ Phone: <b>{telefono_agente}</b><br>
 Email: <b>{email_agente}</b><br><br>
 
 Our headquarters remain at your disposal for any further inquiries. Meanwhile, we are pleased to share our product catalog so you can explore all our offerings.<br><br>
+
+<a href="https://personalzucchero.com/wp-content/uploads/2024/12/PZ_CAT_-2025-web.pdf" target="_blank">View Our Product Catalog</a><br><br>
 
 Kind regards,<br>
 {mittente}
