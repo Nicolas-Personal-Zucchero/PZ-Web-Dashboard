@@ -72,7 +72,7 @@ Provincia: <b>{provincia_azienda}</b><br>
 Prodotto di interesse: <b>{prodotto_di_interesse_azienda}</b><br>
 Fonte del contatto: <b>{fonte_contatto}</b><br>
 Note interne:<br>
-{note_interne}<br><br>
+<b>{note_interne}</b><br><br>
 
 Grazie e buon lavoro!<br><br>
 
