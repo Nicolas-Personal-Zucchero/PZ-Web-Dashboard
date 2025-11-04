@@ -136,4 +136,20 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 </script>
+
+{% if request.args.get('stampare') %}
+<script>
+    const lotto = "{{ request.args.get('stampare') }}";
+    console.log("lotto");
+    console.log(lotto);
+    // Apri l'etichetta in una nuova tab
+    window.open(`/amministrazione/visualizza_lotti/etichetta?id_lotto=${lotto}`, '_blank');
+
+    // Rimuovi il parametro "stampare" dall'URL senza ricaricare la pagina
+    const url = new URL(window.location.href);
+    url.searchParams.delete('stampare');
+    window.history.replaceState(null, '', url.toString());
+</script>
+{% endif %}
+
 {% endblock %}

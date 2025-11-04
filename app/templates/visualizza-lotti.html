@@ -77,9 +77,9 @@
                               data-scansioni='{{ lotto.scansioni_etichette | tojson | safe }}'>
                           {{ lotto.etichette }}
                       </button>
-                      <form method="POST" action="/visualizza_lotti/etichetta" target="_blank">
+                      <form method="POST" action="/amministrazione/visualizza_lotti/etichetta" target="_blank">
                         <input type="hidden" name="id_lotto" value="{{ lotto.id }}">
-                        <button type="submit" class="btn btn-success btn-sm">Etichetta</button>
+                        <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-filetype-pdf"></i></button>
                       </form>
                     </div>
                 </div>

@@ -37,10 +37,15 @@ def index():
             lotti.append(data)
         return render_template("visualizza-lotti.html", lotti=lotti)
     
-@visualizza_lotti_bp.route("/etichetta", methods=["POST"])
+@visualizza_lotti_bp.route("/etichetta", methods=["GET", "POST"])
 def etichetta():
-    id_lotto = request.form.get("id_lotto")
+    if request.method == "POST":
+        id_lotto = request.form.get("id_lotto")
+    else:  # GET
+        id_lotto = request.args.get("id_lotto")
+
     if not id_lotto:
+        flash("ID lotto non fornito.", "error")
         return redirect("/visualizza_lotti")
 
     doc = lotti_zucchero_collection.document(id_lotto).get()

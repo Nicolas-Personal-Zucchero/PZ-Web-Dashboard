@@ -70,6 +70,7 @@ def registrazione_lotti():
 
     flash("Lotto caricato con successo!", "success")
 
-    return redirect("/registrazione_lotti")
+    # return redirect("/registrazione_lotti")
+    return redirect(f"/amministrazione/registrazione_lotti?stampare={lotto}")
 
     

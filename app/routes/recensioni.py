@@ -28,7 +28,7 @@ mailer = MailerPZ(INFO_EMAIL_NAME,INFO_EMAIL_ADDRESS,INFO_EMAIL_PASSWORD)
 
 @recensioni_bp.route("/", methods=["GET", "POST"])
 def recensioni():
-    if request.method == "POST":
+    if request.method == "POST":        
         email = request.form.get("email", "").strip().lower()
         customer = request.form.get("nome_cliente", "").strip()
         sender = request.form.get("nome_mittente", "").strip()
@@ -57,7 +57,6 @@ def recensioni():
 
                 flash("Richiesta di recensione inviata con successo!", "success")
 
-            mailer = None
             return redirect("/recensioni")
 
     # Lettura recensioni da Firestore
