@@ -35,7 +35,7 @@ def index():
                 data["formatted_time"] = "N/A"
 
             lotti.append(data)
-        return render_template("visualizza-lotti.html", lotti=lotti)
+        return render_template("amministrazione/visualizza-lotti.html", lotti=lotti)
     
 @visualizza_lotti_bp.route("/etichetta", methods=["GET", "POST"])
 def etichetta():

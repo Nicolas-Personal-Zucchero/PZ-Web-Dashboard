@@ -78,7 +78,7 @@ def recensioni():
             formatted_time
         ))
 
-    return render_template("recensioni.html", entries=entries)
+    return render_template("home/recensioni.html", entries=entries)
 
 
 @recensioni_bp.route("/elimina", methods=["POST"])

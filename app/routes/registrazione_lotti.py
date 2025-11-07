@@ -27,7 +27,7 @@ PRODUCT_MAP = {
 @registrazione_lotti_bp.route("/", methods=["GET", "POST"])
 def registrazione_lotti():
     if request.method == "GET":
-        return render_template("registrazione-lotti.html")
+        return render_template("amministrazione/registrazione-lotti.html")
 
     data_str = request.form.get("data", "").strip()
     if data_str:

@@ -53,7 +53,7 @@ def assegnaAgente():
     contact_source_options = hubspot.getContactPropertyInfo("fonte").get("options", [])
 
     if request.method != "POST":
-        return render_template("assegna-agente.html", agents=agents, contact_source_options=contact_source_options)
+        return render_template("home/assegna-agente.html", agents=agents, contact_source_options=contact_source_options)
     
     form = request.form
 

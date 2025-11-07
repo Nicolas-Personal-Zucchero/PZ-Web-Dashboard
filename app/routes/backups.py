@@ -18,7 +18,7 @@ def list_backups():
     # Ordina per data (più recente prima)
     folders.sort(key=lambda f: os.path.getmtime(os.path.join(BACKUP_FOLDER, f)), reverse=True)
 
-    return render_template("backups.html", folders=folders)
+    return render_template("amministrazione/backups.html", folders=folders)
 
 
 @backups_bp.route("/download/all")

@@ -70,4 +70,4 @@ def interventi():
     cursor.close()
     conn.close()
 
-    return render_template("interventi.html", entries=converted_entries)
+    return render_template("wip/interventi.html", entries=converted_entries)
