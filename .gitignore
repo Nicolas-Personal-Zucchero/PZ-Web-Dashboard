@@ -66,3 +66,4 @@ Thumbs.db
 
 *.egg-info/
 **/serviceAccountKey.json
+mock_backups/

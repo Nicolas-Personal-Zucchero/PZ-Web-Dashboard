@@ -3,6 +3,7 @@ services:
     build: .
     volumes:
       - ./data:/app/data  # monti tutta la cartella
+      - /home/pz/firestore_backups:/backups  # monta la cartella dei backup
     ports:
       - "80:5000"
     restart: unless-stopped

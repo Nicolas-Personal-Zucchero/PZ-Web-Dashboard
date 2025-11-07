@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Backup Database{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Download Backup Database</h2>
+
+    {% if files %}
+        <ul class="list-group">
+            {% for file in files %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ file }}</span>
+                    <a href="{{ url_for('backup.download_backup', filename=file) }}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-download me-1"></i>Scarica
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="alert alert-info mt-3">Nessun backup trovato nella cartella.</div>
+    {% endif %}
+</div>
+{% endblock %}
