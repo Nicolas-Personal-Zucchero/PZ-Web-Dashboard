@@ -28,11 +28,14 @@ app.register_blueprint(amministrazione_bp)
 wip_bp.register_blueprint(interventi_bp)
 app.register_blueprint(wip_bp)
 
-register_links("home", [
-    {"name": "Richiesta Recensione", "url": "/recensioni", "description": "Invia una mail di richiesta recensione ai clienti in modo rapido.", "icon": "bi bi-envelope-fill me-2"},
-    {"name": "Assegna agente", "url": "/assegna-agente", "description": "Assegna un agente ad un contatto specifico con pochi click.", "icon": "bi bi-person-badge-fill me-2"},
-    {"name": "Mappa agenti", "url": "/agents_map", "description": "Visualizza la mappa degli agenti divisi per provincia.", "icon": "bi bi-geo-alt-fill me-2"}
-])
+register_links("home", [{
+    "title": "Clienti e Agenti",
+    "links": [
+        {"name": "Richiesta Recensione", "url": "/recensioni", "description": "Invia una mail di richiesta recensione ai clienti in modo rapido.", "icon": "bi bi-envelope-fill me-2"},
+        {"name": "Assegna agente", "url": "/assegna-agente", "description": "Assegna un agente ad un contatto specifico con pochi click.", "icon": "bi bi-person-badge-fill me-2"},
+        {"name": "Mappa agenti", "url": "/agents_map", "description": "Visualizza la mappa degli agenti divisi per provincia.", "icon": "bi bi-geo-alt-fill me-2"}
+    ]
+}])
 
 @app.context_processor
 def inject_links():
@@ -62,7 +65,7 @@ def inject_links():
     args, home_link = sections.get(section, (['home'], '/'))
 
     return {
-        'links': get_links(*args),
+        'linkGroups': get_links(*args),
         'home_link': home_link
     }
 

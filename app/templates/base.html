@@ -30,18 +30,9 @@
             white-space: nowrap;
         }
 
-        .sidebar.collapsed {
-            width: var(--sidebar-collapsed-width);
-        }
-
         .sidebar .navbar-brand span,
         .sidebar .nav-link span {
             transition: opacity 0.2s ease;
-        }
-
-        .sidebar.collapsed .navbar-brand span,
-        .sidebar.collapsed .nav-link span {
-            opacity: 0;
         }
 
         /* Link stile */
@@ -62,44 +53,6 @@
         .sidebar .nav-link.active {
             background-color: #4393C8;
             color: white !important;
-        }
-
-        /* Toggle Button Migliorato */
-        .sidebar-toggle {
-            position: absolute;
-            top: 18px;
-            right: -10px;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            z-index: 3000;
-        }
-
-        .sidebar-toggle:hover {
-            background: #4393C8;
-            color: white;
-            border-color: #4393C8;
-            transform: scale(1.1);
-        }
-
-        /* Rotazione icona quando collassato */
-        .sidebar.collapsed .sidebar-toggle i {
-            transform: rotate(180deg);
-        }
-        .sidebar-toggle i {
-            transition: transform 0.25s ease;
-        }
-
-        .sidebar.collapsed ~ .content {
-            margin-left: var(--sidebar-collapsed-width);
         }
 
         /* Content shift */
@@ -125,12 +78,7 @@
 </head>
 <body>
 
-    <!-- SIDEBAR -->
     <div class="sidebar d-flex flex-column" id="sidebar">
-        <!-- Toggle button -->
-        <button class="sidebar-toggle" onclick="toggleSidebar()">
-            <i class="bi bi-chevron-left"></i>
-        </button>
 
         <a class="navbar-brand d-flex align-items-center px-3 mb-4" href="{{ home_link }}">
             <img src="{{ url_for('static', filename='favicon.png') }}" alt="Logo" height="35" class="me-2">
@@ -138,13 +86,18 @@
         </a>
 
         <ul class="nav nav-pills flex-column px-2 gap-1">
-            {% for link in links %}
-                <li class="nav-item">
-                    <a class="nav-link {% if request.path == link.url %}active{% endif %}" href="{{ link.url }}">
-                        <i class="{{ link.icon }}"></i>
-                        <span>{{ link.name }}</span>
-                    </a>
+            {% for group in linkGroups %}
+                <li class="nav-item mt-2">
+                    <span class="text-muted small px-3">{{ group.title }}</span>
                 </li>
+                {% for link in group.links %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == link.url %}active{% endif %}" href="{{ link.url }}">
+                            <i class="{{ link.icon }}"></i>
+                            <span>{{ link.name }}</span>
+                        </a>
+                    </li>
+                {% endfor %}
             {% endfor %}
         </ul>
     </div>
@@ -153,13 +106,6 @@
     <div class="content">
         {% block content %}{% endblock %}
     </div>
-
-<script>
-function toggleSidebar() {
-    const sidebar = document.getElementById("sidebar");
-    sidebar.classList.toggle("collapsed");
-}
-</script>
 
 </body>
 </html>
