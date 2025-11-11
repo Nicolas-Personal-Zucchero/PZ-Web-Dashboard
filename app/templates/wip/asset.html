@@ -53,13 +53,23 @@
         {% endfor %}
     {% endwith %}
 
-    <!-- Lista asset -->
+    <!-- Filtro ricerca e tipologia -->
     {% if entries %}
     <hr>
     <h3>Asset presenti nel gestionale:</h3>
 
-    <div class="mb-3">
-        <input type="text" class="form-control" id="searchInput" placeholder="Cerca asset...">
+    <div class="mb-3 row g-2">
+        <div class="col-md-6">
+            <input type="text" class="form-control" id="searchInput" placeholder="Cerca asset...">
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="tipologiaFilter">
+                <option value="">Tutte le tipologie</option>
+                {% for t in entries|map(attribute='tipologia')|unique %}
+                    <option value="{{ t }}">{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
     </div>
 
     <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
@@ -100,29 +110,33 @@
     {% else %}
     <p class="text-muted">Nessun asset registrato.</p>
     {% endif %}
-
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    // Filtro ricerca asset
     const searchInput = document.getElementById('searchInput');
-    searchInput?.addEventListener('input', function () {
-        const filter = this.value.toLowerCase();
-        const items = document.querySelectorAll('#assetList .list-group-item');
+    const tipologiaFilter = document.getElementById('tipologiaFilter');
+    const items = document.querySelectorAll('#assetList tr');
+
+    function filterAssets() {
+        const searchText = searchInput.value.toLowerCase();
+        const tipologia = tipologiaFilter.value.toLowerCase();
+
         items.forEach(item => {
-            if (!item.classList.contains('static-header')) {
-                const row = item.querySelector('.row');
-                const nomeText = row.children[0].textContent.toLowerCase();
-                const posizioneText = row.children[2].textContent.toLowerCase();
-                if (nomeText.includes(filter) || posizioneText.includes(filter)) {
-                    item.style.display = '';
-                } else {
-                    item.style.display = 'none';
-                }
-            }
+            const nome = item.children[0]?.textContent.toLowerCase() || '';
+            const tipo = item.children[1]?.textContent.toLowerCase() || '';
+            const posizione = item.children[2]?.textContent.toLowerCase() || '';
+
+            const match = 
+                nome.includes(searchText) &&
+                (tipologia === '' || tipo === tipologia);
+
+            item.style.display = match ? '' : 'none';
         });
-    });
+    }
+
+    searchInput.addEventListener('input', filterAssets);
+    tipologiaFilter.addEventListener('change', filterAssets);
 });
 </script>
 {% endblock %}
