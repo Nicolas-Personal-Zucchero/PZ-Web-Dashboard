@@ -84,7 +84,7 @@
                     <td>{{ e.intervallo_manutenzione }}</td>
                     <td>{{ e.intervallo_pulizia }}</td>
                     <td class="text-end">
-                        <a href="www.google.com" class="btn btn-primary btn-sm">Apri</a>
+                        <a href="/wip/asset/{{ e.id }}" class="btn btn-primary btn-sm">Apri</a>
                     </td>
                     <td class="text-end">
                         <form method="POST" action="/wip/asset/elimina" onsubmit="return confirm('Sei sicuro di voler eliminare questo asset?');">

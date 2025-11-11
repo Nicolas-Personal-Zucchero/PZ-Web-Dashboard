@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block title %}Dettaglio Asset{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <a href="/wip/asset" class="btn btn-outline-secondary mb-3">← Torna agli asset</a>
+
+    <h2 class="mb-4">{{ asset.nome }}</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Informazioni</h5>
+                    <p><strong>Tipologia:</strong> {{ asset.tipologia }}</p>
+                    <p><strong>Posizione:</strong> {{ asset.posizione }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Intervalli</h5>
+
+                    <!-- MANUTENZIONE -->
+                    <p><strong>Manutenzione:</strong> ogni {{ asset.intervallo_manutenzione }} giorni</p>
+                    {% if giorni_dalla_manutenzione is not none %}
+                        {% if giorni_ritardo_manutenzione %}
+                            <p class="text-danger fw-semibold">
+                                ⚠️ Ultima: {{ giorni_dalla_manutenzione }} giorni fa  
+                                (RITARDO di {{ giorni_ritardo_manutenzione }} giorni)
+                            </p>
+                        {% else %}
+                            <p class="text-muted small">Ultima: {{ giorni_dalla_manutenzione }} giorni fa</p>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted small">Nessuna manutenzione registrata</p>
+                    {% endif %}
+
+                    <hr>
+
+                    <!-- PULIZIA -->
+                    <p><strong>Pulizia:</strong> ogni {{ asset.intervallo_pulizia }} giorni</p>
+                    {% if giorni_dalla_pulizia is not none %}
+                        {% if giorni_ritardo_pulizia %}
+                            <p class="text-danger fw-semibold">
+                                ⚠️ Ultima: {{ giorni_dalla_pulizia }} giorni fa  
+                                (RITARDO di {{ giorni_ritardo_pulizia }} giorni)
+                            </p>
+                        {% else %}
+                            <p class="text-muted small">Ultima: {{ giorni_dalla_pulizia }} giorni fa</p>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted small">Nessuna pulizia registrata</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <hr>
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#modalIntervento">
+        + Registra Intervento
+    </button>
+
+
+    <h4>Manutenzioni</h4>
+    {% if manutenzioni %}
+    <div style="max-height: 300px; overflow-y: auto;">
+        <ul class="list-group">
+            <li class="list-group-item bg-light fw-bold static-header">
+                <div class="row">
+                    <div class="col-md-2">Data</div>
+                    <div class="col-md-3">Operatore</div>
+                    <div class="col-md-7">Note</div>
+                </div>
+            </li>
+            {% for m in manutenzioni %}
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-md-2">{{ m.data }}</div>
+                    <div class="col-md-3">{{ m.operatore }}</div>
+                    <div class="col-md-7">{{ m.note }}</div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% else %}
+    <p class="text-muted">Nessuna manutenzione registrata.</p>
+    {% endif %}
+
+    <hr>
+
+    <h4>Pulizie</h4>
+    {% if pulizie %}
+    <div style="max-height: 300px; overflow-y: auto;">
+        <ul class="list-group">
+            <li class="list-group-item bg-light fw-bold static-header">
+                <div class="row">
+                    <div class="col-md-2">Data</div>
+                    <div class="col-md-3">Operatore</div>
+                    <div class="col-md-7">Note</div>
+                </div>
+            </li>
+            {% for p in pulizie %}
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-md-2">{{ p.data }}</div>
+                    <div class="col-md-3">{{ p.operatore }}</div>
+                    <div class="col-md-7">{{ p.note }}</div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% else %}
+    <p class="text-muted">Nessuna pulizia registrata</p>
+    {% endif %}
+
+
+</div>
+
+<!-- Modal Intervento -->
+<div class="modal fade" id="modalIntervento" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="/wip/asset/{{ asset.id }}/add_intervento">
+        <div class="modal-header">
+          <h5 class="modal-title">Registra Intervento</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label class="form-label">Tipo Intervento</label>
+            <select class="form-select" name="tipo" required>
+              <option value="manutenzione">Manutenzione</option>
+              <option value="pulizia">Pulizia</option>
+            </select>
+          </div>
+
+            <div class="mb-3">
+                <label class="form-label">Data</label>
+                <input type="date" class="form-control" name="data" id="data" value="{{ datetime.now().strftime('%Y-%m-%d') }}" required>
+            </div>
+
+          <div class="mb-3">
+            <label class="form-label">Operatore</label>
+            <input type="text" class="form-control" name="operatore" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Note</label>
+            <textarea class="form-control" name="note"></textarea>
+          </div>
+          
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Salva</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

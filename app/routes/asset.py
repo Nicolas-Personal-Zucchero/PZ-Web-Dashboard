@@ -55,3 +55,79 @@ def elimina_asset():
         else:
             flash("Asset non trovato.", "warning")
     return redirect("/wip/asset")
+
+def calcola_giorni(interventi, intervallo):
+    if not interventi:
+        return None, None
+    last = interventi[0]["data"]
+    oggi = datetime.now(ITALY_TZ)
+    giorni = (oggi - last).days
+    ritardo = max(0, giorni - intervallo)
+    return giorni, ritardo
+
+@asset_bp.route("/<asset_id>")
+def asset_detail(asset_id):
+    doc = asset_collection.document(asset_id).get()
+
+    if not doc.exists:
+        flash("Asset non trovato.", "warning")
+        return redirect("/wip/asset")
+
+    asset = doc.to_dict()
+    asset["id"] = doc.id
+
+    manutenzioni = sorted(asset.get("manutenzioni", []), key=lambda x: x.get("data", ""), reverse=True)
+    pulizie = sorted(asset.get("pulizie", []), key=lambda x: x.get("data", ""), reverse=True)
+
+    giorni_dalla_manutenzione, giorni_ritardo_manutenzione = calcola_giorni(manutenzioni, asset["intervallo_manutenzione"])
+    giorni_dalla_pulizia, giorni_ritardo_pulizia = calcola_giorni(pulizie, asset["intervallo_pulizia"])
+
+    for m in manutenzioni:
+        m["data"] = m["data"].astimezone(ITALY_TZ).strftime("%d/%m/%Y")
+
+    for p in pulizie:
+        p["data"] = p["data"].astimezone(ITALY_TZ).strftime("%d/%m/%Y")
+
+    return render_template(
+        "/wip/asset_dettaglio.html",
+        asset=asset,
+        manutenzioni=manutenzioni,
+        pulizie=pulizie,
+        giorni_dalla_manutenzione=giorni_dalla_manutenzione,
+        giorni_dalla_pulizia=giorni_dalla_pulizia,
+        giorni_ritardo_manutenzione=giorni_ritardo_manutenzione,
+        giorni_ritardo_pulizia=giorni_ritardo_pulizia,
+        datetime=datetime
+    )
+
+@asset_bp.route("/<asset_id>/add_intervento", methods=["POST"])
+def add_intervento(asset_id):
+    tipo = request.form.get("tipo")  # "manutenzione" o "pulizia"
+    operatore = request.form.get("operatore", "").strip()
+    note = request.form.get("note", "").strip()
+    data_str = request.form.get("data")
+
+    if data_str:
+        uploaded_at = datetime.strptime(data_str, "%Y-%m-%d")
+        uploaded_at = ITALY_TZ.localize(uploaded_at)
+    else:
+        uploaded_at = datetime.now(ITALY_TZ)
+
+    doc_ref = asset_collection.document(asset_id)
+
+    entry = {
+        "data": uploaded_at,
+        "operatore": operatore,
+        "note": note
+    }
+
+    if tipo == "manutenzione":
+        doc_ref.update({"manutenzioni": firestore.ArrayUnion([entry])})
+        flash("Manutenzione registrata con successo!", "success")
+    elif tipo == "pulizia":
+        doc_ref.update({"pulizie": firestore.ArrayUnion([entry])})
+        flash("Pulizia registrata con successo!", "success")
+    else:
+        flash("Tipo intervento non valido.", "danger")
+
+    return redirect(f"/wip/asset/{asset_id}")
