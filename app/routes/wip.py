@@ -6,7 +6,7 @@ wip_bp = Blueprint("wip", __name__, url_prefix="/wip")
 register_links("wip", [{
     "title": "WIP",
     "links": [
-        {"name": "Interventi", "url": "/wip/interventi", "description": "Gestisci gli interventi programmati o richiesti dai clienti.", "icon": "bi bi-tools me-2"}
+        {"name": "Asset", "url": "/wip/asset", "description": "Gestisci gli asset.", "icon": "bi bi-tools me-2"}
     ]
 }])
 

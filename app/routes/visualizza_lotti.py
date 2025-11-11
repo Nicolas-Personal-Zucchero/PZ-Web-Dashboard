@@ -46,12 +46,12 @@ def etichetta():
 
     if not id_lotto:
         flash("ID lotto non fornito.", "error")
-        return redirect("/visualizza_lotti")
+        return redirect("amministrazione/visualizza_lotti")
 
     doc = lotti_zucchero_collection.document(id_lotto).get()
     if not doc.exists:
         flash("Lotto non trovato.", "error")
-        return redirect("/visualizza_lotti")
+        return redirect("amministrazione/visualizza_lotti")
     
     data = doc.to_dict()
 

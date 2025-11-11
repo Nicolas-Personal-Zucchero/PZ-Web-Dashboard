@@ -3,7 +3,7 @@ from flask import Flask, render_template
 from config.links import register_links, get_links
 from routes.assegna_agente import assegna_agente_bp
 from routes.recensioni import recensioni_bp
-from routes.interventi import interventi_bp
+from routes.asset import asset_bp
 from routes.registrazione_lotti import registrazione_lotti_bp
 from routes.wip import wip_bp
 from routes.agents_map import agents_map_bp
@@ -25,7 +25,7 @@ amministrazione_bp.register_blueprint(visualizza_impianti_bp)
 amministrazione_bp.register_blueprint(backups_bp)
 app.register_blueprint(amministrazione_bp)
 
-wip_bp.register_blueprint(interventi_bp)
+wip_bp.register_blueprint(asset_bp)
 app.register_blueprint(wip_bp)
 
 register_links("home", [{
