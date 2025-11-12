@@ -12,7 +12,13 @@ register_links("amministrazione", [
         ]
     },
     {
-        "title": "Amministrazione Database",
+        "title": "Asset",
+        "links": [
+            {"name": "Registro manutenzioni e pulizie", "url": "/amministrazione/asset", "description": "Visualizza il registro delle manutenzioni e pulizie.", "icon": "bi bi-tools me-2"},
+        ]
+    },
+    {
+        "title": "Database",
         "links": [
             {"name": "Scarica backup", "url": "/amministrazione/backups", "description": "Scarica i backup dei database.", "icon": "bi bi-database-fill-down me-2"},
         ]

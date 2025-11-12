@@ -38,7 +38,7 @@ def asset():
                     "created_at": firestore.SERVER_TIMESTAMP
                 })
         flash("Asset registrato con successo!", "success")
-        return redirect("/wip/asset")
+        return redirect("/amministrazione/asset")
 
     # Lettura asset da Firestore ordinati per creazione decrescente
     docs = asset_collection.stream()
@@ -50,7 +50,7 @@ def asset():
 
     entries.sort(key=lambda x: natural_key(x["nome"]))
 
-    return render_template("/wip/asset.html", entries=entries)
+    return render_template("/amministrazione/asset.html", entries=entries)
 
 
 @asset_bp.route("/elimina", methods=["POST"])
@@ -63,7 +63,7 @@ def elimina_asset():
             flash("Asset eliminato con successo.", "success")
         else:
             flash("Asset non trovato.", "warning")
-    return redirect("/wip/asset")
+    return redirect("/amministrazione/asset")
 
 def calcola_giorni(interventi, intervallo):
     if not interventi:
@@ -80,7 +80,7 @@ def asset_detail(asset_id):
 
     if not doc.exists:
         flash("Asset non trovato.", "warning")
-        return redirect("/wip/asset")
+        return redirect("/amministrazione/asset")
 
     asset = doc.to_dict()
     asset["id"] = doc.id
@@ -98,7 +98,7 @@ def asset_detail(asset_id):
         p["data"] = p["data"].astimezone(ITALY_TZ).strftime("%d/%m/%Y")
 
     return render_template(
-        "/wip/asset_dettaglio.html",
+        "/amministrazione/asset_dettaglio.html",
         asset=asset,
         manutenzioni=manutenzioni,
         pulizie=pulizie,
@@ -139,4 +139,4 @@ def add_intervento(asset_id):
     else:
         flash("Tipo intervento non valido.", "danger")
 
-    return redirect(f"/wip/asset/{asset_id}")
+    return redirect(f"/amministrazione/asset/{asset_id}")

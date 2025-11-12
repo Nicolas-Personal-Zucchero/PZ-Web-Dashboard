@@ -5,9 +5,7 @@ wip_bp = Blueprint("wip", __name__, url_prefix="/wip")
 
 register_links("wip", [{
     "title": "WIP",
-    "links": [
-        {"name": "Asset", "url": "/wip/asset", "description": "Gestisci gli asset.", "icon": "bi bi-tools me-2"}
-    ]
+    "links": []
 }])
 
 @wip_bp.route("/", methods=["GET"])

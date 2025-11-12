@@ -21,9 +21,9 @@ app.register_blueprint(agents_map_bp)
 amministrazione_bp.register_blueprint(gestione_lotti_bp)
 amministrazione_bp.register_blueprint(visualizza_impianti_bp)
 amministrazione_bp.register_blueprint(backups_bp)
+amministrazione_bp.register_blueprint(asset_bp)
 app.register_blueprint(amministrazione_bp)
 
-wip_bp.register_blueprint(asset_bp)
 app.register_blueprint(wip_bp)
 
 register_links("home", [{

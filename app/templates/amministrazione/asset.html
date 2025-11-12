@@ -114,10 +114,10 @@
                     <div class="col-md-1">{{ e.intervallo_manutenzione }}</div>
                     <div class="col-md-1">{{ e.intervallo_pulizia }}</div>
                     <div class="col-md-1 text-end">
-                        <a href="/wip/asset/{{ e.id }}" class="btn btn-primary btn-sm">Apri</a>
+                        <a href="/amministrazione/asset/{{ e.id }}" class="btn btn-primary btn-sm">Apri</a>
                     </div>
                     <div class="col-md-1 text-end">
-                        <form method="POST" action="/wip/asset/elimina" 
+                        <form method="POST" action="/amministrazione/asset/elimina" 
                             onsubmit="return confirm('Sei sicuro di voler eliminare questo asset?');">
                             <input type="hidden" name="asset_id" value="{{ e.id }}">
                             <button type="submit" class="btn btn-danger btn-sm">Elimina</button>
