@@ -10,7 +10,7 @@
     <h1>Gestione Lotti</h1>
 
     <button class="btn btn-info mb-3" type="button" id="btnToggle" data-bs-toggle="collapse" data-bs-target="#formRegistrazione" aria-expanded="false" aria-controls="formRegistrazione">
-        <i class="bi bi-plus-circle"></i> Aggiungi Lotto
+        <i class="bi bi-plus-circle"></i> Aggiungi lotto
     </button>
 
     <div class="collapse mb-4" id="formRegistrazione">
@@ -97,11 +97,12 @@
         {% endfor %}
     {% endwith %}
     <hr>
-    <!-- <h2>Lotti Registrati</h2> -->
+    
     {% if lotti %}
+    <!-- <h2>Lotti Registrati</h2> -->
     <div class="mb-3 row g-2">
         <div class="col-md-2">
-            <input type="text" class="form-control" id="searchInput" placeholder="Cerca lotto..." maxlength="6">
+            <input type="text" class="form-control" id="searchInput" placeholder="Cerca lotto" maxlength="6">
         </div>
         <div class="col-md-3">
             <select class="form-select" id="tipologiaFilter">

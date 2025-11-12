@@ -9,33 +9,38 @@
         </a>
         <h1>Visualizza Impianti</h1>
 
-        <table class="table table-striped">
-            <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Lotto attuale</th>
-                <th>Data caricamento</th>
-                <th>Operatore</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for impianto, scansioni in impianti.items() %}
-                <tr>
-                    <td>{{ impianto }}</td>
-                    <td>{{ scansioni[0].lotto }}</td>
-                    <td>{{ scansioni[0].date }}</td>
-                    <td>{{ scansioni[0].operatore }}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary view-scansioni-btn"
-                                data-scansioni='{{ scansioni | tojson | safe }}'>
-                            Visualizza storico
-                        </button>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+        <div style="max-height: 500px; overflow-y: auto;">
+            <ul class="list-group" id="impiantiList">
+                <!-- Header -->
+                <li class="list-group-item bg-light fw-bold static-header">
+                    <div class="row">
+                        <div class="col-md-3">Nome</div>
+                        <div class="col-md-2">Lotto attuale</div>
+                        <div class="col-md-3">Data caricamento</div>
+                        <div class="col-md-2">Operatore</div>
+                        <div class="col-md-2"></div>
+                    </div>
+                </li>
+
+                <!-- Entries -->
+                {% for impianto, scansioni in impianti.items() %}
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-md-3">{{ impianto }}</div>
+                        <div class="col-md-2">{{ scansioni[0].lotto }}</div>
+                        <div class="col-md-3">{{ scansioni[0].date }}</div>
+                        <div class="col-md-2">{{ scansioni[0].operatore }}</div>
+                        <div class="col-md-2">
+                            <button class="btn btn-sm btn-primary view-scansioni-btn"
+                                    data-scansioni='{{ scansioni | tojson | safe }}'>
+                                Visualizza storico
+                            </button>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
 
         <!-- Modal per le scansioni -->
         <div class="modal fade" id="scansioniModal" tabindex="-1" aria-hidden="true">
