@@ -15,6 +15,7 @@ asset_collection = db.collection("asset")
 def asset():
     if request.method == "POST":
         nome = request.form.get("nome", "").strip()
+        modello = request.form.get("modello", "").strip()
         tipologia = request.form.get("tipologia", "").strip()
         posizione = request.form.get("posizione", "").strip()
         intervallo_manutenzione = request.form.get("intervallo_manutenzione", "").strip()
@@ -22,6 +23,7 @@ def asset():
 
         asset_collection.add({
                     "nome": nome,
+                    "modello": modello,
                     "tipologia": tipologia,
                     "posizione": posizione,
                     "intervallo_manutenzione": int(intervallo_manutenzione),

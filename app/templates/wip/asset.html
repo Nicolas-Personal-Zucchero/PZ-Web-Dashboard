@@ -17,11 +17,15 @@
     <div class="collapse mb-4" id="formAsset">
         <form method="POST">
             <div class="row mb-3">
-                <div class="col-md-4">
-                    <label for="nome" class="form-label">Nome dell'asset</label>
+                <div class="col-md-3">
+                    <label for="nome" class="form-label">Nome</label>
                     <input type="text" class="form-control" name="nome" id="nome" placeholder="Es: Macchina Zucchero 1" required>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label for="modello" class="form-label">Modello</label>
+                    <input type="text" class="form-control" name="modello" id="modello" required>
+                </div>
+                <div class="col-md-2">
                     <label for="selectTipologia" class="form-label">Tipologia</label>
                     <select class="form-select" name="tipologia" id="selectTipologia" required>
                         <option value="" disabled selected></option>
@@ -73,6 +77,14 @@
                 {% endfor %}
             </select>
         </div>
+        <div class="col-md-3">
+            <select class="form-select" id="posizioneFilter">
+                <option value="">Tutte le posizioni</option>
+                {% for t in entries|map(attribute='posizione')|unique %}
+                    <option value="{{ t }}">{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
     </div>
 
     <div style="max-height: 500px; overflow-y: auto;">
@@ -81,10 +93,11 @@
             <li class="list-group-item static-header">
                 <div class="row">
                     <div class="col-md-2">Nome</div>
+                    <div class="col-md-2">Modello</div>
                     <div class="col-md-2">Tipologia</div>
                     <div class="col-md-2">Posizione</div>
-                    <div class="col-md-2">Int. Manutenzione</div>
-                    <div class="col-md-2">Int. Pulizia</div>
+                    <div class="col-md-1">Int. Manutenzione</div>
+                    <div class="col-md-1">Int. Pulizia</div>
                     <div class="col-md-1 text-end">Apri</div>
                     <div class="col-md-1 text-end">Elimina</div>
                 </div>
@@ -95,10 +108,11 @@
             <li class="list-group-item">
                 <div class="row">
                     <div class="col-md-2"><strong>{{ e.nome }}</strong></div>
+                    <div class="col-md-2">{{ e.modello }}</div>
                     <div class="col-md-2">{{ e.tipologia }}</div>
                     <div class="col-md-2">{{ e.posizione }}</div>
-                    <div class="col-md-2">{{ e.intervallo_manutenzione }}</div>
-                    <div class="col-md-2">{{ e.intervallo_pulizia }}</div>
+                    <div class="col-md-1">{{ e.intervallo_manutenzione }}</div>
+                    <div class="col-md-1">{{ e.intervallo_pulizia }}</div>
                     <div class="col-md-1 text-end">
                         <a href="/wip/asset/{{ e.id }}" class="btn btn-primary btn-sm">Apri</a>
                     </div>
@@ -124,20 +138,24 @@
 document.addEventListener("DOMContentLoaded", function () {
     const searchInput = document.getElementById('searchInput');
     const tipologiaFilter = document.getElementById('tipologiaFilter');
+    const posizioniFilter = document.getElementById('posizioniFilter');
     const items = document.querySelectorAll('#assetList tr');
 
     function filterAssets() {
         const searchText = searchInput.value.toLowerCase();
         const tipologia = tipologiaFilter.value.toLowerCase();
+        const posizione = posizioniFilter.value.toLowerCase();
 
         items.forEach(item => {
             const nome = item.children[0]?.textContent.toLowerCase() || '';
-            const tipo = item.children[1]?.textContent.toLowerCase() || '';
-            const posizione = item.children[2]?.textContent.toLowerCase() || '';
+            const modello = item.children[1]?.textContent.toLowerCase() || '';
+            const tipo = item.children[2]?.textContent.toLowerCase() || '';
+            const pos = item.children[3]?.textContent.toLowerCase() || '';
 
             const match = 
                 nome.includes(searchText) &&
-                (tipologia === '' || tipo === tipologia);
+                (tipologia === '' || tipo === tipologia) &&
+                (posizione === '' || pos === posizione);
 
             item.style.display = match ? '' : 'none';
         });
