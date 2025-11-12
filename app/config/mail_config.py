@@ -10,12 +10,11 @@ Caro/a {customer},<br>
 Speriamo che la tua esperienza con Personal Zucchero sia stata dolce quanto i nostri prodotti!<br>
 Teniamo tantissimo al tuo parere e ci farebbe davvero piacere se volessi lasciarci una recensione su Google, bastano davvero pochi secondi.<br>
 <br>
-Se hai avuto un momento speciale con noi, raccontacelo!<br>
-La tua opinione aiuta anche altri a scegliere con fiducia.<br>
+<b>La tua opinione ci aiuta</b> e permette anche altri di scegliere con fiducia.<br>
 <br>
 <!-- Pulsante "bulletproof" compatibile con la maggior parte dei client email -->
 <!--[if mso]>
-  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://g.page/r/CVVzbjGLDF6kEAE/review" style="height:44px;v-text-anchor:middle;width:260px;" arcsize="8%" stroke="f" fillcolor="#d9534f">
+  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://g.page/r/CVVzbjGLDF6kEAE/review" style="height:44px;v-text-anchor:middle;width:260px;" arcsize="8%" stroke="f" fillcolor="#00a6e2">
     <w:anchorlock/>
     <center style="color:#ffffff;font-family:Arial, sans-serif;font-size:16px;font-weight:bold;">
       Valuta la tua esperienza
@@ -25,7 +24,7 @@ La tua opinione aiuta anche altri a scegliere con fiducia.<br>
 <!--[if !mso]><!-- -->
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left">
     <tr>
-      <td align="center" bgcolor="#d9534f" style="border-radius:6px;">
+      <td align="center" bgcolor="#00a6e2" style="border-radius:6px;">
         <a href="https://g.page/r/CVVzbjGLDF6kEAE/review"
            target="_blank"
            style="display:inline-block;padding:12px 24px;font-family:Arial, sans-serif;font-size:16px;color:#ffffff;text-decoration:none;font-weight:bold;border-radius:6px;"
@@ -52,12 +51,11 @@ Dear {customer},<br>
 We hope your experience with Personal Zucchero was as sweet as our products!<br>
 We truly value your feedback and would greatly appreciate it if you could take a few seconds to leave us a review on Google.<br>
 <br>
-If you had a special moment with us, we’d love to hear about it!<br>
-Your opinion also helps others choose with confidence.<br>
+<b>Your feedback helps us</b> and allows others to choose with confidence.<br>
 <br>
 <!-- "Bulletproof" button compatible with most email clients -->
 <!--[if mso]>
-  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://g.page/r/CVVzbjGLDF6kEAE/review" style="height:44px;v-text-anchor:middle;width:260px;" arcsize="8%" stroke="f" fillcolor="#d9534f">
+  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://g.page/r/CVVzbjGLDF6kEAE/review" style="height:44px;v-text-anchor:middle;width:260px;" arcsize="8%" stroke="f" fillcolor="#00a6e2">
     <w:anchorlock/>
     <center style="color:#ffffff;font-family:Arial, sans-serif;font-size:16px;font-weight:bold;">
       Rate Your Experience
@@ -67,7 +65,7 @@ Your opinion also helps others choose with confidence.<br>
 <!--[if !mso]><!-- -->
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left">
     <tr>
-      <td align="center" bgcolor="#d9534f" style="border-radius:6px;">
+      <td align="center" bgcolor="#00a6e2" style="border-radius:6px;">
         <a href="https://g.page/r/CVVzbjGLDF6kEAE/review"
            target="_blank"
            style="display:inline-block;padding:12px 24px;font-family:Arial, sans-serif;font-size:16px;color:#ffffff;text-decoration:none;font-weight:bold;border-radius:6px;"
