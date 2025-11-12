@@ -136,33 +136,36 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const searchInput = document.getElementById('searchInput');
+        const searchInput = document.getElementById('searchInput');
     const tipologiaFilter = document.getElementById('tipologiaFilter');
-    const posizioniFilter = document.getElementById('posizioniFilter');
-    const items = document.querySelectorAll('#assetList tr');
+    const posizioneFilter = document.getElementById('posizioneFilter');
+    const items = document.querySelectorAll('#assetList .list-group-item');
 
     function filterAssets() {
         const searchText = searchInput.value.toLowerCase();
         const tipologia = tipologiaFilter.value.toLowerCase();
-        const posizione = posizioniFilter.value.toLowerCase();
+        const posizione = posizioneFilter.value.toLowerCase();
 
         items.forEach(item => {
-            const nome = item.children[0]?.textContent.toLowerCase() || '';
-            const modello = item.children[1]?.textContent.toLowerCase() || '';
-            const tipo = item.children[2]?.textContent.toLowerCase() || '';
-            const pos = item.children[3]?.textContent.toLowerCase() || '';
+            if (item.classList.contains('static-header')) return;
+
+            const nome = item.querySelector('.col-md-2:nth-child(1)')?.textContent.toLowerCase() || '';
+            const modello = item.querySelector('.col-md-2:nth-child(2)')?.textContent.toLowerCase() || '';
+            const tipo = item.querySelector('.col-md-2:nth-child(3)')?.textContent.toLowerCase() || '';
+            const pos = item.querySelector('.col-md-2:nth-child(4)')?.textContent.toLowerCase() || '';
 
             const match = 
-                nome.includes(searchText) &&
-                (tipologia === '' || tipo === tipologia) &&
-                (posizione === '' || pos === posizione);
+                (nome.includes(searchText) || modello.includes(searchText)) &&
+                (tipologia === '' || tipo.includes(tipologia)) &&
+                (posizione === '' || pos.includes(posizione));
 
             item.style.display = match ? '' : 'none';
         });
     }
 
-    searchInput.addEventListener('input', filterAssets);
-    tipologiaFilter.addEventListener('change', filterAssets);
+    if(searchInput) searchInput.addEventListener('input', filterAssets);
+    if(tipologiaFilter) tipologiaFilter.addEventListener('change', filterAssets);
+    if(posizioneFilter) posizioneFilter.addEventListener('change', filterAssets);
 
     const toggleBtn = document.getElementById('btnToggle');
     const formCollapse = document.getElementById('formAsset');

@@ -36,7 +36,7 @@ def asset():
         return redirect("/wip/asset")
 
     # Lettura asset da Firestore ordinati per creazione decrescente
-    docs = asset_collection.order_by("created_at", direction=firestore.Query.DESCENDING).stream()
+    docs = asset_collection.order_by("nome").stream()
     entries = []
     for doc in docs:
         data = doc.to_dict()
