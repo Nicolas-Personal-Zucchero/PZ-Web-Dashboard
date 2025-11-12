@@ -69,15 +69,16 @@
 
     <h4>Manutenzioni</h4>
     {% if manutenzioni %}
-    <div style="max-height: 300px; overflow-y: auto;">
-        <ul class="list-group">
-            <li class="list-group-item bg-light fw-bold static-header">
+    <div style="max-height: 500px; overflow-y: auto;">
+        <ul class="list-group styled-table" id="listaLotti">
+            <li class="list-group-item static-header">
                 <div class="row">
                     <div class="col-md-2">Data</div>
                     <div class="col-md-3">Operatore</div>
                     <div class="col-md-7">Note</div>
                 </div>
             </li>
+
             {% for m in manutenzioni %}
             <li class="list-group-item">
                 <div class="row">
