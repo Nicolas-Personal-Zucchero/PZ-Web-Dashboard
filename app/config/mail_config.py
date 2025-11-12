@@ -2,27 +2,43 @@ REVIEW_EMAIL_OBJECT_ITA = "Ci farebbe piacere la tua opinione! 🌟"
 REVIEW_EMAIL_OBJECT_ENG = "We’d love to hear your thoughts! 🌟"
 AGENT_EMAIL_OBJECT_ITA = "Nuovo contatto assegnato"
 CONTACT_EMAIL_OBJECT_ITA = "Grazie per il Suo Interesse – Il Nostro Consulente Locale La Contatterà"
-CONTACT_EMAIL_OBJECT_ENG = "Thank You for Your Interest – Your Local Consultant Will Contact You"
+CONTACT_EMAIL_OBJECT_ENG = "Thank You for Your Interest – Our Local Consultant Will Contact You"
 
 REVIEW_EMAIL_BODY_ITA = """
 Caro/a {customer},<br>
 <br>
-Speriamo che la tua esperienza con <b>Personal Zucchero</b> sia stata dolce quanto i nostri prodotti!<br>
-Teniamo tantissimo al tuo parere e ci farebbe davvero piacere se volessi lasciarci una recensione su Google.<br>
-<br>
-👉 <b><a href="https://g.page/r/CVVzbjGLDF6kEAE/review">Lascia la tua recensione su Google:</a></b> <a href="https://g.page/r/CVVzbjGLDF6kEAE/review">https://g.page/r/CVVzbjGLDF6kEAE/review</a><br>
-<br>
-Bastano pochi secondi, ma per noi conta moltissimo!<br>
-Puoi raccontare cosa ti è piaciuto di più:<br>
-🍬 La qualità del prodotto acquistato<br>
-🍭 La varietà di scelta tra i nostri prodotti personalizzati<br>
-😊 La gentilezza e disponibilità del nostro staff<br>
-📦 Il supporto ricevuto prima, durante o dopo l’acquisto<br>
+Speriamo che la tua esperienza con Personal Zucchero sia stata dolce quanto i nostri prodotti!<br>
+Teniamo tantissimo al tuo parere e ci farebbe davvero piacere se volessi lasciarci una recensione su Google, bastano davvero pochi secondi.<br>
 <br>
 Se hai avuto un momento speciale con noi, raccontacelo!<br>
 La tua opinione aiuta anche altri a scegliere con fiducia.<br>
 <br>
-👉 <b><a href="https://g.page/r/CVVzbjGLDF6kEAE/review">Lascia la tua recensione su Google:</a></b> <a href="https://g.page/r/CVVzbjGLDF6kEAE/review">https://g.page/r/CVVzbjGLDF6kEAE/review</a><br>
+<!-- Pulsante "bulletproof" compatibile con la maggior parte dei client email -->
+<!--[if mso]>
+  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://g.page/r/CVVzbjGLDF6kEAE/review" style="height:44px;v-text-anchor:middle;width:260px;" arcsize="8%" stroke="f" fillcolor="#d9534f">
+    <w:anchorlock/>
+    <center style="color:#ffffff;font-family:Arial, sans-serif;font-size:16px;font-weight:bold;">
+      Valuta la tua esperienza
+    </center>
+  </v:roundrect>
+<![endif]-->
+<!--[if !mso]><!-- -->
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left">
+    <tr>
+      <td align="center" bgcolor="#d9534f" style="border-radius:6px;">
+        <a href="https://g.page/r/CVVzbjGLDF6kEAE/review"
+           target="_blank"
+           style="display:inline-block;padding:12px 24px;font-family:Arial, sans-serif;font-size:16px;color:#ffffff;text-decoration:none;font-weight:bold;border-radius:6px;"
+           role="button"
+           aria-label="Valuta la tua esperienza">
+          Valuta la tua esperienza
+        </a>
+      </td>
+    </tr>
+  </table>
+<!--<![endif]-->
+<br>
+<br>
 <br>
 Grazie di cuore per il tuo tempo e per aver scelto Personal Zucchero.<br>
 A presto!<br>
@@ -33,23 +49,41 @@ A presto!<br>
 REVIEW_EMAIL_BODY_ENG = """
 Dear {customer},<br>
 <br>
-We hope your experience with <b>Personal Zucchero</b> was as sweet as our treats!<br>
-Your opinion means the world to us, and we’d truly appreciate it if you could leave us a review on Google.<br>
-<br>
-It only takes a few seconds, but it means a lot to us!<br>
-You can share what you liked most:<br>
-🍬 The quality of the product you purchased<br>
-🍭 The variety of our personalized options<br>
-😊 The kindness and helpfulness of our staff<br>
-📦 The support you received before, during, or after your purchase<br>
+We hope your experience with Personal Zucchero was as sweet as our products!<br>
+We truly value your feedback and would greatly appreciate it if you could take a few seconds to leave us a review on Google.<br>
 <br>
 If you had a special moment with us, we’d love to hear about it!<br>
-Your feedback also helps others choose us with confidence.<br>
+Your opinion also helps others choose with confidence.<br>
 <br>
-👉 <b><a href="https://g.page/r/CVVzbjGLDF6kEAE/review">Leave your review on Google:</a></b> <a href="https://g.page/r/CVVzbjGLDF6kEAE/review">https://g.page/r/CVVzbjGLDF6kEAE/review</a><br>
+<!-- "Bulletproof" button compatible with most email clients -->
+<!--[if mso]>
+  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://g.page/r/CVVzbjGLDF6kEAE/review" style="height:44px;v-text-anchor:middle;width:260px;" arcsize="8%" stroke="f" fillcolor="#d9534f">
+    <w:anchorlock/>
+    <center style="color:#ffffff;font-family:Arial, sans-serif;font-size:16px;font-weight:bold;">
+      Rate Your Experience
+    </center>
+  </v:roundrect>
+<![endif]-->
+<!--[if !mso]><!-- -->
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left">
+    <tr>
+      <td align="center" bgcolor="#d9534f" style="border-radius:6px;">
+        <a href="https://g.page/r/CVVzbjGLDF6kEAE/review"
+           target="_blank"
+           style="display:inline-block;padding:12px 24px;font-family:Arial, sans-serif;font-size:16px;color:#ffffff;text-decoration:none;font-weight:bold;border-radius:6px;"
+           role="button"
+           aria-label="Rate Your Experience">
+          Rate Your Experience
+        </a>
+      </td>
+    </tr>
+  </table>
+<!--<![endif]-->
 <br>
-Thank you from the bottom of our hearts for your time and for choosing Personal Zucchero.<br>
-See you soon!<br>
+<br>
+<br>
+Thank you sincerely for your time and for choosing Personal Zucchero.<br>
+We hope to see you again soon!<br>
 <br>
 {sender}<br>
 """
