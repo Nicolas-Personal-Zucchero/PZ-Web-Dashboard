@@ -72,6 +72,32 @@
             filter: brightness(1.15); /* schiarisce leggermente il colore */
         }
 
+        /* Tabelle */
+        /* .list-group.styled-table {
+            max-height: 500px;
+            overflow-y: auto;
+        } */
+
+        .list-group.styled-table .static-header {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .list-group.styled-table li.list-group-item:nth-child(odd):not(.static-header) {
+            background-color: #f8f9fa; /* righe alternate */
+        }
+
+        .list-group.styled-table li.list-group-item:nth-child(even):not(.static-header) {
+            background-color: #ffffff;
+        }
+
+        .list-group.styled-table li.list-group-item:not(.static-header):hover {
+            background-color: #e9ecef;
+        }
+
     </style>
 
     {% block styles %}{% endblock %}
