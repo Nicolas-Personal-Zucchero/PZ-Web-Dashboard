@@ -1,0 +1,424 @@
+{% extends "base.html" %}
+
+{% block title %}Gestione Lotti{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <a href="javascript:history.back()" class="btn btn-light mb-3">
+      <i class="bi bi-arrow-left"></i> Torna indietro
+    </a>
+    <h1>Gestione Lotti</h1>
+
+    <button class="btn btn-info mb-3" type="button" id="btnToggle" data-bs-toggle="collapse" data-bs-target="#formRegistrazione" aria-expanded="false" aria-controls="formRegistrazione">
+        <i class="bi bi-plus-circle"></i> Aggiungi Lotto
+    </button>
+
+    <div class="collapse mb-4" id="formRegistrazione">
+        <h3>Inserisci i dettagli del lotto</h3>
+        <form method="POST" id="lottoForm">
+            <div class="row mb-3">
+                <div class="col-md-2">
+                    <label for="lotto" class="form-label">Lotto</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="lotto" id="lotto" readonly required>
+                        <span class="input-group-text">
+                            <input class="form-check-input mt-0" type="checkbox" id="forceLotto">
+                        </span>
+                    </div>
+                    <small class="text-muted">Forza il lotto spuntando</small>
+                </div>
+                <div class="col-md-2">
+                    <label for="data" class="form-label">Data</label>
+                    <input type="date" class="form-control" name="data" id="data" required>
+                </div>
+                <div class="col-md-3">
+                    <label for="tipologia" class="form-label">Tipologia prodotto</label>
+                    <select class="form-select" name="tipologia" id="tipologia" required>
+                        <option value="" disabled selected>Seleziona tipologia</option>
+                        <option>Zucchero Bianco Semolato</option>
+                        <option>Zucchero Bianco Extrafine</option>
+                        <option>Zucchero Canna Grezzo</option>
+                        <option>Zucchero Canna Barbabietola</option>
+                        <option>Zucchero BIO Golden</option>
+                        <option>Zucchero BIO White</option>
+                    </select>
+                </div>  
+                <div class="col-md-2">
+                    <label for="fornitore" class="form-label">Fornitore</label>
+                    <select class="form-select" name="fornitore" id="fornitore" required>
+                        <option value="" disabled selected>Seleziona fornitore</option>
+                        <option value="ITALIAZUCCHERI">ITALIAZUCCHERI</option>
+                        <option value="INAGRA">INAGRA</option>
+                        <option value="FASTZUCCHERI">FASTZUCCHERI</option>
+                        <option value="GRANDAZUCCHERI">GRANDAZUCCHERI</option>
+                        <option value="PININPERO">PININPERO</option>
+                    </select>
+                </div>    
+                <div class="col-md-3">
+                    <label for="ddt" class="form-label">DDT</label>
+                    <input type="text" class="form-control" name="ddt" id="ddt" placeholder="Inserisci DDT" required>
+                </div> 
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="origine" class="form-label">Origine</label>
+                    <select class="form-select" name="origine" id="origine" required>
+                        <option value="" disabled selected>Seleziona origine</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="n_etichette" class="form-label">Numero etichette</label>
+                    <input type="number" class="form-control" name="n_etichette" id="n_etichette" placeholder="Numero etichette" value="24" min="1" required>
+                </div> 
+                <div class="col-md-4">
+                    <label for="note" class="form-label">Note</label>
+                    <input type="text" class="form-control" name="note" id="note" placeholder="Inserisci note" maxlength="15">
+                </div> 
+            </div>
+
+            <div class="mb-3">
+                <label for="lottiContainer" class="form-label">Lotti fornitore</label>
+                <div id="lottiContainer">
+                    <div class="input-group mb-2">
+                        <input type="text" name="lotti[]" class="form-control" placeholder="Lotto 1" required>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" id="addLottoBtn">Aggiungi Lotto fornitore</button>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Registra Lotto</button>
+        </form>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+    <hr>
+    <!-- <h2>Lotti Registrati</h2> -->
+    {% if lotti %}
+    <div class="mb-3 row g-2">
+        <div class="col-md-2">
+            <input type="text" class="form-control" id="searchInput" placeholder="Cerca lotto..." maxlength="6">
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="tipologiaFilter">
+                <option value="">Tutte le tipologie</option>
+                {% for t in lotti|map(attribute='tipologia_zucchero')|unique %}
+                <option value="{{ t }}">{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" id="fornitoreFilter">
+                <option value="">Tutti i fornitori</option>
+                {% for f in lotti|map(attribute='fornitore')|unique %}
+                <option value="{{ f }}">{{ f }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="origineFilter">
+            <option value="">Tutte le origini</option>
+            {% for o in lotti|map(attribute='origine')|unique %}
+            <option value="{{ o }}">{{ o }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select class="form-select" id="statoFilter">
+            <option value="">Tutti i lotti</option>
+            <option value="in_caricamento">Solo lotti in caricamento</option>
+            <option value="caricati">Solo lotti caricati</option>
+          </select>
+        </div>
+    </div>
+
+    <div style="max-height: 500px; overflow-y: auto;">
+        <ul class="list-group" id="listaLotti">
+            <li class="list-group-item bg-light fw-bold static-header">
+                <div class="row">
+                    <div class="col-md-1">Lotto</div>
+                    <div class="col-md-3">Tipologia</div>
+                    <div class="col-md-2">Fornitore</div>
+                    <div class="col-md-1">DDT</div>
+                    <div class="col-md-1">Lotti fornitore</div>
+                    <div class="col-md-1">Origine</div>
+                    <div class="col-md-2">Data creazione</div>
+                    <div class="col-md-1">Scansioni</div>
+                </div>
+            </li>
+
+            {% for lotto in lotti %}
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-md-1"><strong>{{ lotto.lotto }}</strong></div>
+                    <div class="col-md-3">{{ lotto.tipologia_zucchero }}</div>
+                    <div class="col-md-2">{{ lotto.fornitore }}</div>
+                    <div class="col-md-1">{{ lotto.ddt }}</div>
+                    <div class="col-md-1">{{ lotto.lotti_fornitore | join(', ') }}</div>
+                    <div class="col-md-1">{{ lotto.origine }}</div>
+                    <div class="col-md-2">{{ lotto.formatted_time }}</div>
+                    <div class="col-md-1">
+                      <button class="btn btn-sm btn-primary view-scansioni-btn" 
+                              data-scansioni='{{ lotto.scansioni_etichette | tojson | safe }}'>
+                          {{ lotto.etichette }}
+                      </button>
+                      <form method="POST" action="{{ url_for('.etichetta') }}" target="_blank">
+                        <input type="hidden" name="id_lotto" value="{{ lotto.id }}">
+                        <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-filetype-pdf"></i></button>
+                      </form>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    
+    <div class="modal fade" id="scansioniModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Scansioni Etichette</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <table class="table table-striped" id="scansioniTable">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Impianto</th>
+                  <th>Operatore</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // === Logica Form Registrazione (da registrazione-lotti.html) ===
+    
+    // Imposta la data di default a oggi
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('data').value = today;
+
+    // Popola select origine con nomi dei paesi
+    const origineSelect = document.getElementById('origine');
+    fetch('https://restcountries.com/v3.1/all?fields=name,translations')
+        .then(response => response.json())
+        .then(data => {
+            data.sort((a, b) => {
+                const nameA = a.translations?.ita?.common || a.name.common;
+                const nameB = b.translations?.ita?.common || b.name.common;
+                return nameA.localeCompare(nameB, 'it');
+            });
+            data.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.translations?.ita?.common || country.name.common;
+                option.textContent = country.translations?.ita?.common || country.name.common;
+                origineSelect.appendChild(option);
+            });
+        })
+        .catch(err => console.error('Errore caricamento paesi:', err));
+
+    // Gestione aggiunta/rimozione lotti
+    const addLottoBtn = document.getElementById('addLottoBtn');
+    const lottiContainer = document.getElementById('lottiContainer');
+    let lottoCount = 1;
+
+    addLottoBtn.addEventListener('click', function() {
+        lottoCount++;
+        const div = document.createElement('div');
+        div.classList.add('input-group', 'mb-2');
+        div.innerHTML = `
+            <input type="text" name="lotti[]" class="form-control" placeholder="Lotto ${lottoCount}" required>
+            <button class="btn btn-outline-danger remove-btn" type="button" id="btn${lottoCount}" tabindex="-1">×</button>
+        `;
+        lottiContainer.appendChild(div);
+        div.querySelector("input").focus();
+    });
+
+    lottiContainer.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-btn') && lottoCount > 1 && e.target.id == `btn${lottoCount}`) {
+            e.target.parentElement.remove();
+            lottoCount--;
+        }
+    });
+
+    // === Logica Visualizzazione Lotti (da visualizza-lotti.html) ===
+
+    const searchInput = document.getElementById('searchInput');
+    const tipologiaFilter = document.getElementById('tipologiaFilter');
+    const fornitoreFilter = document.getElementById('fornitoreFilter');
+    const origineFilter = document.getElementById('origineFilter');
+    const statoFilter = document.getElementById('statoFilter');
+    const items = document.querySelectorAll('#listaLotti .list-group-item');
+
+    function filterLotti() {
+        const searchText = searchInput.value.toLowerCase();
+        const tipologia = tipologiaFilter.value.toLowerCase();
+        const fornitore = fornitoreFilter.value.toLowerCase();
+        const origine = origineFilter.value.toLowerCase();
+        const stato = statoFilter.value;
+
+        items.forEach(item => {
+            if (item.classList.contains('static-header')) return;
+
+            const lottoId = item.querySelector('.col-md-1 strong')?.textContent.toLowerCase() || '';
+            const itemTipologia = item.querySelector('.col-md-3')?.textContent.toLowerCase() || '';
+            const itemFornitore = item.querySelector('.col-md-2')?.textContent.toLowerCase() || '';
+            const itemOrigine = item.querySelector('.col-md-1:nth-child(6)')?.textContent.toLowerCase() || '';
+
+            // Recupera il numero di scansioni e numero di etichette
+            const scansioniCount = JSON.parse(item.querySelector('.view-scansioni-btn')?.dataset.scansioni || '[]').length;
+            const totaleEtichette = parseInt(item.querySelector('.view-scansioni-btn')?.textContent.split('/')[1] || '0');
+
+            let statoMatch = true;
+            if (stato === 'in_caricamento') {
+                statoMatch = scansioniCount < totaleEtichette;
+            } else if (stato === 'caricati') {
+                statoMatch = scansioniCount === totaleEtichette;
+            }
+
+            const match = 
+                lottoId.includes(searchText) &&
+                (tipologia === '' || itemTipologia.includes(tipologia)) && // Uso includes per match parziali nel filtro
+                (fornitore === '' || itemFornitore.includes(fornitore)) &&
+                (origine === '' || itemOrigine.includes(origine)) &&
+                statoMatch;
+
+            item.style.display = match ? '' : 'none';
+        });
+    }
+
+    if(searchInput) searchInput.addEventListener('input', filterLotti);
+    if(tipologiaFilter) tipologiaFilter.addEventListener('change', filterLotti);
+    if(fornitoreFilter) fornitoreFilter.addEventListener('change', filterLotti);
+    if(origineFilter) origineFilter.addEventListener('change', filterLotti);
+    if(statoFilter) statoFilter.addEventListener('change', filterLotti);
+
+
+    const scansioniModalElement = document.getElementById('scansioniModal');
+    if (scansioniModalElement) {
+        const scansioniModal = new bootstrap.Modal(scansioniModalElement);
+        const scansioniTableBody = document.querySelector('#scansioniTable tbody');
+
+        document.querySelectorAll('.view-scansioni-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const scansioni = JSON.parse(this.dataset.scansioni);
+
+                // Svuota la tabella
+                scansioniTableBody.innerHTML = '';
+
+                // Popola la tabella
+                scansioni.forEach(s => {
+                    const row = document.createElement('tr');
+                    const dateCell = document.createElement('td');
+                    dateCell.textContent = s.date || '';
+                    const impiantoCell = document.createElement('td');
+                    impiantoCell.textContent = s.impianto || '';
+                    const operatoreCell = document.createElement('td');
+                    operatoreCell.textContent = s.operatore || '';
+                    row.append(dateCell, impiantoCell, operatoreCell);
+                    scansioniTableBody.appendChild(row);
+                });
+
+                // Apri il modal
+                scansioniModal.show();
+            });
+        });
+    }
+
+    const toggleBtn = document.getElementById('btnToggle');
+    const formCollapse = document.getElementById('formRegistrazione');
+
+    if (toggleBtn && formCollapse) {
+        formCollapse.addEventListener('show.bs.collapse', () => {
+            toggleBtn.innerHTML = '<i class="bi bi-x-circle"></i> Annulla';
+        });
+
+        formCollapse.addEventListener('hide.bs.collapse', () => {
+            toggleBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Aggiungi Lotto';
+        });
+    }
+
+    const lottoInput = document.getElementById('lotto');
+    const forceLottoCheckbox = document.getElementById('forceLotto');
+    const tipologiaSelect = document.getElementById("tipologia");
+
+    // Gestione checkbox "Forza lotto"
+    forceLottoCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            lottoInput.readOnly = false;
+            lottoInput.focus();
+        } else {
+            lottoInput.readOnly = true;
+            // Se è selezionata una tipologia, ricalcola il lotto automaticamente
+            const tipologia = tipologiaSelect.value;
+            if (tipologia) {
+                fetch(`/amministrazione/gestione_lotti/get_lotto?tipologia=${encodeURIComponent(tipologia)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.lotto) lottoInput.value = data.lotto;
+                    });
+            } else {
+                lottoInput.value = '';
+            }
+        }
+    });
+
+    // Cambio tipologia
+    tipologiaSelect.addEventListener("change", async function() {
+        const tipologia = this.value;
+        if (!tipologia) return;
+
+        // Se la checkbox è spuntata, non sovrascrivere
+        if (forceLottoCheckbox.checked) return;
+
+        try {
+            const response = await fetch(`/amministrazione/gestione_lotti/get_lotto?tipologia=${encodeURIComponent(tipologia)}`);
+            const data = await response.json();
+            if (data.lotto) {
+                lottoInput.value = data.lotto;
+            } else {
+                alert(data.error || "Errore durante la generazione del lotto");
+            }
+        } catch (err) {
+            console.error("Errore fetch lotto:", err);
+            alert("Errore durante la generazione del lotto");
+        }
+    });
+
+});
+</script>
+
+{% if request.args.get('stampare') %}
+<script>
+    const lotto = "{{ request.args.get('stampare') }}";
+    // Apri l'etichetta in una nuova tab, usando il nuovo blueprint
+    window.open(`{{ url_for('.etichetta') }}?id_lotto=${lotto}`, '_blank');
+
+    // Rimuovi il parametro "stampare" dall'URL e apri il form di registrazione per mostrare il messaggio flash
+    const formRegistrazione = new bootstrap.Collapse(document.getElementById('formRegistrazione'));
+    formRegistrazione.show();
+
+    // Rimuovi il parametro "stampare" dall'URL senza ricaricare la pagina
+    const url = new URL(window.location.href);
+    url.searchParams.delete('stampare');
+    window.history.replaceState(null, '', url.toString());
+</script>
+{% endif %}
+
+{% endblock %}
