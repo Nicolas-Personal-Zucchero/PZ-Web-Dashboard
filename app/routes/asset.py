@@ -5,11 +5,16 @@ import pytz
 from config.config import ITALY_TZ
 from utils.firebase_client import db
 from firebase_admin import firestore
+import re
 
 asset_bp = Blueprint("asset", __name__, url_prefix="/asset")
 
 # Collezione Firestore
 asset_collection = db.collection("asset")
+
+def natural_key(s):
+    """Crea una chiave per l'ordinamento naturale: divide numeri e lettere"""
+    return [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', s)]
 
 @asset_bp.route("/", methods=["GET", "POST"])
 def asset():
@@ -36,12 +41,14 @@ def asset():
         return redirect("/wip/asset")
 
     # Lettura asset da Firestore ordinati per creazione decrescente
-    docs = asset_collection.order_by("nome").stream()
+    docs = asset_collection.stream()
     entries = []
     for doc in docs:
         data = doc.to_dict()
         data["id"] = doc.id
         entries.append(data)
+
+    entries.sort(key=lambda x: natural_key(x["nome"]))
 
     return render_template("/wip/asset.html", entries=entries)
 
