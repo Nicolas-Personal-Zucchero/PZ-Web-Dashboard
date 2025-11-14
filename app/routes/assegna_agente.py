@@ -16,7 +16,7 @@ assegnazione_contatti_agenti_collection = db.collection("assegnazione_contatti_a
 INFO_EMAIL_NAME = os.getenv("INFO_EMAIL_NAME", "")
 INFO_EMAIL_ADDRESS = os.getenv("INFO_EMAIL_ADDRESS", "")
 INFO_EMAIL_PASSWORD = os.getenv("INFO_EMAIL_PASSWORD", "")
-HUBSPOT_AGENT_ASSIGNMENT_TOKEN = os.getenv("HUBSPOT_AGENT_ASSIGNMENT_TOKEN")
+HUBSPOT_AGENT_ASSIGNMENT_TOKEN = os.getenv("HUBSPOT_AGENT_ASSIGNMENT_TOKEN", "")
 
 if not INFO_EMAIL_NAME:
     print("INFO_EMAIL_NAME is not set.")
