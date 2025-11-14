@@ -169,16 +169,79 @@ Dopo aver cliccato sul pulsante:
                 </div>
             </div>
         </div>
-        
+
         <button type="submit" class="btn btn-primary mb-3">Assegna contatto all'agente</button>
     </form>
-
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% for category, message in messages %}
             <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
         {% endfor %}
     {% endwith %}
+
+    <hr>
+    {% if agents %}
+    <div style="max-height: 500px; overflow-y: auto;">
+        <ul class="list-group styled-table" id="listaAgenti">
+            <li class="list-group-item static-header">
+                <div class="row">
+                    <div class="col-md-2">Agente</div>
+                    <div class="col-md-2">Email</div>
+                    <div class="col-md-6"></div>
+                    <div class="col-md-1 text-end"></div>
+                    <div class="col-md-1 text-end"></div>
+                </div>
+            </li>
+
+            {% for a in agents %}
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-md-2"><strong>{{ a.lastname }} {{ a.firstname }}</strong></div>
+                    <div class="col-md-2">{{ a.email }}</div>
+                    <div class="col-md-6"></div>
+                    <div class="col-md-1 text-end">
+                        <button type="button"
+                                class="btn btn-sm btn-info"
+                                data-bs-toggle="modal"
+                                data-bs-target="#contactsModal"
+                                data-agent="{{ a.id }}"
+                                data-contacts='{{ a.associated_contacts|tojson }}'>
+                            {{ a.associated_contacts|length }} contatti
+                        </button>
+                    </div>
+                    <div class="col-md-1 text-end">
+                        <a href="https://app-eu1.hubspot.com/contacts/25378285/record/0-1/{{ a.id }}"
+                        target="_blank"
+                        class="btn btn-sm"
+                        style="background-color: #FF7A59; border-color: #FF7A59; color: white;"
+                        title="Apri in HubSpot">
+                            <i class="bi bi-box-arrow-up-right"></i> HubSpot
+                        </a>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modale per i contatti -->
+<div class="modal fade" id="contactsModal" tabindex="-1" aria-labelledby="contactsModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="contactsModalLabel">Contatti associati</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+      </div>
+      <div class="modal-body">
+        <ul id="contactsList" class="list-group"></ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <style>
@@ -196,6 +259,33 @@ Dopo aver cliccato sul pulsante:
     }
 
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const contactsModal = document.getElementById('contactsModal');
+        contactsModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget; // bottone cliccato
+            const agentName = button.closest('li').querySelector('strong').innerText;
+            const contacts = JSON.parse(button.getAttribute('data-contacts'));
+            const modalTitle = contactsModal.querySelector('.modal-title');
+            const contactsList = contactsModal.querySelector('#contactsList');
+
+            modalTitle.textContent = `Contatti associati a ${agentName}`;
+            contactsList.innerHTML = '';
+
+            if (contacts.length === 0) {
+                contactsList.innerHTML = '<li class="list-group-item">Nessun contatto associato</li>';
+            } else {
+                contacts.forEach(c => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    li.textContent = (c.firstname || '') + ' ' + (c.lastname || '') + ' (' + (c.email || 'N/A') + ')';
+                    contactsList.appendChild(li);
+                });
+            }
+        });
+    });
+</script>
 
 <script>
     const selectMittente = document.getElementById("selectMittente");

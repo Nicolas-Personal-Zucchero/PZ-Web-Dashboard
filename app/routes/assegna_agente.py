@@ -16,7 +16,7 @@ assegnazione_contatti_agenti_collection = db.collection("assegnazione_contatti_a
 INFO_EMAIL_NAME = os.getenv("INFO_EMAIL_NAME", "")
 INFO_EMAIL_ADDRESS = os.getenv("INFO_EMAIL_ADDRESS", "")
 INFO_EMAIL_PASSWORD = os.getenv("INFO_EMAIL_PASSWORD", "")
-HUBSPOT_AGENT_ASSIGNMENT_TOKEN = os.getenv("HUBSPOT_AGENT_ASSIGNMENT_TOKEN", "")
+HUBSPOT_AGENT_ASSIGNMENT_TOKEN = os.getenv("HUBSPOT_AGENT_ASSIGNMENT_TOKEN")
 
 if not INFO_EMAIL_NAME:
     print("INFO_EMAIL_NAME is not set.")
@@ -48,12 +48,11 @@ def get_field(form, key):
 
 @assegna_agente_bp.route("/", methods=["GET", "POST"])
 def assegnaAgente():
-    agents = get_active_agents(hubspot)
-    agents_by_id = {agent['id']: agent for agent in agents}
+    agents_by_id = get_active_agents_by_id(hubspot)
     contact_source_options = hubspot.getContactPropertyInfo("fonte").get("options", [])
 
     if request.method != "POST":
-        return render_template("home/assegna-agente.html", agents=agents, contact_source_options=contact_source_options)
+        return render_template("home/assegna-agente.html", agents=list(agents_by_id.values()), contact_source_options=contact_source_options)
     
     form = request.form
 
@@ -80,12 +79,6 @@ def assegnaAgente():
         "provincia": get_field(form, "provincia"),
         "prodotto_di_interesse": get_field(form, "prodotto_di_interesse"),
     }
-
-    # note_extra = {
-    #     "manuale": "Contatto ottenuto in maniera diretta",
-    #     "automatico": "Contatto ottenuto da landing page"
-    # }.get(contact_type, "")
-    # note_agente += f"<br><br>{note_extra}"
     
     updated_contact, updated_company = upsert_contact_and_company(hubspot, contact_info, company_info)
 
@@ -104,14 +97,24 @@ def assegnaAgente():
     flash("Contatto assegnato all'agente con successo!", "success")
     return redirect("/assegna-agente")
 
-def get_active_agents(hubspot):
+def get_active_agents_by_id(hubspot):
     agents_ids = hubspot.getAgentsListMembersIds()
     agents = hubspot.getContactBatch(agents_ids, [
         "firstname", "lastname", "email", 
         "hs_additional_emails", "escluso_da_assegnazione_clienti"
     ])
-    agents = [a for a in agents if a.get("escluso_da_assegnazione_clienti") == "false" and a.get("data_fine_contratto") == None]
-    return sorted(agents, key=lambda x: ((x.get("lastname") or "zzzzzz").lower(), (x.get("firstname") or "").lower()))
+    filtered_agents = [a for a in agents if a.get("escluso_da_assegnazione_clienti") == "false" and a.get("data_fine_contratto") == None]
+    sorted_agents = sorted(filtered_agents, key=lambda a: ((a.get("lastname") or "zzzzzz").lower(), (a.get("firstname") or "").lower()))
+    agents_by_id = {a['id']: a for a in sorted_agents}
+
+    associations = hubspot.getContactsAssociatedContactsBatch(agents_ids)
+    associated_contacts_ids = [item for sublist in associations.values() for item in sublist]
+    associated_contacts = hubspot.getContactBatch(list(associated_contacts_ids), ["firstname", "lastname", "email"])
+    associated_contacts_by_id = {c['id']: c for c in associated_contacts}
+    for a_id, a_ass in associations.items():
+        if a_id in agents_by_id: #Controllo non sia un agente escluso
+            agents_by_id[a_id]["associated_contacts"] = [associated_contacts_by_id[a_id] for a_id in a_ass]
+    return agents_by_id
 
 def validate_form_fields(form, required_fields):
     return all(form.get(f, "").strip() for f in required_fields)
@@ -119,8 +122,8 @@ def validate_form_fields(form, required_fields):
 def add_assignment_to_firebase(agent, contact, sender):
     doc_ref = assegnazione_contatti_agenti_collection.document(contact["email"])
     doc_ref.set({
-        "agente": f"{agent.get('firstname', '')} {agent.get('lastname', '')}",
-        "cliente": contact["email"],
+        "agente": agent["id"],
+        "cliente": contact["id"],
         "operatore": sender,
         "assigned_at": firestore.SERVER_TIMESTAMP
     })

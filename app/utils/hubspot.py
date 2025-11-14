@@ -689,6 +689,9 @@ class HubspotPZ:
     def getCompaniesAssociatedContactsBatch(self, companies_ids: List[str]) -> Optional[Dict[str, List[str]]]:
         return self._getObjectAssociationsBatch("companies", "contacts", companies_ids)
     
+    def getContactsAssociatedContactsBatch(self, contacts_ids: List[str]) -> Optional[Dict[str, List[str]]]:
+        return self._getObjectAssociationsBatch("contacts", "contacts", contacts_ids)
+
     def createContactsAssociatedCompaniesBatch(self, associations: List[Tuple[str, str]]) -> bool:
         return self._createObjectAssociationsBatch("contacts", "companies", associations)
     
