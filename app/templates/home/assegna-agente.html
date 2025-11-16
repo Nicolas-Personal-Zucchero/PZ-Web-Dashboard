@@ -205,7 +205,8 @@ Dopo aver cliccato sul pulsante:
                                 data-bs-toggle="modal"
                                 data-bs-target="#contactsModal"
                                 data-agent="{{ a.id }}"
-                                data-contacts='{{ a.associated_contacts|tojson }}'>
+                                data-contacts='{{ a.associated_contacts|tojson }}'
+                                {% if a.associated_contacts|length == 0 %}disabled{% endif %}>
                             {{ a.associated_contacts|length }} contatti
                         </button>
                     </div>
@@ -228,14 +229,25 @@ Dopo aver cliccato sul pulsante:
 
 <!-- Modale per i contatti -->
 <div class="modal fade" id="contactsModal" tabindex="-1" aria-labelledby="contactsModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="contactsModalLabel">Contatti associati</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
       </div>
       <div class="modal-body">
-        <ul id="contactsList" class="list-group"></ul>
+        <ul class="list-group styled-table">
+            <li class="list-group-item static-header">
+                <div class="row">
+                    <div class="col-md-3">Nome</div>
+                    <div class="col-md-3">Email</div>
+                    <div class="col-md-3">Operatore</div>
+                    <div class="col-md-2">Assegnato il</div>
+                    <div class="col-md-1"></div>
+                </div>
+            </li>
+            <div id="contactsList"></div>
+        </ul>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
@@ -279,7 +291,23 @@ Dopo aver cliccato sul pulsante:
                 contacts.forEach(c => {
                     const li = document.createElement('li');
                     li.className = 'list-group-item';
-                    li.textContent = (c.firstname || '') + ' ' + (c.lastname || '') + ' (' + (c.email || 'N/A') + ')';
+                    li.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-3"><strong>${c.firstname || ''} ${c.lastname || ''}</strong></div>
+                            <div class="col-md-3">${c.email || 'N/A'}</div>
+                            <div class="col-md-3">${c.operatore || ''}</div>
+                            <div class="col-md-2">${c.assigned_at || ''}</div>
+                            <div class="col-md-1">
+                                <a href="https://app-eu1.hubspot.com/contacts/25378285/record/0-1/${c.id || ''}"
+                                target="_blank"
+                                class="btn btn-sm"
+                                style="background-color: #FF7A59; border-color: #FF7A59; color: white;"
+                                title="Apri in HubSpot">
+                                    <i class="bi bi-box-arrow-up-right"></i> HubSpot
+                                </a>
+                            </div>
+                        </div>
+                    `;
                     contactsList.appendChild(li);
                 });
             }

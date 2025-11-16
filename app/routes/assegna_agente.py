@@ -2,6 +2,7 @@ import os
 from flask import Blueprint, render_template, request, redirect, flash, jsonify
 
 from config.mail_config import EMAIL_TEMPLATES
+from config.config import ITALY_TZ
 
 from mailer_pz import MailerPZ
 from utils.hubspot import HubspotPZ
@@ -98,6 +99,8 @@ def assegnaAgente():
     return redirect("/assegna-agente")
 
 def get_active_agents_by_id(hubspot):
+    firebase_assignments = get_all_assignments()
+
     agents_ids = hubspot.getAgentsListMembersIds()
     agents = hubspot.getContactBatch(agents_ids, [
         "firstname", "lastname", "email", 
@@ -111,13 +114,36 @@ def get_active_agents_by_id(hubspot):
     associated_contacts_ids = [item for sublist in associations.values() for item in sublist]
     associated_contacts = hubspot.getContactBatch(list(associated_contacts_ids), ["firstname", "lastname", "email"])
     associated_contacts_by_id = {c['id']: c for c in associated_contacts}
-    for a_id, a_ass in associations.items():
-        if a_id in agents_by_id: #Controllo non sia un agente escluso
-            agents_by_id[a_id]["associated_contacts"] = [associated_contacts_by_id[a_id] for a_id in a_ass]
+
+    for agent_id, contacts_ids in associations.items():
+        if agent_id in agents_by_id: #Controllo non sia un agente escluso
+            for contact_id in contacts_ids:
+                for assignment in firebase_assignments:
+                    if assignment["cliente"] == contact_id and assignment["agente"] == agent_id:
+                        associated_contacts_by_id[contact_id]["operatore"] = assignment.get("operatore")
+                        assigned_at = assignment.get("assigned_at")
+                        if assigned_at:
+                            local_time = assigned_at.astimezone(ITALY_TZ)
+                            formatted_time = local_time.strftime("%d/%m/%Y, %H:%M:%S")
+                        else:
+                            formatted_time = "N/A"
+                        associated_contacts_by_id[contact_id]["assigned_at"] = formatted_time
+                        
+            agents_by_id[agent_id]["associated_contacts"] = [associated_contacts_by_id[contact_id] for contact_id in contacts_ids]
     return agents_by_id
 
 def validate_form_fields(form, required_fields):
     return all(form.get(f, "").strip() for f in required_fields)
+
+def get_all_assignments():
+    # Recupera tutti i documenti della collezione
+    docs = assegnazione_contatti_agenti_collection.stream()
+    all_assignments = []
+    for doc in docs:
+        data = doc.to_dict()
+        # data["id"] = doc.id  # opzionale, aggiunge l'ID del documento
+        all_assignments.append(data)
+    return all_assignments
 
 def add_assignment_to_firebase(agent, contact, sender):
     doc_ref = assegnazione_contatti_agenti_collection.document(contact["email"])
