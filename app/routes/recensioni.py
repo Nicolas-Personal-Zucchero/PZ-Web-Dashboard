@@ -35,16 +35,20 @@ def recensioni():
         language = request.form.get("lingua_email", "").strip()
 
         if email and customer and sender and language:
-            doc_ref = recensioni_collection.document(email)
-            if doc_ref.get().exists:
+            existing = list(recensioni_collection
+            .where("email", "==", email)
+            .where("hidden", "==", False)
+            .limit(1)
+            .stream())
+            if any(existing):
                 flash("Hai già inviato una richiesta di recensione a questa email.", "warning")
             else:
-                # Inserimento in Firestore
-                doc_ref.set({
+                recensioni_collection.add({
                     "email": email,
                     "customer": customer,
                     "sender": sender,
                     "language": language,
+                    "hidden": False,
                     "created_at": firestore.SERVER_TIMESTAMP
                 })
 
@@ -60,35 +64,33 @@ def recensioni():
             return redirect("/recensioni")
 
     # Lettura recensioni da Firestore
-    docs = recensioni_collection.order_by("created_at", direction=firestore.Query.DESCENDING).stream()
-    entries = []
+    docs = recensioni_collection \
+    .where("hidden", "==", False) \
+    .order_by("created_at", direction=firestore.Query.DESCENDING) \
+    .stream()
+    reviews = []
     for doc in docs:
         data = doc.to_dict()
+        data["id"] = doc.id
         created_at = data.get("created_at")
         if created_at:
             local_time = created_at.astimezone(ITALY_TZ)
-            formatted_time = local_time.strftime("%d/%m/%Y, %H:%M:%S")
+            data["formatted_time"] = local_time.strftime("%d/%m/%Y, %H:%M:%S")
         else:
-            formatted_time = "N/A"
-        entries.append((
-            data.get("email"),
-            data.get("customer"),
-            data.get("sender"),
-            data.get("language"),
-            formatted_time
-        ))
+            data["formatted_time"] = "N/A"
+        reviews.append(data)
 
-    return render_template("home/recensioni.html", entries=entries)
+    return render_template("home/recensioni.html", reviews=reviews)
 
 
 @recensioni_bp.route("/elimina", methods=["POST"])
 def elimina_recensione():
-    email = request.form.get("email", "").strip().lower()
-    if email:
-        doc_ref = recensioni_collection.document(email)
+    doc_id = request.form.get("id", "").strip()
+    if doc_id:
+        doc_ref = recensioni_collection.document(doc_id)
         if doc_ref.get().exists:
-            doc_ref.delete()
-            flash("Utente eliminato con successo.", "success")
+            doc_ref.update({"hidden": True})
+            flash("Recensione eliminata con successo.", "success")
         else:
-            flash("Utente non trovato.", "warning")
+            flash("Recensione non trovata.", "warning")
     return redirect("/recensioni")

@@ -56,7 +56,7 @@
         {% endfor %}
     {% endwith %}
 
-    {% if entries %}
+    {% if reviews %}
     <hr>
     <h3>Clienti che hanno già ricevuto la richiesta:</h3>
     <div class="mb-3">
@@ -75,27 +75,27 @@
                 </div>
             </li>
 
-            {% for email, customer, sender, language, created_at in entries %}
+            {% for r in reviews %}
             <li class="list-group-item">
                 <div class="row">
                     <div class="col-md-2">
-                        <strong>{{ customer }}</strong>
+                        <strong>{{ r.customer }}</strong>
                     </div>
                     <div class="col-md-4">
-                        {{ email }}
+                        {{ r.email }}
                     </div>
                     <div class="col-md-2">
-                        {{ sender }}
+                        {{ r.sender }}
                     </div>
                     <div class="col-md-1">
-                        {{ language }}
+                        {{ r.language }}
                     </div>
                     <div class="col-md-2">
-                        {{ created_at }}
+                        {{ r.formatted_time }}
                     </div>
                     <div class="col-md-1 text-end">
                         <form method="POST" action="/recensioni/elimina" onsubmit="return confirm('Sei sicuro di voler eliminare la registrazione dell\'invio da questo utente? Questa operazione permetterà di inviargli nuovamente la richiesta di recensione');">
-                            <input type="hidden" name="email" value="{{ email }}">
+                            <input type="hidden" name="id" value="{{ r.id }}">
                             <button type="submit" class="btn btn-danger btn-sm">Elimina</button>
                         </form>
                     </div>
