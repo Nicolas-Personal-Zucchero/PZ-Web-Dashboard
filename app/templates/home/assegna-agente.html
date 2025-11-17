@@ -186,8 +186,10 @@ Dopo aver cliccato sul pulsante:
             <li class="list-group-item static-header">
                 <div class="row">
                     <div class="col-md-2">Agente</div>
-                    <div class="col-md-2">Email</div>
-                    <div class="col-md-6"></div>
+                    <div class="col-md-3">Email</div>
+                    <div class="col-md-2">Telefono</div>
+                    <div class="col-md-2">Cellulare</div>
+                    <div class="col-md-1"></div>
                     <div class="col-md-1 text-end"></div>
                     <div class="col-md-1 text-end"></div>
                 </div>
@@ -196,9 +198,11 @@ Dopo aver cliccato sul pulsante:
             {% for a in agents %}
             <li class="list-group-item">
                 <div class="row">
-                    <div class="col-md-2"><strong>{{ a.lastname }} {{ a.firstname }}</strong></div>
-                    <div class="col-md-2">{{ a.email }}</div>
-                    <div class="col-md-6"></div>
+                    <div class="col-md-2"><strong>{{ a.lastname or '' }} {{ a.firstname or '' }}</strong></div>
+                    <div class="col-md-3">{{ a.email }}</div>
+                    <div class="col-md-2">{{ a.phone or '' }}</div>
+                    <div class="col-md-2">{{ a.mobilephone or '' }}</div>
+                    <div class="col-md-1"></div>
                     <div class="col-md-1 text-end">
                         <button type="button"
                                 class="btn btn-sm btn-info"

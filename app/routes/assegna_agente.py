@@ -103,7 +103,7 @@ def get_active_agents_by_id(hubspot):
 
     agents_ids = hubspot.getAgentsListMembersIds()
     agents = hubspot.getContactBatch(agents_ids, [
-        "firstname", "lastname", "email", 
+        "firstname", "lastname", "email", "phone", "mobilephone",
         "hs_additional_emails", "escluso_da_assegnazione_clienti"
     ])
     filtered_agents = [a for a in agents if a.get("escluso_da_assegnazione_clienti") == "false" and a.get("data_fine_contratto") == None]
@@ -259,7 +259,8 @@ def send_contact_email(mailer, sender, language, contact, agent):
             nome_cliente=contact.get("firstname") or "",
             nome_agente=f"{agent.get('firstname', '')} {agent.get('lastname', '')}",
             email_agente=agent.get("email") or "",
-            telefono_agente=agent.get("mobilephone") or agent.get("phone", ""),
+            telefono_agente=agent.get("phone", ""),
+            cellulare_agente=agent.get("mobilephone", ""),
             mittente=sender
         ),
         hubspot_ccn=True

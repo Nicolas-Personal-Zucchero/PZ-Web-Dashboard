@@ -122,6 +122,7 @@ Le anticipiamo i suoi contatti:<br><br>
 
 Nome: <b>{nome_agente}</b><br>
 Telefono: <b>{telefono_agente}</b><br>
+Cellulare: <b>{cellulare_agente}</b><br>
 Email: <b>{email_agente}</b><br><br>
 
 Dalla nostra sede restiamo a disposizione per qualsiasi esigenza e con l'occasione anticipiamo il nostro catalogo prodotti per visionare tutte le nostre linee.<br><br>
@@ -142,6 +143,7 @@ In the meantime, here is their contact information:<br><br>
 
 Name: <b>{nome_agente}</b><br>
 Phone: <b>{telefono_agente}</b><br>
+Mobile: <b>{cellulare_agente}</b><br>
 Email: <b>{email_agente}</b><br><br>
 
 Our headquarters remain at your disposal for any further inquiries. Meanwhile, we are pleased to share our product catalog so you can explore all our offerings.<br><br>
