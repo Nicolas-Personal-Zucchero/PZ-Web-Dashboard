@@ -146,8 +146,7 @@ def get_all_assignments():
     return all_assignments
 
 def add_assignment_to_firebase(agent, contact, sender):
-    doc_ref = assegnazione_contatti_agenti_collection.document(contact["email"])
-    doc_ref.set({
+    assegnazione_contatti_agenti_collection.add({
         "agente": agent["id"],
         "cliente": contact["id"],
         "operatore": sender,
