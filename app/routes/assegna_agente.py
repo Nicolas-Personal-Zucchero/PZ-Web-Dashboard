@@ -200,7 +200,7 @@ def upsert_contact_and_company(hubspot, form_contact, form_company):
 
 def send_agent_email(mailer, sender, agent, contact, company, note):
     mailer.invia_email_singola(
-        destinatari=f"{agent['email']};info@personalzucchero.com",
+        destinatari=agent['email'],
         oggetto=EMAIL_TEMPLATES["agent_ita"]["object"],
         corpo=EMAIL_TEMPLATES["agent_ita"]["body"].format(
             nome_agente=agent.get("firstname") or "",
@@ -223,6 +223,32 @@ def send_agent_email(mailer, sender, agent, contact, company, note):
             mittente=sender
         ),
         hubspot_ccn=True
+    )
+
+    mailer.invia_email_singola(
+        destinatari="info@personalzucchero.com",
+        oggetto=EMAIL_TEMPLATES["agent_ita"]["object"],
+        corpo=EMAIL_TEMPLATES["agent_ita"]["body"].format(
+            nome_agente=agent.get("firstname") or "",
+
+            nome_cliente=contact.get("firstname") or "",
+            cognome_cliente=contact.get("lastname") or "",
+            email_cliente=contact.get("email") or "",
+            telefono_cliente=contact.get("phone") or "",
+
+            nome_azienda=company.get("name") or "",
+            partita_iva=company.get("partita_iva") or "",
+            categoria=company.get("categoria_mexal") or "",
+            citta_azienda=company.get("city") or "",
+            provincia_azienda=company.get("provincia") or "",
+            prodotto_di_interesse_azienda=company.get("prodotto_di_interesse") or "",
+            fonte_contatto=contact.get("fonte") or "",
+
+            note_interne=note,
+
+            mittente=sender
+        ),
+        hubspot_ccn=False
     )
 
 def send_contact_email(mailer, sender, language, contact, agent):
