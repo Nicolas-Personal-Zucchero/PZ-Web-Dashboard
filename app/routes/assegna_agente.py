@@ -256,7 +256,7 @@ def send_contact_email(mailer, sender, language, contact, agent):
         oggetto=EMAIL_TEMPLATES["contact_" + language.lower()]["object"],
         corpo=EMAIL_TEMPLATES["contact_" + language.lower()]["body"].format(
             nome_cliente=contact.get("firstname") or "",
-            nome_agente=f"{agent.get('lastname') or ""} {agent.get('firstname') or ""}",
+            nome_agente=f"{agent.get('lastname') or ''} {agent.get('firstname') or ''}",
             email_agente=agent.get("email") or "",
             telefono_agente=agent.get("phone") or "",
             cellulare_agente=agent.get("mobilephone") or "",
