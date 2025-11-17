@@ -217,7 +217,7 @@ def send_agent_email(mailer, sender, agent, contact, company, note):
             prodotto_di_interesse_azienda=company.get("prodotto_di_interesse") or "",
             fonte_contatto=contact.get("fonte") or "",
 
-            note_interne=note,
+            note_interne=note or "",
 
             mittente=sender
         ),
@@ -243,7 +243,7 @@ def send_agent_email(mailer, sender, agent, contact, company, note):
             prodotto_di_interesse_azienda=company.get("prodotto_di_interesse") or "",
             fonte_contatto=contact.get("fonte") or "",
 
-            note_interne=note,
+            note_interne=note or "",
 
             mittente=sender
         ),
