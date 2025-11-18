@@ -51,6 +51,7 @@ def get_field(form, key):
 def assegnaAgente():
     agents_by_id = get_active_agents_by_id(hubspot)
     contact_source_options = hubspot.getContactPropertyInfo("fonte").get("options", [])
+    contact_source_options_by_value = {opt["value"]: opt["label"] for opt in contact_source_options}
 
     if request.method != "POST":
         return render_template("home/assegna-agente.html", agents=list(agents_by_id.values()), contact_source_options=contact_source_options)
@@ -88,6 +89,9 @@ def assegnaAgente():
         return redirect("/assegna-agente")
 
     add_assignment_to_firebase(agent, updated_contact, sender)
+
+    #Rimpiazzo il value della fonte con la label (più leggibile nella mail)
+    updated_contact["fonte"] = contact_source_options_by_value.get(updated_contact.get("fonte"), updated_contact.get("fonte"))
 
     send_agent_email(mailer, sender, agent, updated_contact, updated_company, agent_note)
     send_contact_email(mailer, sender, lingua_email, updated_contact, agent)
