@@ -4,7 +4,7 @@ from hubspot_pz import HubspotPZ
 from mailer_pz import MailerPZ
 
 # Path to the secrets file inside the container
-SECRETS_FILE = "/app/data/secrets.json"
+SECRETS_FILE = "/app/secrets/secrets.json"
 
 class SecretsManager:
     def __init__(self):
@@ -23,14 +23,9 @@ class SecretsManager:
                 print(f"Error decoding {SECRETS_FILE}, falling back to empty secrets.")
                 self._secrets = {}
         else:
-            # Fallback to env vars if file doesn't exist (first run)
-            print(f"{SECRETS_FILE} not found, initializing from environment variables.")
-            self._secrets = {
-                "INFO_EMAIL_NAME": os.getenv("INFO_EMAIL_NAME", ""),
-                "INFO_EMAIL_ADDRESS": os.getenv("INFO_EMAIL_ADDRESS", ""),
-                "INFO_EMAIL_PASSWORD": os.getenv("INFO_EMAIL_PASSWORD", ""),
-                "HUBSPOT_AGENT_ASSIGNMENT_TOKEN": os.getenv("HUBSPOT_AGENT_ASSIGNMENT_TOKEN", "")
-            }
+            # Fallback to empty secrets if file doesn't exist (first run)
+            print(f"{SECRETS_FILE} not found, initializing from empty secrets.")
+            self._secrets = {}
             # Ensure directory exists before saving
             os.makedirs(os.path.dirname(SECRETS_FILE), exist_ok=True)
             self.save_secrets(self._secrets)
