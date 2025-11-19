@@ -1,19 +1,23 @@
 from flask import Flask, render_template
 
 from config.links import register_links, get_links
-from routes.assegna_agente import assegna_agente_bp
+
+from routes import home_bp
 from routes.recensioni import recensioni_bp
-from routes.asset import asset_bp
-from routes.wip import wip_bp
+from routes.assegna_agente import assegna_agente_bp
 from routes.agents_map import agents_map_bp
-from routes.visualizza_impianti import visualizza_impianti_bp
+from routes.wip import wip_bp
+
+from routes.amministrazione.asset import asset_bp
+from routes.amministrazione.visualizza_impianti import visualizza_impianti_bp
 from routes.amministrazione import amministrazione_bp
-from routes.backups import backups_bp
-from routes.gestione_lotti import gestione_lotti_bp
+from routes.amministrazione.backups import backups_bp
+from routes.amministrazione.gestione_lotti import gestione_lotti_bp
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"  # Serve per flash()
 
+app.register_blueprint(home_bp)
 app.register_blueprint(recensioni_bp)
 app.register_blueprint(assegna_agente_bp)
 app.register_blueprint(agents_map_bp)
@@ -25,15 +29,6 @@ amministrazione_bp.register_blueprint(asset_bp)
 app.register_blueprint(amministrazione_bp)
 
 app.register_blueprint(wip_bp)
-
-register_links("home", [{
-    "title": "Clienti e Agenti",
-    "links": [
-        {"name": "Richiesta Recensione", "url": "/recensioni", "description": "Invia una mail di richiesta recensione ai clienti in modo rapido.", "icon": "bi bi-envelope-fill me-2"},
-        {"name": "Assegna agente", "url": "/assegna-agente", "description": "Assegna un agente ad un contatto specifico con pochi click.", "icon": "bi bi-person-badge-fill me-2"},
-        {"name": "Mappa agenti", "url": "/agents_map", "description": "Visualizza la mappa degli agenti divisi per provincia.", "icon": "bi bi-geo-alt-fill me-2"}
-    ]
-}])
 
 @app.context_processor
 def inject_links():
@@ -66,10 +61,6 @@ def inject_links():
         'linkGroups': get_links(*args),
         'home_link': home_link
     }
-
-@app.route("/")
-def home():
-    return render_template("index.html")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

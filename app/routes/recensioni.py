@@ -80,7 +80,7 @@ def recensioni():
             data["formatted_time"] = "N/A"
         reviews.append(data)
 
-    return render_template("home/recensioni.html", reviews=reviews)
+    return render_template("recensioni.html", reviews=reviews)
 
 
 @recensioni_bp.route("/elimina", methods=["POST"])

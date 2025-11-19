@@ -54,7 +54,7 @@ def assegnaAgente():
     contact_source_options_by_value = {opt["value"]: opt["label"] for opt in contact_source_options}
 
     if request.method != "POST":
-        return render_template("home/assegna-agente.html", agents=list(agents_by_id.values()), contact_source_options=contact_source_options)
+        return render_template("assegna-agente.html", agents=list(agents_by_id.values()), contact_source_options=contact_source_options)
     
     form = request.form
 
