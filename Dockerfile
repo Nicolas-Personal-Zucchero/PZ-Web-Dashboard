@@ -2,14 +2,15 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copia i requirements
-COPY requirements.txt .
+# Installa Git (necessario per pip install da repo Git) e pip aggiornato
+RUN apt-get update && \
+    apt-get install -y git && \
+    pip install --upgrade pip && \
+    rm -rf /var/lib/apt/lists/*
 
 # Installa tutte le dipendenze standard (da PyPI)
+COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
-
-# Installa la libreria mailer-pz da TestPyPI (senza dipendenze)
-RUN pip install --index-url https://test.pypi.org/simple/ --no-deps mailer-pz
 
 # Copia il codice dell'app Flask
 COPY app/ ./app

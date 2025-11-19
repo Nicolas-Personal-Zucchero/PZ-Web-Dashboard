@@ -6,3 +6,6 @@ firebase_admin
 reportlab
 qrcode[pil]
 pillow
+
+git+https://github.com/Nicolas-Personal-Zucchero/HubspotPZ.git
+git+https://github.com/Nicolas-Personal-Zucchero/MailerPZ.git

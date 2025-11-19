@@ -5,7 +5,7 @@ from config.mail_config import EMAIL_TEMPLATES
 from config.config import ITALY_TZ
 
 from mailer_pz import MailerPZ
-from utils.hubspot import HubspotPZ
+from hubspot_pz import HubspotPZ
 
 from utils.firebase_client import db
 from firebase_admin import firestore
