@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template
 from config.links import register_links
+from routes.amministrazione.secrets import secrets_bp
 
 amministrazione_bp = Blueprint("amministrazione", __name__, url_prefix="/amministrazione")
 
@@ -21,9 +22,12 @@ register_links("amministrazione", [
         "title": "Database",
         "links": [
             {"name": "Scarica backup", "url": "/amministrazione/backups", "description": "Scarica i backup dei database.", "icon": "bi bi-database-fill-down me-2"},
+            {"name": "Gestione Token", "url": "/amministrazione/secrets", "description": "Gestisci i token e le chiavi segrete.", "icon": "bi bi-key-fill me-2"},
         ]
     }
 ])
+
+amministrazione_bp.register_blueprint(secrets_bp)
 
 @amministrazione_bp.route("/", methods=["GET"])
 def index():

@@ -3,9 +3,7 @@ from flask import Blueprint, render_template, request, redirect, flash, jsonify
 
 from config.mail_config import EMAIL_TEMPLATES
 from config.config import ITALY_TZ
-
-from mailer_pz import MailerPZ
-from hubspot_pz import HubspotPZ
+from config.secrets_manager import secrets_manager
 
 from utils.firebase_client import db
 from firebase_admin import firestore
@@ -14,28 +12,9 @@ assegna_agente_bp = Blueprint("assegna_agente", __name__, url_prefix="/assegna-a
 
 assegnazione_contatti_agenti_collection = db.collection("assegnazione_contatti_agenti")
 
-INFO_EMAIL_NAME = os.getenv("INFO_EMAIL_NAME", "")
-INFO_EMAIL_ADDRESS = os.getenv("INFO_EMAIL_ADDRESS", "")
-INFO_EMAIL_PASSWORD = os.getenv("INFO_EMAIL_PASSWORD", "")
-HUBSPOT_AGENT_ASSIGNMENT_TOKEN = os.getenv("HUBSPOT_AGENT_ASSIGNMENT_TOKEN", "")
-
-if not INFO_EMAIL_NAME:
-    print("INFO_EMAIL_NAME is not set.")
-
-if not INFO_EMAIL_ADDRESS:
-    print("INFO_EMAIL_ADDRESS is not set.")
-
-if not INFO_EMAIL_PASSWORD:
-    print("INFO_EMAIL_PASSWORD is not set.")
-
-if not HUBSPOT_AGENT_ASSIGNMENT_TOKEN:
-    print("HUBSPOT_AGENT_ASSIGNMENT_TOKEN is not set.")
-
-mailer = MailerPZ(INFO_EMAIL_NAME, INFO_EMAIL_ADDRESS, INFO_EMAIL_PASSWORD)
-hubspot = HubspotPZ(HUBSPOT_AGENT_ASSIGNMENT_TOKEN)
-
 @assegna_agente_bp.route("/get_contact")
 def get_contact():
+    hubspot = secrets_manager.get_hubspot()
     email = request.args.get("email")    
     contact, company = get_contact_and_its_company(hubspot, email or "")
     return jsonify(
@@ -49,6 +28,13 @@ def get_field(form, key):
 
 @assegna_agente_bp.route("/", methods=["GET", "POST"])
 def assegnaAgente():
+    hubspot = secrets_manager.get_hubspot()
+    mailer = secrets_manager.get_mailer()
+    
+    if not hubspot:
+        flash("Errore: Token HubSpot mancante.", "danger")
+        return render_template("assegna-agente.html", agents=[], contact_source_options=[])
+
     agents_by_id = get_active_agents_by_id(hubspot)
     contact_source_options = hubspot.getContactPropertyInfo("fonte").get("options", [])
     contact_source_options_by_value = {opt["value"]: opt["label"] for opt in contact_source_options}
@@ -93,8 +79,11 @@ def assegnaAgente():
     #Rimpiazzo il value della fonte con la label (più leggibile nella mail)
     updated_contact["fonte"] = contact_source_options_by_value.get(updated_contact.get("fonte"), updated_contact.get("fonte"))
 
-    send_agent_email(mailer, sender, agent, updated_contact, updated_company, agent_note)
-    send_contact_email(mailer, sender, lingua_email, updated_contact, agent)
+    if mailer:
+        send_agent_email(mailer, sender, agent, updated_contact, updated_company, agent_note)
+        send_contact_email(mailer, sender, lingua_email, updated_contact, agent)
+    else:
+        flash("Attenzione: Email non inviate (configurazione mailer mancante).", "warning")
 
     associate_contact_agent(hubspot, updated_contact, agent)
     create_deal_for_agent(hubspot, agent, updated_contact)

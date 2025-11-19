@@ -1,6 +1,6 @@
 import os
 from flask import Blueprint, render_template, request, redirect, flash
-from mailer_pz import MailerPZ
+from config.secrets_manager import secrets_manager
 from config.config import ITALY_TZ
 from config.mail_config import EMAIL_TEMPLATES
 
@@ -11,23 +11,9 @@ recensioni_collection = db.collection("recensioni")
 
 recensioni_bp = Blueprint("recensioni", __name__, url_prefix="/recensioni")
 
-INFO_EMAIL_NAME = os.getenv("INFO_EMAIL_NAME", "")
-INFO_EMAIL_ADDRESS = os.getenv("INFO_EMAIL_ADDRESS", "")
-INFO_EMAIL_PASSWORD = os.getenv("INFO_EMAIL_PASSWORD", "")
-
-if not INFO_EMAIL_NAME:
-    print("INFO_EMAIL_NAME is not set.")
-
-if not INFO_EMAIL_ADDRESS:
-    print("INFO_EMAIL_ADDRESS is not set.")
-
-if not INFO_EMAIL_PASSWORD:
-    print("INFO_EMAIL_PASSWORD is not set.")
-
-mailer = MailerPZ(INFO_EMAIL_NAME,INFO_EMAIL_ADDRESS,INFO_EMAIL_PASSWORD)
-
 @recensioni_bp.route("/", methods=["GET", "POST"])
 def recensioni():
+    mailer = secrets_manager.get_mailer()
     if request.method == "POST":        
         email = request.form.get("email", "").strip().lower()
         customer = request.form.get("nome_cliente", "").strip()
@@ -52,12 +38,15 @@ def recensioni():
                     "created_at": firestore.SERVER_TIMESTAMP
                 })
 
-                mailer.invia_email_singola(
-                    email,
-                    EMAIL_TEMPLATES["review_" + language.lower()]["object"],
-                    EMAIL_TEMPLATES["review_" + language.lower()]["body"].format(customer=customer, sender=sender),
-                    hubspot_ccn=True
-                )
+                if mailer:
+                    mailer.invia_email_singola(
+                        email,
+                        EMAIL_TEMPLATES["review_" + language.lower()]["object"],
+                        EMAIL_TEMPLATES["review_" + language.lower()]["body"].format(customer=customer, sender=sender),
+                        hubspot_ccn=True
+                    )
+                else:
+                    flash("Errore: Configurazione mailer mancante.", "danger")
 
                 flash("Richiesta di recensione inviata con successo!", "success")
 
