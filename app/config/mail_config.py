@@ -154,10 +154,58 @@ Kind regards,<br>
 {mittente}
 """
 
+SIGEP_EMAIL_OBJECT_ITA = "Ecco i tuoi biglietti per il Sigep! 🎟️"
+SIGEP_EMAIL_OBJECT_ENG = "Here are your Sigep tickets! 🎟️"
+
+SIGEP_EMAIL_BODY_ITA = """
+Buongiorno da Personal Zucchero.<br>
+<br>
+Con piacere inviamo i codici per il biglietto d'ingresso giornaliero ridotto a Sigep 2024, acquistabile al prezzo di € 10,00 ognuno (anziché € 65,00) seguendo questi passaggi:<br>
+<br>
+Ecco i codici (ogni codice vale per un ingresso giornaliero):<br>
+{codici_biglietti}<br>
+Queste sono le procedure per l'iscrizione:<br>
+<br>
+Per prima cosa sarà necessario inserire i propri dati e registrarsi a questa pagina web:<br>
+<br>
+<a href="https://visita.sigep.it/reserved-area/iscrizione">https://visita.sigep.it/reserved-area/iscrizione</a><br>
+<br>
+Dopo l'iscrizione, si riceverà una mail che riporterà il link per completare la registrazione.<br>
+<br>
+Una volta completata la registrazione, si avrà accesso alla pagina che permetterà di effettuare l’acquisto online, inserendo il codice che abbiamo fornito e successivamente potrete effettuare il pagamento ridotto.<br>
+<br>
+La pagina si trova nella sezione Ticket (<a href="https://visita.sigep.it/it/reserved-area/tickets">https://visita.sigep.it/reserved-area/ticket</a>).<br>
+<br>
+Una volta attivato il codice, cliccare su “VALIDA” e seguire le istruzioni del sito per procedere con l’acquisto.<br>
+<br>
+Per qualsiasi dubbio, non esitate a contattarci.<br>
+<br>
+Nel frattempo vi invitiamo a scaricare e consultare il nostro catalogo cliccando <a href="https://personalzucchero.com/wp-content/uploads/2024/12/PZ_CAT_-2025-web.pdf">qui</a>, per scoprire la gamma completa dei nostri prodotti.<br>
+<br>
+Vi aspettiamo al nostro stand n. 029 – PAD A4<br>
+<br>
+Grazie mille e Cordiali saluti<br>
+"""
+
+SIGEP_EMAIL_BODY_ENG = """
+Dear <b>{nome_cliente}</b>,<br><br>
+
+Here are your Sigep tickets! 🎟️<br><br>
+
+{codici_biglietti}<br><br>
+
+To activate them, visit the official exhibition website and enter the codes in the dedicated section.<br><br>
+
+Kind regards,<br>
+Personal Zucchero
+"""
+
 EMAIL_TEMPLATES = {
     "review_ita": {"object": REVIEW_EMAIL_OBJECT_ITA, "body": REVIEW_EMAIL_BODY_ITA},
     "review_eng": {"object": REVIEW_EMAIL_OBJECT_ENG, "body": REVIEW_EMAIL_BODY_ENG},
     "agent_ita": {"object": AGENT_EMAIL_OBJECT_ITA, "body": AGENT_EMAIL_BODY_ITA},
     "contact_ita": {"object": CONTACT_EMAIL_OBJECT_ITA, "body": CONTACT_EMAIL_BODY_ITA},
     "contact_eng": {"object": CONTACT_EMAIL_OBJECT_ENG, "body": CONTACT_EMAIL_BODY_ENG},
+    "sigep_ita": {"object": SIGEP_EMAIL_OBJECT_ITA, "body": SIGEP_EMAIL_BODY_ITA},
+    "sigep_eng": {"object": SIGEP_EMAIL_OBJECT_ENG, "body": SIGEP_EMAIL_BODY_ENG}
 }

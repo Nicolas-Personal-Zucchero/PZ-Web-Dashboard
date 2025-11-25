@@ -41,4 +41,4 @@ def index():
             scansioni.sort(key=lambda x: x['date'], reverse=True)
             for scan in scansioni:
                 scan['date'] = scan['date'].strftime("%d/%m/%Y, %H:%M:%S")
-        return render_template('amministrazione/visualizza-impianti.html', impianti=impianti)
+        return render_template('/amministrazione/visualizza-impianti.html', impianti=impianti)

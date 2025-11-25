@@ -49,4 +49,4 @@ def manage_secrets():
                 flash(f"Chiave '{key_to_delete}' eliminata.", "success")
                 return redirect("/amministrazione/secrets")
 
-    return render_template("amministrazione/secrets.html", secrets=current_secrets)
+    return render_template("/amministrazione/secrets.html", secrets=current_secrets)

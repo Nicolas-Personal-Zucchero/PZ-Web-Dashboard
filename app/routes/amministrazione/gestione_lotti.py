@@ -133,7 +133,7 @@ def index():
         lotti.append(data)
     
     # Restituisce il nuovo template unificato
-    return render_template("amministrazione/gestione-lotti.html", lotti=lotti)
+    return render_template("/amministrazione/gestione-lotti.html", lotti=lotti)
 
 @gestione_lotti_bp.route("/etichetta", methods=["GET", "POST"])
 def etichetta():
