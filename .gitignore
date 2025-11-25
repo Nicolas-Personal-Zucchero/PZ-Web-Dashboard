@@ -68,4 +68,5 @@ Thumbs.db
 **/serviceAccountKey.json
 mock_backups/
 mock_secrets/
+mock_certs/
 data/secrets.json
