@@ -165,7 +165,8 @@
                     <div class="col-md-1">
                         <button class="btn btn-sm btn-primary view-scansioni-btn" 
                                 data-scansioni='{{ lotto.scansioni_etichette | tojson | safe }}'
-                                data-lotto-id="{{ lotto.id }}"> {{ lotto.etichette }}
+                                data-lotto-id="{{ lotto.id }}"
+                                data-lotto-etichette="{{ lotto.etichette }}"> {{ lotto.etichette }}
                         </button>
                       <form method="POST" action="{{ url_for('.etichetta') }}" target="_blank">
                         <input type="hidden" name="id_lotto" value="{{ lotto.id }}">
@@ -350,6 +351,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (scansioniModalElement) {
         const scansioniModal = new bootstrap.Modal(scansioniModalElement);
         const scansioniTableBody = document.querySelector('#scansioniTable tbody');
+        const modalTitle = document.querySelector('.modal-title');
         
         // Riferimenti al form di aggiunta
         const addScansioneForm = document.getElementById('addScansioneForm');
@@ -361,8 +363,10 @@ document.addEventListener("DOMContentLoaded", function () {
             btn.addEventListener('click', function () {
                 const scansioni = JSON.parse(this.dataset.scansioni);
                 const lottoId = this.dataset.lottoId; // Recupera ID Lotto
+                const lottoEtichetteNumero = this.dataset.lottoEtichette;
 
                 // Imposta ID nel form nascosto e resetta select
+                modalTitle.textContent = `Scansioni Etichette per ${lottoId} (${lottoEtichetteNumero})`;
                 scanLottoIdInput.value = lottoId;
                 scanImpiantoSelect.value = "Scansione Manuale";
                 scanOperatoreSelect.value = "Denis Severini";
