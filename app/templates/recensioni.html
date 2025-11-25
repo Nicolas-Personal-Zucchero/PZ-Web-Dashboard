@@ -59,8 +59,18 @@
     {% if reviews %}
     <hr>
     <h3>Clienti che hanno già ricevuto la richiesta:</h3>
-    <div class="mb-3">
-        <input type="text" class="form-control" id="searchInput" placeholder="Cerca email">
+    <div class="mb-3 row g-2">
+        <div class="col-md-8">
+            <input type="text" class="form-control" id="searchInput" placeholder="Cerca email o cliente">
+        </div>
+        <div class="col-md-4">
+            <select class="form-select" id="mittenteFilter">
+                <option value="">Tutti i mittenti</option>
+                {% for r in reviews|map(attribute='sender')|unique %}
+                <option value="{{ r }}">{{ r }}</option>
+                {% endfor %}
+            </select>
+        </div>
     </div>
     <div style="max-height: 500px; overflow-y: auto;">
         <ul class="list-group styled-table" id="emailList">
@@ -84,7 +94,7 @@
                     <div class="col-md-4">
                         {{ r.email }}
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-2 js-mittente">
                         {{ r.sender }}
                     </div>
                     <div class="col-md-1">
@@ -109,36 +119,48 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    // === Gestione LocalStorage Mittente ===
     const selectMittente = document.getElementById("nome_mittente");
-
-    // Carica valori salvato
     const savedMittente = localStorage.getItem("mittente");
 
-    if (savedMittente) {
+    if (savedMittente && selectMittente) {
         selectMittente.value = savedMittente;
     }
 
-    // Salva valore ogni volta che cambia
-    selectMittente.addEventListener("change", function () {
-        localStorage.setItem("mittente", selectMittente.value);
-    });
-
-    // Filtro ricerca
-    document.getElementById('searchInput')?.addEventListener('input', function () {
-        const filter = this.value.toLowerCase();
-        const items = document.querySelectorAll('#emailList .list-group-item');
-        items.forEach(item => {
-            if (!item.classList.contains('static-header')) {
-                const customerText = item.querySelector('.col-md-2 strong')?.textContent.toLowerCase() || '';
-                const emailText = item.querySelector('.col-md-4')?.textContent.toLowerCase() || '';
-                if (customerText.includes(filter) || emailText.includes(filter)) {
-                    item.style.display = '';
-                } else {
-                    item.style.display = 'none';
-                }
-            }
+    if (selectMittente) {
+        selectMittente.addEventListener("change", function () {
+            localStorage.setItem("mittente", selectMittente.value);
         });
-    });
+    }
+
+    // === Logica Visualizzazione/Filtro Recensioni (Simile a gestione-lotti) ===
+    const searchInput = document.getElementById('searchInput');
+    const mittenteFilter = document.getElementById('mittenteFilter');
+    const items = document.querySelectorAll('#emailList .list-group-item');
+
+    function filterReviews() {
+        const searchText = searchInput ? searchInput.value.toLowerCase() : '';
+        const mittente = mittenteFilter ? mittenteFilter.value.toLowerCase() : '';
+
+        items.forEach(item => {
+            if (item.classList.contains('static-header')) return;
+
+            // Recupera i valori dal DOM
+            const cliente = item.querySelector('.col-md-2 strong')?.textContent.toLowerCase() || '';
+            const email = item.querySelector('.col-md-4')?.textContent.toLowerCase() || '';
+            const itemMittente = item.querySelector('.js-mittente')?.textContent.toLowerCase() || '';
+
+            const match = 
+                (cliente.includes(searchText) || email.includes(searchText)) &&
+                (mittente === '' || itemMittente.includes(mittente));
+
+            item.style.display = match ? '' : 'none';
+            console.log({cliente, email, itemMittente, match})
+        });
+    }
+
+    if (searchInput) searchInput.addEventListener('input', filterReviews);
+    if (mittenteFilter) mittenteFilter.addEventListener('change', filterReviews);
 });
 </script>
 {% endblock %}
