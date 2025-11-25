@@ -3,7 +3,8 @@ services:
     build: .
     volumes:
       - /home/pz/firestore_backups:/backups  # monta la cartella dei backup
-      - /home/pz/.secrets:/app/secrets
+      - /home/pz/.secrets:/secrets
+      - /home/pz/certs:/certs
     ports:
       - "80:5000"
     restart: unless-stopped

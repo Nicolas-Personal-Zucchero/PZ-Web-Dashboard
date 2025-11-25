@@ -4,7 +4,7 @@ from hubspot_pz import HubspotPZ
 from mailer_pz import MailerPZ
 
 # Path to the secrets file inside the container
-SECRETS_FILE = "/app/secrets/secrets.json"
+SECRETS_FILE = "/secrets/secrets.json"
 
 class SecretsManager:
     def __init__(self):

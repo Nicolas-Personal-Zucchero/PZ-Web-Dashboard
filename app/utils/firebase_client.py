@@ -1,7 +1,7 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-cred = credentials.Certificate("/app/secrets/serviceAccountKey.json")
+cred = credentials.Certificate("/secrets/serviceAccountKey.json")
 
 # Inizializza solo se non è già inizializzato
 if not firebase_admin._apps:

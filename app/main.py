@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template
 
 from config.links import register_links, get_links
@@ -63,4 +64,13 @@ def inject_links():
     }
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    cert_path = "certs/cert.pem"
+    key_path = "certs/key.pem"
+
+    ssl_context = (cert_path, key_path) if os.path.exists(cert_path) and os.path.exists(key_path) else None
+
+    app.run(
+        host="0.0.0.0",
+        port=5000,
+        ssl_context=ssl_context
+    )
