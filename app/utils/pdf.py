@@ -22,7 +22,7 @@ def generate_pdf(filename, lotto_personal_zucchero, fornitore, ddt, tipologia_zu
     TEXT_OFFSET_X = 5 * mm
     TEXT_OFFSET_Y = 15 * mm
 
-    FONT_LOTTO_PERSONAL_TITOLO = ("Helvetica", 20)
+    FONT_LOTTO_PERSONAL_TITOLO = ("Helvetica", 10)
     FONT_LOTTO_PERSONAL = ("Helvetica-Bold", 60)
     FONT_FORNITORE_DDT = ("Helvetica-Bold", 25)
     FONT_ZUCCHERO = ("Helvetica-Bold", 20)
@@ -57,14 +57,16 @@ def generate_pdf(filename, lotto_personal_zucchero, fornitore, ddt, tipologia_zu
     usable_height = LABEL_WIDTH - 2 * MARGIN_Y
 
     text_x = x + TEXT_OFFSET_X
-    text_y = y + usable_height - TEXT_OFFSET_Y
+    text_y = y + usable_height - TEXT_OFFSET_Y + 13 * mm
 
     c.setFont(*FONT_LOTTO_PERSONAL_TITOLO)
-    c.drawString(text_x + 5 * mm, text_y + 5 * mm, f"Lotto: ")
+    for char in "LOTTO":
+        c.drawString(text_x - 5 * mm, text_y, char)
+        text_y -= FONT_LOTTO_PERSONAL_TITOLO[1]
 
     # Lotto personal zucchero (grande)
     c.setFont(*FONT_LOTTO_PERSONAL)
-    lotto_y = text_y
+    lotto_y = y + usable_height - TEXT_OFFSET_Y
 
     # Calcola la larghezza del testo per il rettangolo
     text_width = c.stringWidth(f"{lotto_personal_zucchero}", *FONT_LOTTO_PERSONAL)
@@ -72,11 +74,11 @@ def generate_pdf(filename, lotto_personal_zucchero, fornitore, ddt, tipologia_zu
 
     # Rettangolo nero dietro il testo
     c.setFillColorRGB(0, 0, 0)  # nero
-    c.rect(text_x + 35 * mm - 2, lotto_y - 4, text_width + 4, text_height - 10, fill=True, stroke=False)
+    c.rect(text_x - 0 * mm - 2, lotto_y - 4, text_width + 4, text_height - 10, fill=True, stroke=False)
 
     # Testo bianco sopra il rettangolo
     c.setFillColorRGB(1, 1, 1)  # bianco
-    c.drawString(text_x + 35 * mm, lotto_y, f"{lotto_personal_zucchero}")
+    c.drawString(text_x - 0 * mm, lotto_y, f"{lotto_personal_zucchero}")
 
     # Ripristina colore nero per gli altri testi
     c.setFillColorRGB(0, 0, 0)

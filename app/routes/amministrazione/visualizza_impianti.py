@@ -27,6 +27,8 @@ def index():
 
             for scan in scansioni:
                 impianto = scan['impianto']
+                if impianto == "Scansione Manuale":
+                    continue
                 dt = scan['date'].astimezone(ITALY_TZ)
                 impianti[impianto].append({
                     'date': dt,

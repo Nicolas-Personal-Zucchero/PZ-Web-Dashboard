@@ -123,6 +123,13 @@ def index():
         else:
             data["formatted_time"] = "N/A"
 
+        for scansione in data.get("scansioni_etichette", []):
+            date = scansione.get("date")
+            if date:
+                scansione["date"] = date.astimezone(ITALY_TZ).strftime("%d/%m/%Y, %H:%M:%S")
+            else:
+                scansione["date"] = "N/A"
+
         lotti.append(data)
     
     # Restituisce il nuovo template unificato
@@ -156,3 +163,35 @@ def etichetta():
     filename = f"etichetta_{data.get('lotto', '')}.pdf"
     pdf = generate_pdf(filename, data.get("lotto", ""), data.get("fornitore", ""), data.get("ddt", ""), data.get("tipologia_zucchero", ""), uploaded_at_str, data.get("note", ""), data.get("lotti_fornitore", ""))
     return send_file(pdf, as_attachment=False, download_name=filename, mimetype="application/pdf")
+
+@gestione_lotti_bp.route("/aggiungi_scansione", methods=["POST"])
+def aggiungi_scansione():
+    try:
+        data = request.get_json()
+        lotto_id = data.get("lotto_id")
+        impianto = data.get("impianto")
+        operatore = data.get("operatore")
+
+        if not lotto_id or not impianto or not operatore:
+            return {"success": False, "error": "Dati mancanti"}, 400
+
+        # Verifica dell'esistenza del documento
+        doc_ref = lotti_zucchero_collection.document(lotto_id)
+        if not doc_ref.get().exists:
+            return {"success": False, "error": f"Lotto con ID {lotto_id} non trovato"}, 404
+        
+        now = datetime.now(ITALY_TZ)
+        nuova_scansione = {
+            "impianto": impianto,
+            "operatore": operatore,
+            "date": now
+        }
+
+        doc_ref.update({
+            "scansioni_etichette": firestore.ArrayUnion([nuova_scansione])
+        })
+
+        return {"success": True, "message": "Scansione aggiunta"}, 200
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}, 500
