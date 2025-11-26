@@ -3,13 +3,14 @@
 
 {% block content %}
 <div class="p-4">
-    <a href="javascript:history.back()" class="btn btn-light mb-3">
-      <i class="bi bi-arrow-left"></i> Torna indietro
+    <a href="{{ home_link }}" class="btn btn-light mb-3">
+        <i class="bi bi-arrow-left"></i> Torna indietro
     </a>
     <h1>Elenco Asset</h1>
 
     <!-- Pulsante mostra/nascondi form -->
-    <button class="btn btn-info mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#formAsset" aria-expanded="false" aria-controls="formAsset" id="btnToggle">
+    <button class="btn btn-info mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#formAsset"
+        aria-expanded="false" aria-controls="formAsset" id="btnToggle">
         <i class="bi bi-plus-circle"></i> Aggiungi asset
     </button>
 
@@ -19,7 +20,8 @@
             <div class="row mb-3">
                 <div class="col-md-3">
                     <label for="nome" class="form-label">Nome</label>
-                    <input type="text" class="form-control" name="nome" id="nome" placeholder="Es: Macchina Zucchero 1" required>
+                    <input type="text" class="form-control" name="nome" id="nome" placeholder="Es: Macchina Zucchero 1"
+                        required>
                 </div>
                 <div class="col-md-3">
                     <label for="modello" class="form-label">Modello</label>
@@ -36,17 +38,20 @@
                 </div>
                 <div class="col-md-4">
                     <label for="posizione" class="form-label">Posizione</label>
-                    <input type="text" class="form-control" name="posizione" id="posizione" placeholder="Es: Reparto produzione" required>
+                    <input type="text" class="form-control" name="posizione" id="posizione"
+                        placeholder="Es: Reparto produzione" required>
                 </div>
             </div>
             <div class="row mb-3">
                 <div class="col-md-4">
                     <label for="intervallo_manutenzione" class="form-label">Intervallo Manutenzione (giorni)</label>
-                    <input type="number" class="form-control" name="intervallo_manutenzione" id="intervallo_manutenzione" placeholder="Es: 365" required>
+                    <input type="number" class="form-control" name="intervallo_manutenzione"
+                        id="intervallo_manutenzione" placeholder="Es: 365" required>
                 </div>
                 <div class="col-md-4">
                     <label for="intervallo_pulizia" class="form-label">Intervallo Pulizia (giorni)</label>
-                    <input type="number" class="form-control" name="intervallo_pulizia" id="intervallo_pulizia" placeholder="Es: 30" min="0" required>
+                    <input type="number" class="form-control" name="intervallo_pulizia" id="intervallo_pulizia"
+                        placeholder="Es: 30" min="0" required>
                 </div>
             </div>
             <button type="submit" class="btn btn-primary">Registra asset</button>
@@ -55,9 +60,9 @@
 
     <!-- Flash messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
-        {% endfor %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+    {% endfor %}
     {% endwith %}
     <hr>
 
@@ -73,7 +78,7 @@
             <select class="form-select" id="tipologiaFilter">
                 <option value="">Tutte le tipologie</option>
                 {% for t in entries|map(attribute='tipologia')|unique %}
-                    <option value="{{ t }}">{{ t }}</option>
+                <option value="{{ t }}">{{ t }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -81,7 +86,7 @@
             <select class="form-select" id="posizioneFilter">
                 <option value="">Tutte le posizioni</option>
                 {% for t in entries|map(attribute='posizione')|unique %}
-                    <option value="{{ t }}">{{ t }}</option>
+                <option value="{{ t }}">{{ t }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -117,7 +122,7 @@
                         <a href="/amministrazione/asset/{{ e.id }}" class="btn btn-primary btn-sm">Apri</a>
                     </div>
                     <div class="col-md-1 text-end">
-                        <form method="POST" action="/amministrazione/asset/elimina" 
+                        <form method="POST" action="/amministrazione/asset/elimina"
                             onsubmit="return confirm('Sei sicuro di voler eliminare questo asset?');">
                             <input type="hidden" name="asset_id" value="{{ e.id }}">
                             <button type="submit" class="btn btn-danger btn-sm">Elimina</button>
@@ -135,50 +140,50 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function () {
         const searchInput = document.getElementById('searchInput');
-    const tipologiaFilter = document.getElementById('tipologiaFilter');
-    const posizioneFilter = document.getElementById('posizioneFilter');
-    const items = document.querySelectorAll('#assetList .list-group-item');
+        const tipologiaFilter = document.getElementById('tipologiaFilter');
+        const posizioneFilter = document.getElementById('posizioneFilter');
+        const items = document.querySelectorAll('#assetList .list-group-item');
 
-    function filterAssets() {
-        const searchText = searchInput.value.toLowerCase();
-        const tipologia = tipologiaFilter.value.toLowerCase();
-        const posizione = posizioneFilter.value.toLowerCase();
+        function filterAssets() {
+            const searchText = searchInput.value.toLowerCase();
+            const tipologia = tipologiaFilter.value.toLowerCase();
+            const posizione = posizioneFilter.value.toLowerCase();
 
-        items.forEach(item => {
-            if (item.classList.contains('static-header')) return;
+            items.forEach(item => {
+                if (item.classList.contains('static-header')) return;
 
-            const nome = item.querySelector('.col-md-2:nth-child(1)')?.textContent.toLowerCase() || '';
-            const modello = item.querySelector('.col-md-2:nth-child(2)')?.textContent.toLowerCase() || '';
-            const tipo = item.querySelector('.col-md-2:nth-child(3)')?.textContent.toLowerCase() || '';
-            const pos = item.querySelector('.col-md-2:nth-child(4)')?.textContent.toLowerCase() || '';
+                const nome = item.querySelector('.col-md-2:nth-child(1)')?.textContent.toLowerCase() || '';
+                const modello = item.querySelector('.col-md-2:nth-child(2)')?.textContent.toLowerCase() || '';
+                const tipo = item.querySelector('.col-md-2:nth-child(3)')?.textContent.toLowerCase() || '';
+                const pos = item.querySelector('.col-md-2:nth-child(4)')?.textContent.toLowerCase() || '';
 
-            const match = 
-                (nome.includes(searchText) || modello.includes(searchText)) &&
-                (tipologia === '' || tipo.includes(tipologia)) &&
-                (posizione === '' || pos.includes(posizione));
+                const match =
+                    (nome.includes(searchText) || modello.includes(searchText)) &&
+                    (tipologia === '' || tipo.includes(tipologia)) &&
+                    (posizione === '' || pos.includes(posizione));
 
-            item.style.display = match ? '' : 'none';
-        });
-    }
+                item.style.display = match ? '' : 'none';
+            });
+        }
 
-    if(searchInput) searchInput.addEventListener('input', filterAssets);
-    if(tipologiaFilter) tipologiaFilter.addEventListener('change', filterAssets);
-    if(posizioneFilter) posizioneFilter.addEventListener('change', filterAssets);
+        if (searchInput) searchInput.addEventListener('input', filterAssets);
+        if (tipologiaFilter) tipologiaFilter.addEventListener('change', filterAssets);
+        if (posizioneFilter) posizioneFilter.addEventListener('change', filterAssets);
 
-    const toggleBtn = document.getElementById('btnToggle');
-    const formCollapse = document.getElementById('formAsset');
+        const toggleBtn = document.getElementById('btnToggle');
+        const formCollapse = document.getElementById('formAsset');
 
-    if (toggleBtn && formCollapse) {
-        formCollapse.addEventListener('show.bs.collapse', () => {
-            toggleBtn.innerHTML = '<i class="bi bi-x-circle"></i> Annulla';
-        });
+        if (toggleBtn && formCollapse) {
+            formCollapse.addEventListener('show.bs.collapse', () => {
+                toggleBtn.innerHTML = '<i class="bi bi-x-circle"></i> Annulla';
+            });
 
-        formCollapse.addEventListener('hide.bs.collapse', () => {
-            toggleBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Aggiungi Lotto';
-        });
-    }
-});
+            formCollapse.addEventListener('hide.bs.collapse', () => {
+                toggleBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Aggiungi Lotto';
+            });
+        }
+    });
 </script>
 {% endblock %}

@@ -4,12 +4,13 @@
 
 {% block content %}
 <div class="p-4">
-    <a href="javascript:history.back()" class="btn btn-light mb-3">
-      <i class="bi bi-arrow-left"></i> Torna indietro
+    <a href="{{ home_link }}" class="btn btn-light mb-3">
+        <i class="bi bi-arrow-left"></i> Torna indietro
     </a>
     <h1>Gestione Lotti</h1>
 
-    <button class="btn btn-info mb-3" type="button" id="btnToggle" data-bs-toggle="collapse" data-bs-target="#formRegistrazione" aria-expanded="false" aria-controls="formRegistrazione">
+    <button class="btn btn-info mb-3" type="button" id="btnToggle" data-bs-toggle="collapse"
+        data-bs-target="#formRegistrazione" aria-expanded="false" aria-controls="formRegistrazione">
         <i class="bi bi-plus-circle"></i> Aggiungi lotto
     </button>
 
@@ -42,7 +43,7 @@
                         <option>Zucchero BIO Golden</option>
                         <option>Zucchero BIO White</option>
                     </select>
-                </div>  
+                </div>
                 <div class="col-md-2">
                     <label for="fornitore" class="form-label">Fornitore</label>
                     <select class="form-select" name="fornitore" id="fornitore" required>
@@ -53,11 +54,11 @@
                         <option value="GRANDAZUCCHERI">GRANDAZUCCHERI</option>
                         <option value="PININPERO">PININPERO</option>
                     </select>
-                </div>    
+                </div>
                 <div class="col-md-3">
                     <label for="ddt" class="form-label">DDT</label>
                     <input type="text" class="form-control" name="ddt" id="ddt" placeholder="Inserisci DDT" required>
-                </div> 
+                </div>
             </div>
 
             <div class="row mb-3">
@@ -69,12 +70,14 @@
                 </div>
                 <div class="col-md-4">
                     <label for="n_etichette" class="form-label">Numero etichette</label>
-                    <input type="number" class="form-control" name="n_etichette" id="n_etichette" placeholder="Numero etichette" value="24" min="1" required>
-                </div> 
+                    <input type="number" class="form-control" name="n_etichette" id="n_etichette"
+                        placeholder="Numero etichette" value="24" min="1" required>
+                </div>
                 <div class="col-md-4">
                     <label for="note" class="form-label">Note</label>
-                    <input type="text" class="form-control" name="note" id="note" placeholder="Inserisci note" maxlength="15">
-                </div> 
+                    <input type="text" class="form-control" name="note" id="note" placeholder="Inserisci note"
+                        maxlength="15">
+                </div>
             </div>
 
             <div class="mb-3">
@@ -84,7 +87,8 @@
                         <input type="text" name="lotti[]" class="form-control" placeholder="Lotto 1" required>
                     </div>
                 </div>
-                <button type="button" class="btn btn-secondary btn-sm" id="addLottoBtn">Aggiungi Lotto fornitore</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="addLottoBtn">Aggiungi Lotto
+                    fornitore</button>
             </div>
 
             <button type="submit" class="btn btn-primary">Registra Lotto</button>
@@ -92,12 +96,12 @@
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
-        {% endfor %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+    {% endfor %}
     {% endwith %}
     <hr>
-    
+
     {% if lotti %}
     <!-- <h2>Lotti Registrati</h2> -->
     <div class="mb-3 row g-2">
@@ -121,19 +125,19 @@
             </select>
         </div>
         <div class="col-md-3">
-          <select class="form-select" id="origineFilter">
-            <option value="">Tutte le origini</option>
-            {% for o in lotti|map(attribute='origine')|unique %}
-            <option value="{{ o }}">{{ o }}</option>
-            {% endfor %}
-          </select>
+            <select class="form-select" id="origineFilter">
+                <option value="">Tutte le origini</option>
+                {% for o in lotti|map(attribute='origine')|unique %}
+                <option value="{{ o }}">{{ o }}</option>
+                {% endfor %}
+            </select>
         </div>
         <div class="col-md-2">
-          <select class="form-select" id="statoFilter">
-            <option value="">Tutti i lotti</option>
-            <option value="in_caricamento" selected>Solo lotti in caricamento</option>
-            <option value="caricati">Solo lotti caricati</option>
-          </select>
+            <select class="form-select" id="statoFilter">
+                <option value="">Tutti i lotti</option>
+                <option value="in_caricamento" selected>Solo lotti in caricamento</option>
+                <option value="caricati">Solo lotti caricati</option>
+            </select>
         </div>
     </div>
 
@@ -163,15 +167,16 @@
                     <div class="col-md-1">{{ lotto.origine }}</div>
                     <div class="col-md-2">{{ lotto.formatted_time }}</div>
                     <div class="col-md-1">
-                        <button class="btn btn-sm btn-primary view-scansioni-btn" 
-                                data-scansioni='{{ lotto.scansioni_etichette | tojson | safe }}'
-                                data-lotto-id="{{ lotto.id }}"
-                                data-lotto-etichette="{{ lotto.etichette }}"> {{ lotto.etichette }}
+                        <button class="btn btn-sm btn-primary view-scansioni-btn"
+                            data-scansioni='{{ lotto.scansioni_etichette | tojson | safe }}'
+                            data-lotto-id="{{ lotto.id }}" data-lotto-etichette="{{ lotto.etichette }}"> {{
+                            lotto.etichette }}
                         </button>
-                      <form method="POST" action="{{ url_for('.etichetta') }}" target="_blank">
-                        <input type="hidden" name="id_lotto" value="{{ lotto.id }}">
-                        <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-filetype-pdf"></i></button>
-                      </form>
+                        <form method="POST" action="{{ url_for('.etichetta') }}" target="_blank">
+                            <input type="hidden" name="id_lotto" value="{{ lotto.id }}">
+                            <button type="submit" class="btn btn-success btn-sm"><i
+                                    class="bi bi-filetype-pdf"></i></button>
+                        </form>
                     </div>
                 </div>
             </li>
@@ -179,331 +184,331 @@
         </ul>
     </div>
     {% endif %}
-    
-    <div class="modal fade" id="scansioniModal" tabindex="-1">
-      <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Scansioni Etichette</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <div class="card mb-3 bg-light">
-                <div class="card-body p-3">
-                    <h6 class="card-title mb-2"><i class="bi bi-plus-circle"></i> Aggiungi Nuova Scansione</h6>
-                    <form id="addScansioneForm" class="row g-2 align-items-end">
-                        <input type="hidden" id="scanLottoId" name="lotto_id">
-                        
-                        <div class="col-md-5">
-                            <label class="form-label small mb-1">Impianto</label>
-                            <select class="form-select form-select-sm" id="scanImpianto" required>
-                                <option selected>Scansione Manuale</option>
-                                <option>Impianto 1 (Bianco)</option>
-                                <option>Impianto 2 (Bianco)</option>
-                                <option>Impianto 3 (Canna)</option>
-                                <option>Cisterna</option>
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label class="form-label small mb-1">Operatore</label>
-                            <select class="form-select form-select-sm" id="scanOperatore" required>
-                                <option>Daniel Barbieri</option>
-                                <option>Gianluca Magnanelli</option>
-                                <option>Luca Soldati</option>
-                                <option selected>Denis Severini</option>
-                                <option>Mauro Amadori</option>
-                                <option>Altro</option>
-                            </select>
-                        </div>
 
-                        <div class="col-md-3">
-                            <button type="submit" class="btn btn-success btn-sm w-100">Aggiungi</button>
-                        </div>
-                    </form>
+    <div class="modal fade" id="scansioniModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Scansioni Etichette</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-            </div>
-            <table class="table table-striped" id="scansioniTable">
-            <thead>
-                <tr>
-                <th>Data</th>
-                <th>Impianto</th>
-                <th>Operatore</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-            </table>
-        <!-- </div>
+                <div class="modal-body">
+                    <div class="card mb-3 bg-light">
+                        <div class="card-body p-3">
+                            <h6 class="card-title mb-2"><i class="bi bi-plus-circle"></i> Aggiungi Nuova Scansione</h6>
+                            <form id="addScansioneForm" class="row g-2 align-items-end">
+                                <input type="hidden" id="scanLottoId" name="lotto_id">
+
+                                <div class="col-md-5">
+                                    <label class="form-label small mb-1">Impianto</label>
+                                    <select class="form-select form-select-sm" id="scanImpianto" required>
+                                        <option selected>Scansione Manuale</option>
+                                        <option>Impianto 1 (Bianco)</option>
+                                        <option>Impianto 2 (Bianco)</option>
+                                        <option>Impianto 3 (Canna)</option>
+                                        <option>Cisterna</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label small mb-1">Operatore</label>
+                                    <select class="form-select form-select-sm" id="scanOperatore" required>
+                                        <option>Daniel Barbieri</option>
+                                        <option>Gianluca Magnanelli</option>
+                                        <option>Luca Soldati</option>
+                                        <option selected>Denis Severini</option>
+                                        <option>Mauro Amadori</option>
+                                        <option>Altro</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-success btn-sm w-100">Aggiungi</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <table class="table table-striped" id="scansioniTable">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Impianto</th>
+                                <th>Operatore</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <!-- </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
           </div>
         </div> -->
-      </div>
-    </div>
+                </div>
+            </div>
 
-</div>
+        </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    // === Logica Form Registrazione (da registrazione-lotti.html) ===
-    
-    // Imposta la data di default a oggi
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('data').value = today;
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // === Logica Form Registrazione (da registrazione-lotti.html) ===
 
-    // Popola select origine con nomi dei paesi
-    const origineSelect = document.getElementById('origine');
-    fetch('https://restcountries.com/v3.1/all?fields=name,translations')
-        .then(response => response.json())
-        .then(data => {
-            data.sort((a, b) => {
-                const nameA = a.translations?.ita?.common || a.name.common;
-                const nameB = b.translations?.ita?.common || b.name.common;
-                return nameA.localeCompare(nameB, 'it');
-            });
-            data.forEach(country => {
-                const option = document.createElement('option');
-                option.value = country.translations?.ita?.common || country.name.common;
-                option.textContent = country.translations?.ita?.common || country.name.common;
-                origineSelect.appendChild(option);
-            });
-        })
-        .catch(err => console.error('Errore caricamento paesi:', err));
+                // Imposta la data di default a oggi
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('data').value = today;
 
-    // Gestione aggiunta/rimozione lotti
-    const addLottoBtn = document.getElementById('addLottoBtn');
-    const lottiContainer = document.getElementById('lottiContainer');
-    let lottoCount = 1;
+                // Popola select origine con nomi dei paesi
+                const origineSelect = document.getElementById('origine');
+                fetch('https://restcountries.com/v3.1/all?fields=name,translations')
+                    .then(response => response.json())
+                    .then(data => {
+                        data.sort((a, b) => {
+                            const nameA = a.translations?.ita?.common || a.name.common;
+                            const nameB = b.translations?.ita?.common || b.name.common;
+                            return nameA.localeCompare(nameB, 'it');
+                        });
+                        data.forEach(country => {
+                            const option = document.createElement('option');
+                            option.value = country.translations?.ita?.common || country.name.common;
+                            option.textContent = country.translations?.ita?.common || country.name.common;
+                            origineSelect.appendChild(option);
+                        });
+                    })
+                    .catch(err => console.error('Errore caricamento paesi:', err));
 
-    addLottoBtn.addEventListener('click', function() {
-        lottoCount++;
-        const div = document.createElement('div');
-        div.classList.add('input-group', 'mb-2');
-        div.innerHTML = `
+                // Gestione aggiunta/rimozione lotti
+                const addLottoBtn = document.getElementById('addLottoBtn');
+                const lottiContainer = document.getElementById('lottiContainer');
+                let lottoCount = 1;
+
+                addLottoBtn.addEventListener('click', function () {
+                    lottoCount++;
+                    const div = document.createElement('div');
+                    div.classList.add('input-group', 'mb-2');
+                    div.innerHTML = `
             <input type="text" name="lotti[]" class="form-control" placeholder="Lotto ${lottoCount}" required>
             <button class="btn btn-outline-danger remove-btn" type="button" id="btn${lottoCount}" tabindex="-1">×</button>
         `;
-        lottiContainer.appendChild(div);
-        div.querySelector("input").focus();
-    });
-
-    lottiContainer.addEventListener('click', function(e) {
-        if (e.target.classList.contains('remove-btn') && lottoCount > 1 && e.target.id == `btn${lottoCount}`) {
-            e.target.parentElement.remove();
-            lottoCount--;
-        }
-    });
-
-    // === Logica Visualizzazione Lotti (da visualizza-lotti.html) ===
-
-    const searchInput = document.getElementById('searchInput');
-    const tipologiaFilter = document.getElementById('tipologiaFilter');
-    const fornitoreFilter = document.getElementById('fornitoreFilter');
-    const origineFilter = document.getElementById('origineFilter');
-    const statoFilter = document.getElementById('statoFilter');
-    const items = document.querySelectorAll('#listaLotti .list-group-item');
-
-    function filterLotti() {
-        const searchText = searchInput.value.toLowerCase();
-        const tipologia = tipologiaFilter.value.toLowerCase();
-        const fornitore = fornitoreFilter.value.toLowerCase();
-        const origine = origineFilter.value.toLowerCase();
-        const stato = statoFilter.value;
-
-        items.forEach(item => {
-            if (item.classList.contains('static-header')) return;
-
-            const lottoId = item.querySelector('.col-md-1 strong')?.textContent.toLowerCase() || '';
-            const itemTipologia = item.querySelector('.col-md-3')?.textContent.toLowerCase() || '';
-            const itemFornitore = item.querySelector('.col-md-2')?.textContent.toLowerCase() || '';
-            const itemOrigine = item.querySelector('.col-md-1:nth-child(6)')?.textContent.toLowerCase() || '';
-
-            // Recupera il numero di scansioni e numero di etichette
-            const scansioniCount = JSON.parse(item.querySelector('.view-scansioni-btn')?.dataset.scansioni || '[]').length;
-            const totaleEtichette = parseInt(item.querySelector('.view-scansioni-btn')?.textContent.split('/')[1] || '0');
-
-            let statoMatch = true;
-            if (stato === 'in_caricamento') {
-                statoMatch = scansioniCount < totaleEtichette;
-            } else if (stato === 'caricati') {
-                statoMatch = scansioniCount >= totaleEtichette;
-            }
-
-            const match = 
-                lottoId.includes(searchText) &&
-                (tipologia === '' || itemTipologia.includes(tipologia)) && // Uso includes per match parziali nel filtro
-                (fornitore === '' || itemFornitore.includes(fornitore)) &&
-                (origine === '' || itemOrigine.includes(origine)) &&
-                statoMatch;
-
-            item.style.display = match ? '' : 'none';
-        });
-    }
-
-    if(searchInput) searchInput.addEventListener('input', filterLotti);
-    if(tipologiaFilter) tipologiaFilter.addEventListener('change', filterLotti);
-    if(fornitoreFilter) fornitoreFilter.addEventListener('change', filterLotti);
-    if(origineFilter) origineFilter.addEventListener('change', filterLotti);
-    if(statoFilter) statoFilter.addEventListener('change', filterLotti);
-
-
-    const scansioniModalElement = document.getElementById('scansioniModal');
-    if (scansioniModalElement) {
-        const scansioniModal = new bootstrap.Modal(scansioniModalElement);
-        const scansioniTableBody = document.querySelector('#scansioniTable tbody');
-        const modalTitle = document.querySelector('.modal-title');
-        
-        // Riferimenti al form di aggiunta
-        const addScansioneForm = document.getElementById('addScansioneForm');
-        const scanLottoIdInput = document.getElementById('scanLottoId');
-        const scanImpiantoSelect = document.getElementById('scanImpianto');
-        const scanOperatoreSelect = document.getElementById('scanOperatore');
-
-        document.querySelectorAll('.view-scansioni-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const scansioni = JSON.parse(this.dataset.scansioni);
-                const lottoId = this.dataset.lottoId; // Recupera ID Lotto
-                const lottoEtichetteNumero = this.dataset.lottoEtichette;
-
-                // Imposta ID nel form nascosto e resetta select
-                modalTitle.textContent = `Scansioni Etichette per ${lottoId} (${lottoEtichetteNumero})`;
-                scanLottoIdInput.value = lottoId;
-                scanImpiantoSelect.value = "Scansione Manuale";
-                scanOperatoreSelect.value = "Denis Severini";
-
-                // Svuota la tabella
-                scansioniTableBody.innerHTML = '';
-
-                // Popola la tabella (ordina per data decrescente se necessario, qui mostriamo come arrivano)
-                scansioni.forEach(s => {
-                    const row = document.createElement('tr');
-                    const dateCell = document.createElement('td');
-                    dateCell.textContent = s.date || '';
-                    const impiantoCell = document.createElement('td');
-                    impiantoCell.textContent = s.impianto || '';
-                    const operatoreCell = document.createElement('td');
-                    operatoreCell.textContent = s.operatore || '';
-                    row.append(dateCell, impiantoCell, operatoreCell);
-                    scansioniTableBody.appendChild(row);
+                    lottiContainer.appendChild(div);
+                    div.querySelector("input").focus();
                 });
 
-                // Apri il modal
-                scansioniModal.show();
-            });
-        });
-
-        // Gestione Invio Nuova Scansione
-        addScansioneForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const payload = {
-                lotto_id: scanLottoIdInput.value,
-                impianto: scanImpiantoSelect.value,
-                operatore: scanOperatoreSelect.value
-            };
-
-            try {
-                const response = await fetch('/amministrazione/gestione_lotti/aggiungi_scansione', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
+                lottiContainer.addEventListener('click', function (e) {
+                    if (e.target.classList.contains('remove-btn') && lottoCount > 1 && e.target.id == `btn${lottoCount}`) {
+                        e.target.parentElement.remove();
+                        lottoCount--;
+                    }
                 });
 
-                const result = await response.json();
+                // === Logica Visualizzazione Lotti (da visualizza-lotti.html) ===
 
-                if (response.ok) {
-                    // Ricarica la pagina per aggiornare i dati e i contatori
-                    window.location.reload();
-                } else {
-                    alert("Errore: " + (result.error || "Impossibile aggiungere la scansione"));
-                }
-            } catch (err) {
-                console.error(err);
-                alert("Errore di comunicazione con il server.");
-            }
-        });
-    }
+                const searchInput = document.getElementById('searchInput');
+                const tipologiaFilter = document.getElementById('tipologiaFilter');
+                const fornitoreFilter = document.getElementById('fornitoreFilter');
+                const origineFilter = document.getElementById('origineFilter');
+                const statoFilter = document.getElementById('statoFilter');
+                const items = document.querySelectorAll('#listaLotti .list-group-item');
 
-    const toggleBtn = document.getElementById('btnToggle');
-    const formCollapse = document.getElementById('formRegistrazione');
+                function filterLotti() {
+                    const searchText = searchInput.value.toLowerCase();
+                    const tipologia = tipologiaFilter.value.toLowerCase();
+                    const fornitore = fornitoreFilter.value.toLowerCase();
+                    const origine = origineFilter.value.toLowerCase();
+                    const stato = statoFilter.value;
 
-    if (toggleBtn && formCollapse) {
-        formCollapse.addEventListener('show.bs.collapse', () => {
-            toggleBtn.innerHTML = '<i class="bi bi-x-circle"></i> Annulla';
-        });
+                    items.forEach(item => {
+                        if (item.classList.contains('static-header')) return;
 
-        formCollapse.addEventListener('hide.bs.collapse', () => {
-            toggleBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Aggiungi Lotto';
-        });
-    }
+                        const lottoId = item.querySelector('.col-md-1 strong')?.textContent.toLowerCase() || '';
+                        const itemTipologia = item.querySelector('.col-md-3')?.textContent.toLowerCase() || '';
+                        const itemFornitore = item.querySelector('.col-md-2')?.textContent.toLowerCase() || '';
+                        const itemOrigine = item.querySelector('.col-md-1:nth-child(6)')?.textContent.toLowerCase() || '';
 
-    const lottoInput = document.getElementById('lotto');
-    const forceLottoCheckbox = document.getElementById('forceLotto');
-    const tipologiaSelect = document.getElementById("tipologia");
+                        // Recupera il numero di scansioni e numero di etichette
+                        const scansioniCount = JSON.parse(item.querySelector('.view-scansioni-btn')?.dataset.scansioni || '[]').length;
+                        const totaleEtichette = parseInt(item.querySelector('.view-scansioni-btn')?.textContent.split('/')[1] || '0');
 
-    // Gestione checkbox "Forza lotto"
-    forceLottoCheckbox.addEventListener('change', function() {
-        if (this.checked) {
-            lottoInput.readOnly = false;
-            lottoInput.focus();
-        } else {
-            lottoInput.readOnly = true;
-            // Se è selezionata una tipologia, ricalcola il lotto automaticamente
-            const tipologia = tipologiaSelect.value;
-            if (tipologia) {
-                fetch(`/amministrazione/gestione_lotti/get_lotto?tipologia=${encodeURIComponent(tipologia)}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.lotto) lottoInput.value = data.lotto;
+                        let statoMatch = true;
+                        if (stato === 'in_caricamento') {
+                            statoMatch = scansioniCount < totaleEtichette;
+                        } else if (stato === 'caricati') {
+                            statoMatch = scansioniCount >= totaleEtichette;
+                        }
+
+                        const match =
+                            lottoId.includes(searchText) &&
+                            (tipologia === '' || itemTipologia.includes(tipologia)) && // Uso includes per match parziali nel filtro
+                            (fornitore === '' || itemFornitore.includes(fornitore)) &&
+                            (origine === '' || itemOrigine.includes(origine)) &&
+                            statoMatch;
+
+                        item.style.display = match ? '' : 'none';
                     });
-            } else {
-                lottoInput.value = '';
-            }
-        }
-    });
+                }
 
-    // Cambio tipologia
-    tipologiaSelect.addEventListener("change", async function() {
-        const tipologia = this.value;
-        if (!tipologia) return;
+                if (searchInput) searchInput.addEventListener('input', filterLotti);
+                if (tipologiaFilter) tipologiaFilter.addEventListener('change', filterLotti);
+                if (fornitoreFilter) fornitoreFilter.addEventListener('change', filterLotti);
+                if (origineFilter) origineFilter.addEventListener('change', filterLotti);
+                if (statoFilter) statoFilter.addEventListener('change', filterLotti);
 
-        // Se la checkbox è spuntata, non sovrascrivere
-        if (forceLottoCheckbox.checked) return;
 
-        try {
-            const response = await fetch(`/amministrazione/gestione_lotti/get_lotto?tipologia=${encodeURIComponent(tipologia)}`);
-            const data = await response.json();
-            if (data.lotto) {
-                lottoInput.value = data.lotto;
-            } else {
-                alert(data.error || "Errore durante la generazione del lotto");
-            }
-        } catch (err) {
-            console.error("Errore fetch lotto:", err);
-            alert("Errore durante la generazione del lotto");
-        }
-    });
+                const scansioniModalElement = document.getElementById('scansioniModal');
+                if (scansioniModalElement) {
+                    const scansioniModal = new bootstrap.Modal(scansioniModalElement);
+                    const scansioniTableBody = document.querySelector('#scansioniTable tbody');
+                    const modalTitle = document.querySelector('.modal-title');
 
-});
-</script>
+                    // Riferimenti al form di aggiunta
+                    const addScansioneForm = document.getElementById('addScansioneForm');
+                    const scanLottoIdInput = document.getElementById('scanLottoId');
+                    const scanImpiantoSelect = document.getElementById('scanImpianto');
+                    const scanOperatoreSelect = document.getElementById('scanOperatore');
 
-{% if request.args.get('stampare') %}
-<script>
-    const lotto = "{{ request.args.get('stampare') }}";
-    // Apri l'etichetta in una nuova tab, usando il nuovo blueprint
-    window.open(`{{ url_for('.etichetta') }}?id_lotto=${lotto}`, '_blank');
+                    document.querySelectorAll('.view-scansioni-btn').forEach(btn => {
+                        btn.addEventListener('click', function () {
+                            const scansioni = JSON.parse(this.dataset.scansioni);
+                            const lottoId = this.dataset.lottoId; // Recupera ID Lotto
+                            const lottoEtichetteNumero = this.dataset.lottoEtichette;
 
-    // Rimuovi il parametro "stampare" dall'URL e apri il form di registrazione per mostrare il messaggio flash
-    const formRegistrazione = new bootstrap.Collapse(document.getElementById('formRegistrazione'));
-    formRegistrazione.show();
+                            // Imposta ID nel form nascosto e resetta select
+                            modalTitle.textContent = `Scansioni Etichette per ${lottoId} (${lottoEtichetteNumero})`;
+                            scanLottoIdInput.value = lottoId;
+                            scanImpiantoSelect.value = "Scansione Manuale";
+                            scanOperatoreSelect.value = "Denis Severini";
 
-    // Rimuovi il parametro "stampare" dall'URL senza ricaricare la pagina
-    const url = new URL(window.location.href);
-    url.searchParams.delete('stampare');
-    window.history.replaceState(null, '', url.toString());
-</script>
-{% endif %}
+                            // Svuota la tabella
+                            scansioniTableBody.innerHTML = '';
 
-{% endblock %}
+                            // Popola la tabella (ordina per data decrescente se necessario, qui mostriamo come arrivano)
+                            scansioni.forEach(s => {
+                                const row = document.createElement('tr');
+                                const dateCell = document.createElement('td');
+                                dateCell.textContent = s.date || '';
+                                const impiantoCell = document.createElement('td');
+                                impiantoCell.textContent = s.impianto || '';
+                                const operatoreCell = document.createElement('td');
+                                operatoreCell.textContent = s.operatore || '';
+                                row.append(dateCell, impiantoCell, operatoreCell);
+                                scansioniTableBody.appendChild(row);
+                            });
+
+                            // Apri il modal
+                            scansioniModal.show();
+                        });
+                    });
+
+                    // Gestione Invio Nuova Scansione
+                    addScansioneForm.addEventListener('submit', async function (e) {
+                        e.preventDefault();
+
+                        const payload = {
+                            lotto_id: scanLottoIdInput.value,
+                            impianto: scanImpiantoSelect.value,
+                            operatore: scanOperatoreSelect.value
+                        };
+
+                        try {
+                            const response = await fetch('/amministrazione/gestione_lotti/aggiungi_scansione', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(payload)
+                            });
+
+                            const result = await response.json();
+
+                            if (response.ok) {
+                                // Ricarica la pagina per aggiornare i dati e i contatori
+                                window.location.reload();
+                            } else {
+                                alert("Errore: " + (result.error || "Impossibile aggiungere la scansione"));
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            alert("Errore di comunicazione con il server.");
+                        }
+                    });
+                }
+
+                const toggleBtn = document.getElementById('btnToggle');
+                const formCollapse = document.getElementById('formRegistrazione');
+
+                if (toggleBtn && formCollapse) {
+                    formCollapse.addEventListener('show.bs.collapse', () => {
+                        toggleBtn.innerHTML = '<i class="bi bi-x-circle"></i> Annulla';
+                    });
+
+                    formCollapse.addEventListener('hide.bs.collapse', () => {
+                        toggleBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Aggiungi Lotto';
+                    });
+                }
+
+                const lottoInput = document.getElementById('lotto');
+                const forceLottoCheckbox = document.getElementById('forceLotto');
+                const tipologiaSelect = document.getElementById("tipologia");
+
+                // Gestione checkbox "Forza lotto"
+                forceLottoCheckbox.addEventListener('change', function () {
+                    if (this.checked) {
+                        lottoInput.readOnly = false;
+                        lottoInput.focus();
+                    } else {
+                        lottoInput.readOnly = true;
+                        // Se è selezionata una tipologia, ricalcola il lotto automaticamente
+                        const tipologia = tipologiaSelect.value;
+                        if (tipologia) {
+                            fetch(`/amministrazione/gestione_lotti/get_lotto?tipologia=${encodeURIComponent(tipologia)}`)
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.lotto) lottoInput.value = data.lotto;
+                                });
+                        } else {
+                            lottoInput.value = '';
+                        }
+                    }
+                });
+
+                // Cambio tipologia
+                tipologiaSelect.addEventListener("change", async function () {
+                    const tipologia = this.value;
+                    if (!tipologia) return;
+
+                    // Se la checkbox è spuntata, non sovrascrivere
+                    if (forceLottoCheckbox.checked) return;
+
+                    try {
+                        const response = await fetch(`/amministrazione/gestione_lotti/get_lotto?tipologia=${encodeURIComponent(tipologia)}`);
+                        const data = await response.json();
+                        if (data.lotto) {
+                            lottoInput.value = data.lotto;
+                        } else {
+                            alert(data.error || "Errore durante la generazione del lotto");
+                        }
+                    } catch (err) {
+                        console.error("Errore fetch lotto:", err);
+                        alert("Errore durante la generazione del lotto");
+                    }
+                });
+
+            });
+        </script>
+
+        {% if request.args.get('stampare') %}
+        <script>
+            const lotto = "{{ request.args.get('stampare') }}";
+            // Apri l'etichetta in una nuova tab, usando il nuovo blueprint
+            window.open(`{{ url_for('.etichetta') }}?id_lotto=${lotto}`, '_blank');
+
+            // Rimuovi il parametro "stampare" dall'URL e apri il form di registrazione per mostrare il messaggio flash
+            const formRegistrazione = new bootstrap.Collapse(document.getElementById('formRegistrazione'));
+            formRegistrazione.show();
+
+            // Rimuovi il parametro "stampare" dall'URL senza ricaricare la pagina
+            const url = new URL(window.location.href);
+            url.searchParams.delete('stampare');
+            window.history.replaceState(null, '', url.toString());
+        </script>
+        {% endif %}
+
+        {% endblock %}

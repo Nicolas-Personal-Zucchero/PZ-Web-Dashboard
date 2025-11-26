@@ -3,92 +3,92 @@
 {% block title %}Visualizza Impianti{% endblock %}
 
 {% block content %}
-    <div class="p-4">
-        <a href="javascript:history.back()" class="btn btn-light mb-3">
-            <i class="bi bi-arrow-left"></i> Torna indietro
-        </a>
-        <h1>Visualizza Impianti</h1>
+<div class="p-4">
+    <a href="{{ home_link }}" class="btn btn-light mb-3">
+        <i class="bi bi-arrow-left"></i> Torna indietro
+    </a>
+    <h1>Visualizza Impianti</h1>
 
-        <div style="max-height: 500px; overflow-y: auto;">
-            <ul class="list-group styled-table" id="impiantiList">
-                <!-- Header -->
-                <li class="list-group-item static-header">
-                    <div class="row">
-                        <div class="col-md-3">Nome</div>
-                        <div class="col-md-2">Lotto attuale</div>
-                        <div class="col-md-3">Data caricamento</div>
-                        <div class="col-md-2">Operatore</div>
-                        <div class="col-md-2"></div>
-                    </div>
-                </li>
+    <div style="max-height: 500px; overflow-y: auto;">
+        <ul class="list-group styled-table" id="impiantiList">
+            <!-- Header -->
+            <li class="list-group-item static-header">
+                <div class="row">
+                    <div class="col-md-3">Nome</div>
+                    <div class="col-md-2">Lotto attuale</div>
+                    <div class="col-md-3">Data caricamento</div>
+                    <div class="col-md-2">Operatore</div>
+                    <div class="col-md-2"></div>
+                </div>
+            </li>
 
-                <!-- Entries -->
-                {% for impianto, scansioni in impianti.items() %}
-                <li class="list-group-item">
-                    <div class="row">
-                        <div class="col-md-3">{{ impianto }}</div>
-                        <div class="col-md-2">{{ scansioni[0].lotto }}</div>
-                        <div class="col-md-3">{{ scansioni[0].date }}</div>
-                        <div class="col-md-2">{{ scansioni[0].operatore }}</div>
-                        <div class="col-md-2">
-                            <button class="btn btn-sm btn-primary view-scansioni-btn"
-                                    data-scansioni='{{ scansioni | tojson | safe }}'>
-                                Visualizza storico
-                            </button>
-                        </div>
+            <!-- Entries -->
+            {% for impianto, scansioni in impianti.items() %}
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-md-3">{{ impianto }}</div>
+                    <div class="col-md-2">{{ scansioni[0].lotto }}</div>
+                    <div class="col-md-3">{{ scansioni[0].date }}</div>
+                    <div class="col-md-2">{{ scansioni[0].operatore }}</div>
+                    <div class="col-md-2">
+                        <button class="btn btn-sm btn-primary view-scansioni-btn"
+                            data-scansioni='{{ scansioni | tojson | safe }}'>
+                            Visualizza storico
+                        </button>
                     </div>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
 
-        <!-- Modal per le scansioni -->
-        <div class="modal fade" id="scansioniModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Scansioni Etichette</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <table class="table table-striped" id="scansioniTable">
-                            <thead>
+    <!-- Modal per le scansioni -->
+    <div class="modal fade" id="scansioniModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Scansioni Etichette</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-striped" id="scansioniTable">
+                        <thead>
                             <tr>
                                 <th>Data</th>
                                 <th>Lotto</th>
                                 <th>Operatore</th>
                             </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                    <!-- <div class="modal-footer">
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <!-- <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
                     </div> -->
-                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const scansioniModal = new bootstrap.Modal(document.getElementById('scansioniModal'));
-            const scansioniTableBody = document.querySelector('#scansioniTable tbody');
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const scansioniModal = new bootstrap.Modal(document.getElementById('scansioniModal'));
+        const scansioniTableBody = document.querySelector('#scansioniTable tbody');
 
-            document.querySelectorAll('.view-scansioni-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const scansioni = JSON.parse(this.dataset.scansioni);
+        document.querySelectorAll('.view-scansioni-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const scansioni = JSON.parse(this.dataset.scansioni);
 
-                    scansioniTableBody.innerHTML = '';
-                    scansioni.forEach(s => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `<td>${s.date}</td><td>${s.lotto}</td><td>${s.operatore}</td>`;
-                        scansioniTableBody.appendChild(row);
-                    });
-
-                    scansioniModal.show();
+                scansioniTableBody.innerHTML = '';
+                scansioni.forEach(s => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${s.date}</td><td>${s.lotto}</td><td>${s.operatore}</td>`;
+                    scansioniTableBody.appendChild(row);
                 });
+
+                scansioniModal.show();
             });
         });
-    </script>
+    });
+</script>
 {% endblock %}

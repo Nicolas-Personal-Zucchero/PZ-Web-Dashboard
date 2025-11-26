@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="p-4">
-    <a href="javascript:history.back()" class="btn btn-light mb-3">
+    <a href="{{ home_link }}" class="btn btn-light mb-3">
         <i class="bi bi-arrow-left"></i> Torna indietro
     </a>
     <h1>Invia una mail automatica ai clienti richiedendo una recensione</h1>
@@ -51,9 +51,9 @@
     </form>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
-        {% endfor %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+    {% endfor %}
     {% endwith %}
 
     {% if reviews %}
@@ -104,7 +104,8 @@
                         {{ r.formatted_time }}
                     </div>
                     <div class="col-md-1 text-end">
-                        <form method="POST" action="/recensioni/elimina" onsubmit="return confirm('Sei sicuro di voler eliminare la registrazione dell\'invio da questo utente? Questa operazione permetterà di inviargli nuovamente la richiesta di recensione');">
+                        <form method="POST" action="/recensioni/elimina"
+                            onsubmit="return confirm('Sei sicuro di voler eliminare la registrazione dell\'invio da questo utente? Questa operazione permetterà di inviargli nuovamente la richiesta di recensione');">
                             <input type="hidden" name="id" value="{{ r.id }}">
                             <button type="submit" class="btn btn-danger btn-sm">Elimina</button>
                         </form>
@@ -118,49 +119,49 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    // === Gestione LocalStorage Mittente ===
-    const selectMittente = document.getElementById("nome_mittente");
-    const savedMittente = localStorage.getItem("mittente");
+    document.addEventListener("DOMContentLoaded", function () {
+        // === Gestione LocalStorage Mittente ===
+        const selectMittente = document.getElementById("nome_mittente");
+        const savedMittente = localStorage.getItem("mittente");
 
-    if (savedMittente && selectMittente) {
-        selectMittente.value = savedMittente;
-    }
+        if (savedMittente && selectMittente) {
+            selectMittente.value = savedMittente;
+        }
 
-    if (selectMittente) {
-        selectMittente.addEventListener("change", function () {
-            localStorage.setItem("mittente", selectMittente.value);
-        });
-    }
+        if (selectMittente) {
+            selectMittente.addEventListener("change", function () {
+                localStorage.setItem("mittente", selectMittente.value);
+            });
+        }
 
-    // === Logica Visualizzazione/Filtro Recensioni (Simile a gestione-lotti) ===
-    const searchInput = document.getElementById('searchInput');
-    const mittenteFilter = document.getElementById('mittenteFilter');
-    const items = document.querySelectorAll('#emailList .list-group-item');
+        // === Logica Visualizzazione/Filtro Recensioni (Simile a gestione-lotti) ===
+        const searchInput = document.getElementById('searchInput');
+        const mittenteFilter = document.getElementById('mittenteFilter');
+        const items = document.querySelectorAll('#emailList .list-group-item');
 
-    function filterReviews() {
-        const searchText = searchInput ? searchInput.value.toLowerCase() : '';
-        const mittente = mittenteFilter ? mittenteFilter.value.toLowerCase() : '';
+        function filterReviews() {
+            const searchText = searchInput ? searchInput.value.toLowerCase() : '';
+            const mittente = mittenteFilter ? mittenteFilter.value.toLowerCase() : '';
 
-        items.forEach(item => {
-            if (item.classList.contains('static-header')) return;
+            items.forEach(item => {
+                if (item.classList.contains('static-header')) return;
 
-            // Recupera i valori dal DOM
-            const cliente = item.querySelector('.col-md-2 strong')?.textContent.toLowerCase() || '';
-            const email = item.querySelector('.col-md-4')?.textContent.toLowerCase() || '';
-            const itemMittente = item.querySelector('.js-mittente')?.textContent.toLowerCase() || '';
+                // Recupera i valori dal DOM
+                const cliente = item.querySelector('.col-md-2 strong')?.textContent.toLowerCase() || '';
+                const email = item.querySelector('.col-md-4')?.textContent.toLowerCase() || '';
+                const itemMittente = item.querySelector('.js-mittente')?.textContent.toLowerCase() || '';
 
-            const match = 
-                (cliente.includes(searchText) || email.includes(searchText)) &&
-                (mittente === '' || itemMittente.includes(mittente));
+                const match =
+                    (cliente.includes(searchText) || email.includes(searchText)) &&
+                    (mittente === '' || itemMittente.includes(mittente));
 
-            item.style.display = match ? '' : 'none';
-            console.log({cliente, email, itemMittente, match})
-        });
-    }
+                item.style.display = match ? '' : 'none';
+                console.log({ cliente, email, itemMittente, match })
+            });
+        }
 
-    if (searchInput) searchInput.addEventListener('input', filterReviews);
-    if (mittenteFilter) mittenteFilter.addEventListener('change', filterReviews);
-});
+        if (searchInput) searchInput.addEventListener('input', filterReviews);
+        if (mittenteFilter) mittenteFilter.addEventListener('change', filterReviews);
+    });
 </script>
 {% endblock %}

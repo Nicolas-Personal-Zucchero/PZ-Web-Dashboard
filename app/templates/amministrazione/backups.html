@@ -4,10 +4,10 @@
 
 {% block content %}
 <div class="p-4">
-    <a href="javascript:history.back()" class="btn btn-light mb-3">
+    <a href="{{ home_link }}" class="btn btn-light mb-3">
         <i class="bi bi-arrow-left"></i> Torna indietro
     </a>
-    <h1 >Download Backup</h1>
+    <h1>Download Backup</h1>
 
     <div class="mb-3">
         <a href="{{ url_for('amministrazione.backup.download_all_backups') }}" class="btn btn-success">
@@ -16,18 +16,19 @@
     </div>
 
     {% if folders %}
-        <ul class="list-group">
-            {% for folder in folders %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <strong>{{ folder }}</strong>
-                    <a href="{{ url_for('amministrazione.backup.download_single_backup', folder=folder) }}" class="btn btn-sm btn-primary">
-                        <i class="bi bi-folder-symlink me-1"></i>Scarica questa cartella
-                    </a>
-                </li>
-            {% endfor %}
-        </ul>
+    <ul class="list-group">
+        {% for folder in folders %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <strong>{{ folder }}</strong>
+            <a href="{{ url_for('amministrazione.backup.download_single_backup', folder=folder) }}"
+                class="btn btn-sm btn-primary">
+                <i class="bi bi-folder-symlink me-1"></i>Scarica questa cartella
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
     {% else %}
-        <div class="alert alert-info mt-3">Nessuna cartella di backup trovata.</div>
+    <div class="alert alert-info mt-3">Nessuna cartella di backup trovata.</div>
     {% endif %}
 
 </div>

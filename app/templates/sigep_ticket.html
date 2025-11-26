@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Gestione Biglietti Sigep{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <a href="{{ home_link }}" class="btn btn-light mb-3">
+        <i class="bi bi-arrow-left"></i> Torna indietro
+    </a>
+    <h1>Gestione Biglietti Sigep</h1>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <!-- Available Tickets Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Biglietti Disponibili</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ available_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-ticket-perforated-fill fa-2x text-gray-300" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Send Tickets Section -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">Invia Biglietti</h6>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('sigep_ticket.send_tickets') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Cliente</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nome Cliente</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="count" class="form-label">Numero Biglietti</label>
+                                <input type="number" class="form-control" id="count" name="count" min="1" value="1"
+                                    required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="language" class="form-label">Lingua Email</label>
+                                <select class="form-select" id="language" name="language">
+                                    <option value="ita" selected>Italiano 🇮🇹</option>
+                                    <option value="eng">Inglese 🇬🇧</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-send-fill me-2"></i>Invia Biglietti
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ticket Management Section (Upload + Delete) -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Gestione Database Biglietti</h6>
+                </div>
+                <div class="card-body">
+                    <h6 class="font-weight-bold">Carica Nuovi Biglietti</h6>
+                    <form action="{{ url_for('sigep_ticket.upload') }}" method="POST" enctype="multipart/form-data"
+                        class="mb-4">
+                        <div class="mb-3">
+                            <label for="file" class="form-label">File CSV</label>
+                            <input class="form-control" type="file" id="file" name="file" accept=".csv" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="column_name" class="form-label">Nome Colonna Codice</label>
+                            <input type="text" class="form-control" id="column_name" name="column_name"
+                                placeholder="Es: code" required>
+                            <div class="form-text">Inserisci il nome esatto dell'intestazione della colonna che contiene
+                                i codici.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-upload me-2"></i>Carica Nuovi Biglietti
+                        </button>
+                    </form>
+
+                    <hr>
+
+                    <h6 class="font-weight-bold text-danger">Zona Pericolo</h6>
+                    <p class="small text-muted">Questa azione eliminerà <strong>tutti</strong> i biglietti presenti nel
+                        database (assegnati e non). L'azione è irreversibile.</p>
+                    <form action="{{ url_for('sigep_ticket.clear_collection') }}" method="POST"
+                        onsubmit="return confirm('Sei sicuro di voler eliminare TUTTI i biglietti? Questa azione non può essere annullata.');">
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="bi bi-trash-fill me-2"></i>Svuota Collezione Biglietti
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assigned Tickets Table -->
+    {% if assigned_list %}
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Biglietti Assegnati</h6>
+                </div>
+                <div class="card-body">
+                    <div style="max-height: 500px; overflow-y: auto;">
+                        <ul class="list-group styled-table">
+                            <li class="list-group-item static-header bg-light">
+                                <div class="row font-weight-bold">
+                                    <div class="col-md-10">Email</div>
+                                    <div class="col-md-2 text-center">Biglietti</div>
+                                </div>
+                            </li>
+
+                            {% for item in assigned_list %}
+                            <li class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col-md-10">
+                                        {{ item.email }}
+                                    </div>
+                                    <div class="col-md-2 text-center">
+                                        <button class="btn badge bg-primary rounded-pill ticket-count-btn border-0"
+                                            data-codes="{{ item.codes|join(',') }}" data-name="{{ item.name }}"
+                                            style="cursor: pointer;">
+                                            {{ item.count }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Ticket Codes Modal -->
+<div class="modal fade" id="ticketCodesModal" tabindex="-1" aria-labelledby="ticketCodesModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ticketCodesModalLabel">Codici Biglietti</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Biglietti assegnati a <strong id="modalUserName"></strong>:</p>
+                <div class="list-group" id="modalCodesList">
+                    <!-- Codes will be populated here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const buttons = document.querySelectorAll('.ticket-count-btn');
+        const modalElement = document.getElementById('ticketCodesModal');
+        const modal = new bootstrap.Modal(modalElement);
+        const modalUserName = document.getElementById('modalUserName');
+        const modalCodesList = document.getElementById('modalCodesList');
+
+        buttons.forEach(button => {
+            button.addEventListener('click', function () {
+                const name = this.getAttribute('data-name');
+                const codesString = this.getAttribute('data-codes');
+                const codes = codesString ? codesString.split(',') : [];
+
+                modalUserName.textContent = name;
+                modalCodesList.innerHTML = '';
+
+                if (codes.length > 0) {
+                    codes.forEach(code => {
+                        const item = document.createElement('div');
+                        item.className = 'list-group-item list-group-item-action text-center font-monospace';
+                        item.textContent = code;
+                        modalCodesList.appendChild(item);
+                    });
+                } else {
+                    const item = document.createElement('div');
+                    item.className = 'list-group-item text-center text-muted';
+                    item.textContent = 'Nessun codice disponibile';
+                    modalCodesList.appendChild(item);
+                }
+
+                modal.show();
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -5,40 +5,65 @@ from firebase_admin import firestore
 from utils.firebase_client import db
 from config.secrets_manager import secrets_manager
 from config.mail_config import EMAIL_TEMPLATES
-import random
+
 
 sigep_ticket_bp = Blueprint("sigep_ticket", __name__, url_prefix="/sigep-ticket")
 tickets_collection = db.collection("sigep_tickets")
 
 @sigep_ticket_bp.route("/", methods=["GET"])
 def index():
-    # Count available tickets
-    # Note: For large collections, aggregation queries are better, but for this scale stream/len is okay or count() if available
-    # Using count() aggregation if supported by the SDK version, otherwise stream
-    
-    try:
-        aggregate_query = tickets_collection.where("assigned", "==", False).count()
-        results = aggregate_query.get()
-        available_count = int(results[0][0].value)
-    except Exception:
-        # Fallback if count() is not available or fails
-        docs = tickets_collection.where("assigned", "==", False).stream()
-        available_count = len(list(docs))
+    # --- OTTIMIZZAZIONE 1: Count ---
+    # Usiamo direttamente count(). Se fallisce, è meglio ricevere un errore 
+    # piuttosto che mandare in crash la RAM caricando migliaia di documenti in una lista.
+    available_query = tickets_collection.where("assigned", "==", False).count()
+    available_results = available_query.get()
+    available_count = int(available_results[0][0].value)
 
-    return render_template("/wip/sigep_ticket.html", available_count=available_count)
+    # --- OTTIMIZZAZIONE 2: Projection ---
+    # Scarichiamo SOLO i campi che ci servono.
+    assigned_docs = tickets_collection.where("assigned", "==", True)\
+                                      .select(["assigned_to", "code"])\
+                                      .stream()
+    
+    assigned_map = {}
+
+    for doc in assigned_docs:
+        data = doc.to_dict()
+        email = data.get("assigned_to")
+        
+        # Saltiamo record senza email
+        if not email:
+            continue
+
+        # Logica semplificata
+        if email not in assigned_map:
+            assigned_map[email] = {
+                "email": email,
+                "count": 0,
+                "codes": []
+            }
+        
+        assigned_map[email]["count"] += 1
+        if data.get("code"):
+            assigned_map[email]["codes"].append(data.get("code"))
+
+    # Ordinamento
+    assigned_list = sorted(assigned_map.values(), key=lambda x: x["count"], reverse=True)
+
+    return render_template("/sigep_ticket.html", available_count=available_count, assigned_list=assigned_list)
 
 @sigep_ticket_bp.route("/upload", methods=["POST"])
 def upload():
     if "file" not in request.files:
         flash("Nessun file caricato", "danger")
-        return redirect("/wip/sigep-ticket")
+        return redirect("/sigep-ticket")
     
     file = request.files["file"]
     column_name = request.form.get("column_name", "").strip()
 
     if not file or not column_name:
         flash("File o nome colonna mancanti", "danger")
-        return redirect("/wip/sigep-ticket")
+        return redirect("/sigep-ticket")
 
     try:
         file_content = file.stream.read().decode("UTF8")
@@ -54,7 +79,7 @@ def upload():
         
         if column_name not in csv_input.fieldnames:
             flash(f"Colonna '{column_name}' non trovata nel CSV", "danger")
-            return redirect("/wip/sigep-ticket")
+            return redirect("/sigep-ticket")
 
         batch = db.batch()
         count = 0
@@ -80,7 +105,7 @@ def upload():
     except Exception as e:
         flash(f"Errore durante il caricamento: {str(e)}", "danger")
 
-    return redirect("/wip/sigep-ticket")
+    return redirect("/sigep-ticket")
 
 @sigep_ticket_bp.route("/send", methods=["POST"])
 def send_tickets():
@@ -94,13 +119,13 @@ def send_tickets():
 
     if not email or not name or count <= 0:
         flash("Dati mancanti o non validi", "danger")
-        return redirect("/wip/sigep-ticket")
+        return redirect("/sigep-ticket")
 
-    # Transaction to get random tickets
+    # Transaction to get tickets
     transaction = db.transaction()
     
     try:
-        assigned_codes = assign_tickets_transaction(transaction, count, email, name)
+        assigned_codes = assign_tickets_transaction(transaction, count, email)
         
         # Send email
         mailer = secrets_manager.get_mailer()
@@ -124,15 +149,13 @@ def send_tickets():
     except Exception as e:
         flash(f"Errore durante l'invio: {str(e)}", "danger")
 
-    return redirect("/wip/sigep-ticket")
+    return redirect("/sigep-ticket")
 
 @firestore.transactional
-def assign_tickets_transaction(transaction, count, email, name):
+def assign_tickets_transaction(transaction, count, email):
     # Query for unassigned tickets
-    # Note: Getting random documents efficiently in Firestore is hard.
-    # We will query for 'count' unassigned tickets. Ideally we should randomize, 
-    # but for this use case, taking the first 'count' available is acceptable 
-    # as they are all identical in value.
+    # Query for 'count' unassigned tickets.
+    # We take the first 'count' available tickets.
     
     query = tickets_collection.where("assigned", "==", False).limit(count)
     stream = query.stream(transaction=transaction)
@@ -145,8 +168,7 @@ def assign_tickets_transaction(transaction, count, email, name):
     for doc in docs:
         transaction.update(doc.reference, {
             "assigned": True,
-            "assigned_to_email": email,
-            "assigned_to_name": name,
+            "assigned_to": email,
             "assigned_at": firestore.SERVER_TIMESTAMP
         })
         codes.append(doc.get("code"))
@@ -180,4 +202,4 @@ def clear_collection():
     except Exception as e:
         flash(f"Errore durante la cancellazione: {str(e)}", "danger")
 
-    return redirect("/wip/sigep-ticket")
+    return redirect("/sigep-ticket")

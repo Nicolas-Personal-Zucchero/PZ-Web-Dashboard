@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Personal Zucchero{% endblock %}</title>
@@ -8,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <style>
         :root {
             --sidebar-width: 230px;
@@ -35,8 +36,10 @@
 
         .sidebar .nav-link span {
             transition: opacity 0.2s ease;
-            white-space: normal; /* consente il wrapping */
-            word-break: break-word; /* spezza parole troppo lunghe */
+            white-space: normal;
+            /* consente il wrapping */
+            word-break: break-word;
+            /* spezza parole troppo lunghe */
         }
 
         /* Link stile */
@@ -68,13 +71,17 @@
 
         /* Effetto hover generico per tutti i pulsanti */
         .btn {
-            transition: all 0.2s ease; /* animazione fluida */
+            transition: all 0.2s ease;
+            /* animazione fluida */
         }
 
         .btn:hover {
-            transform: translateY(-2px); /* leggero sollevamento */
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2); /* ombra */
-            filter: brightness(1.15); /* schiarisce leggermente il colore */
+            transform: translateY(-2px);
+            /* leggero sollevamento */
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+            /* ombra */
+            filter: brightness(1.15);
+            /* schiarisce leggermente il colore */
         }
 
         /* Tabelle */
@@ -88,7 +95,8 @@
         }
 
         .list-group.styled-table li.list-group-item:nth-child(odd):not(.static-header) {
-            background-color: #f8f9fa; /* righe alternate */
+            background-color: #f8f9fa;
+            /* righe alternate */
         }
 
         .list-group.styled-table li.list-group-item:nth-child(even):not(.static-header) {
@@ -98,11 +106,11 @@
         .list-group.styled-table li.list-group-item:not(.static-header):hover {
             background-color: #e9ecef;
         }
-
     </style>
 
     {% block styles %}{% endblock %}
 </head>
+
 <body>
 
     <div class="sidebar d-flex flex-column" id="sidebar">
@@ -114,17 +122,17 @@
 
         <ul class="nav nav-pills flex-column px-2 gap-1">
             {% for group in linkGroups %}
-                <li class="nav-item mt-2">
-                    <span class="text-muted small px-3">{{ group.title }}</span>
-                </li>
-                {% for link in group.links %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == link.url %}active{% endif %}" href="{{ link.url }}">
-                            <i class="{{ link.icon }}"></i>
-                            <span>{{ link.name }}</span>
-                        </a>
-                    </li>
-                {% endfor %}
+            <li class="nav-item mt-2">
+                <span class="text-muted small px-3">{{ group.title }}</span>
+            </li>
+            {% for link in group.links %}
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == link.url %}active{% endif %}" href="{{ link.url }}">
+                    <i class="{{ link.icon }}"></i>
+                    <span>{{ link.name }}</span>
+                </a>
+            </li>
+            {% endfor %}
             {% endfor %}
         </ul>
     </div>
@@ -135,4 +143,5 @@
     </div>
 
 </body>
+
 </html>

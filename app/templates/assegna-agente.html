@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="p-4">
-    <a href="javascript:history.back()" class="btn btn-light mb-3">
+    <a href="{{ home_link }}" class="btn btn-light mb-3">
         <i class="bi bi-arrow-left"></i> Torna indietro
     </a>
     <h1>Assegnamento contatto ad agente</h1>
@@ -55,7 +55,8 @@ Dopo aver cliccato sul pulsante:
                             </select>
                         </div>
                         <div class="mb-3">
-                            <textarea class="form-control" rows="3" name="note_agente" id="note_agente" placeholder="Note per l'agente"></textarea>
+                            <textarea class="form-control" rows="3" name="note_agente" id="note_agente"
+                                placeholder="Note per l'agente"></textarea>
                         </div>
                     </div>
                 </div>
@@ -67,7 +68,7 @@ Dopo aver cliccato sul pulsante:
                         <div class="row mb-3">
                             <div class="col col-md-6">
                                 <label for="email" class="form-label">Email del cliente*</label>
-                                <input type="email" class="form-control" name="email" id="email"required>
+                                <input type="email" class="form-control" name="email" id="email" required>
                             </div>
                             <div class="col col-md-4">
                                 <label for="fonte" class="form-label">Fonte*</label>
@@ -80,7 +81,8 @@ Dopo aver cliccato sul pulsante:
                             </div>
                             <div class="col col-md-2">
                                 <label for="lingua_email" class="form-label">Lingua cliente*</label>
-                                <select class="form-select" id="lingua_email" name="lingua_email" id="selectLingua" required>
+                                <select class="form-select" id="lingua_email" name="lingua_email" id="selectLingua"
+                                    required>
                                     <option value="ITA" selected>Italiano</option>
                                     <option value="ENG">Inglese</option>
                                 </select>
@@ -174,9 +176,9 @@ Dopo aver cliccato sul pulsante:
     </form>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
-        {% endfor %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+    {% endfor %}
     {% endwith %}
 
     <hr>
@@ -204,22 +206,17 @@ Dopo aver cliccato sul pulsante:
                     <div class="col-md-2">{{ a.mobilephone or '' }}</div>
                     <div class="col-md-1"></div>
                     <div class="col-md-1 text-end">
-                        <button type="button"
-                                class="btn btn-sm btn-info"
-                                data-bs-toggle="modal"
-                                data-bs-target="#contactsModal"
-                                data-agent="{{ a.id }}"
-                                data-contacts='{{ a.associated_contacts|tojson }}'
-                                {% if a.associated_contacts|length == 0 %}disabled{% endif %}>
+                        <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal"
+                            data-bs-target="#contactsModal" data-agent="{{ a.id }}"
+                            data-contacts='{{ a.associated_contacts|tojson }}' {% if a.associated_contacts|length==0
+                            %}disabled{% endif %}>
                             {{ a.associated_contacts|length }} contatti
                         </button>
                     </div>
                     <div class="col-md-1 text-end">
-                        <a href="https://app-eu1.hubspot.com/contacts/25378285/record/0-1/{{ a.id }}"
-                        target="_blank"
-                        class="btn btn-sm"
-                        style="background-color: #FF7A59; border-color: #FF7A59; color: white;"
-                        title="Apri in HubSpot">
+                        <a href="https://app-eu1.hubspot.com/contacts/25378285/record/0-1/{{ a.id }}" target="_blank"
+                            class="btn btn-sm" style="background-color: #FF7A59; border-color: #FF7A59; color: white;"
+                            title="Apri in HubSpot">
                             <i class="bi bi-box-arrow-up-right"></i> HubSpot
                         </a>
                     </div>
@@ -233,53 +230,55 @@ Dopo aver cliccato sul pulsante:
 
 <!-- Modale per i contatti -->
 <div class="modal fade" id="contactsModal" tabindex="-1" aria-labelledby="contactsModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="contactsModalLabel">Contatti associati</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
-      </div>
-      <div class="modal-body">
-        <ul class="list-group styled-table">
-            <li class="list-group-item static-header">
-                <div class="row">
-                    <div class="col-md-3">Nome</div>
-                    <div class="col-md-3">Email</div>
-                    <div class="col-md-3">Operatore</div>
-                    <div class="col-md-2">Assegnato il</div>
-                    <div class="col-md-1"></div>
-                </div>
-            </li>
-            <div id="contactsList"></div>
-        </ul>
-      </div>
-      <!-- <div class="modal-footer">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contactsModalLabel">Contatti associati</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group styled-table">
+                    <li class="list-group-item static-header">
+                        <div class="row">
+                            <div class="col-md-3">Nome</div>
+                            <div class="col-md-3">Email</div>
+                            <div class="col-md-3">Operatore</div>
+                            <div class="col-md-2">Assegnato il</div>
+                            <div class="col-md-1"></div>
+                        </div>
+                    </li>
+                    <div id="contactsList"></div>
+                </ul>
+            </div>
+            <!-- <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
       </div> -->
+        </div>
     </div>
-  </div>
 </div>
 
 <style>
     .form-control.filled,
     .form-select.filled {
-        border-color: #198754; /* verde per evidenziare */
-        background-color: #e6f4ea; /* leggero sfondo verde */
+        border-color: #198754;
+        /* verde per evidenziare */
+        background-color: #e6f4ea;
+        /* leggero sfondo verde */
     }
 
     /* Campi obbligatori vuoti */
     .form-control:required:invalid,
     .form-select:required:invalid {
-        border-color: #dc3545 !important; /* rosso bootstrap */
+        border-color: #dc3545 !important;
+        /* rosso bootstrap */
         background-color: #fff5f5;
     }
-
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const contactsModal = document.getElementById('contactsModal');
-        contactsModal.addEventListener('show.bs.modal', function(event) {
+        contactsModal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget; // bottone cliccato
             const agentName = button.closest('li').querySelector('strong').innerText;
             const contacts = JSON.parse(button.getAttribute('data-contacts'));
@@ -356,7 +355,7 @@ Dopo aver cliccato sul pulsante:
     // Funzione debounce
     function debounce(fn, delay) {
         let timeoutId;
-        return function(...args) {
+        return function (...args) {
             clearTimeout(timeoutId);
             timeoutId = setTimeout(() => fn.apply(this, args), delay);
         };

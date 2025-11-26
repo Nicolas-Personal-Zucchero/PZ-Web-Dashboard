@@ -27,16 +27,16 @@
                     <!-- MANUTENZIONE -->
                     <p><strong>Manutenzione:</strong> ogni {{ asset.intervallo_manutenzione }} giorni</p>
                     {% if giorni_dalla_manutenzione is not none %}
-                        {% if giorni_ritardo_manutenzione %}
-                            <p class="text-danger fw-semibold">
-                                ⚠️ Ultima: {{ giorni_dalla_manutenzione }} giorni fa  
-                                (RITARDO di {{ giorni_ritardo_manutenzione }} giorni)
-                            </p>
-                        {% else %}
-                            <p class="text-muted small">Ultima: {{ giorni_dalla_manutenzione }} giorni fa</p>
-                        {% endif %}
+                    {% if giorni_ritardo_manutenzione %}
+                    <p class="text-danger fw-semibold">
+                        ⚠️ Ultima: {{ giorni_dalla_manutenzione }} giorni fa
+                        (RITARDO di {{ giorni_ritardo_manutenzione }} giorni)
+                    </p>
                     {% else %}
-                        <p class="text-muted small">Nessuna manutenzione registrata</p>
+                    <p class="text-muted small">Ultima: {{ giorni_dalla_manutenzione }} giorni fa</p>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-muted small">Nessuna manutenzione registrata</p>
                     {% endif %}
 
                     <hr>
@@ -44,16 +44,16 @@
                     <!-- PULIZIA -->
                     <p><strong>Pulizia:</strong> ogni {{ asset.intervallo_pulizia }} giorni</p>
                     {% if giorni_dalla_pulizia is not none %}
-                        {% if giorni_ritardo_pulizia %}
-                            <p class="text-danger fw-semibold">
-                                ⚠️ Ultima: {{ giorni_dalla_pulizia }} giorni fa  
-                                (RITARDO di {{ giorni_ritardo_pulizia }} giorni)
-                            </p>
-                        {% else %}
-                            <p class="text-muted small">Ultima: {{ giorni_dalla_pulizia }} giorni fa</p>
-                        {% endif %}
+                    {% if giorni_ritardo_pulizia %}
+                    <p class="text-danger fw-semibold">
+                        ⚠️ Ultima: {{ giorni_dalla_pulizia }} giorni fa
+                        (RITARDO di {{ giorni_ritardo_pulizia }} giorni)
+                    </p>
                     {% else %}
-                        <p class="text-muted small">Nessuna pulizia registrata</p>
+                    <p class="text-muted small">Ultima: {{ giorni_dalla_pulizia }} giorni fa</p>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-muted small">Nessuna pulizia registrata</p>
                     {% endif %}
                 </div>
             </div>
@@ -127,48 +127,49 @@
 
 <!-- Modal Intervento -->
 <div class="modal fade" id="modalIntervento" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="POST" action="/amministrazione/asset/{{ asset.id }}/add_intervento">
-        <div class="modal-header">
-          <h5 class="modal-title">Registra Intervento</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="/amministrazione/asset/{{ asset.id }}/add_intervento">
+                <div class="modal-header">
+                    <h5 class="modal-title">Registra Intervento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">Tipo Intervento</label>
+                        <select class="form-select" name="tipo" required>
+                            <option value="manutenzione">Manutenzione</option>
+                            <option value="pulizia">Pulizia</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Data</label>
+                        <input type="date" class="form-control" name="data" id="data"
+                            value="{{ datetime.now().strftime('%Y-%m-%d') }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Operatore</label>
+                        <input type="text" class="form-control" name="operatore" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Note</label>
+                        <textarea class="form-control" name="note"></textarea>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Salva</button>
+                </div>
+
+            </form>
         </div>
-
-        <div class="modal-body">
-
-          <div class="mb-3">
-            <label class="form-label">Tipo Intervento</label>
-            <select class="form-select" name="tipo" required>
-              <option value="manutenzione">Manutenzione</option>
-              <option value="pulizia">Pulizia</option>
-            </select>
-          </div>
-
-            <div class="mb-3">
-                <label class="form-label">Data</label>
-                <input type="date" class="form-control" name="data" id="data" value="{{ datetime.now().strftime('%Y-%m-%d') }}" required>
-            </div>
-
-          <div class="mb-3">
-            <label class="form-label">Operatore</label>
-            <input type="text" class="form-control" name="operatore" required>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Note</label>
-            <textarea class="form-control" name="note"></textarea>
-          </div>
-          
-        </div>
-
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Salva</button>
-        </div>
-
-      </form>
     </div>
-  </div>
 </div>
 
 {% endblock %}

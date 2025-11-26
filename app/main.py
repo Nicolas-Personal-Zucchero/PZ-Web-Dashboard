@@ -13,7 +13,7 @@ from routes.amministrazione.visualizza_impianti import visualizza_impianti_bp
 from routes.amministrazione import amministrazione_bp
 from routes.amministrazione.backups import backups_bp
 from routes.amministrazione.gestione_lotti import gestione_lotti_bp
-from routes.wip.sigep_ticket import sigep_ticket_bp
+from routes.sigep_ticket import sigep_ticket_bp
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"  # Serve per flash()
@@ -22,7 +22,7 @@ app.register_blueprint(home_bp)
 app.register_blueprint(recensioni_bp)
 app.register_blueprint(assegna_agente_bp)
 app.register_blueprint(agents_map_bp)
-
+app.register_blueprint(sigep_ticket_bp)
 
 amministrazione_bp.register_blueprint(gestione_lotti_bp)
 amministrazione_bp.register_blueprint(visualizza_impianti_bp)
@@ -30,7 +30,6 @@ amministrazione_bp.register_blueprint(backups_bp)
 amministrazione_bp.register_blueprint(asset_bp)
 app.register_blueprint(amministrazione_bp)
 
-wip_bp.register_blueprint(sigep_ticket_bp)
 app.register_blueprint(wip_bp)
 
 @app.context_processor
