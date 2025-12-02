@@ -6,6 +6,7 @@ from config.config import ITALY_TZ
 from config.secrets_manager import secrets_manager
 
 from utils.firebase_client import db
+from utils.utils import extract_logo_id, download_file_stream
 from firebase_admin import firestore
 
 assegna_agente_bp = Blueprint("assegna_agente", __name__, url_prefix="/assegna-agente")
@@ -17,6 +18,11 @@ def get_contact():
     hubspot = secrets_manager.get_hubspot()
     email = request.args.get("email")    
     contact, company = get_contact_and_its_company(hubspot, email or "")
+
+    if company and company["logo"]:
+        logo_id = extract_logo_id(company["logo"])
+        logo_info = hubspot.get_file_signed_url(logo_id)
+        company["logo"] = logo_info.get("url")
     return jsonify(
         contact=contact,
         company=company
@@ -65,7 +71,7 @@ def assegnaAgente():
         "categoria_mexal": get_field(form, "categoria_mexal"),
         "city": get_field(form, "citta"),
         "provincia": get_field(form, "provincia"),
-        "prodotto_di_interesse": get_field(form, "prodotto_di_interesse"),
+        "prodotto_di_interesse": get_field(form, "prodotto_di_interesse")
     }
     
     updated_contact, updated_company = upsert_contact_and_company(hubspot, contact_info, company_info)
@@ -80,7 +86,12 @@ def assegnaAgente():
     updated_contact["fonte"] = contact_source_options_by_value.get(updated_contact.get("fonte"), updated_contact.get("fonte"))
 
     if mailer:
-        send_agent_email(mailer, sender, agent, updated_contact, updated_company, agent_note)
+        logo_streams = []
+        if updated_company["logo"]:
+            logo_id = extract_logo_id(updated_company["logo"])
+            logo_info = hubspot.get_file_signed_url(logo_id)
+            logo_streams = [download_file_stream(logo_info, "logo")]
+        send_agent_email(mailer, sender, agent, updated_contact, updated_company, agent_note, logo_streams)
         send_contact_email(mailer, sender, lingua_email, updated_contact, agent)
     else:
         flash("Attenzione: Email non inviate (configurazione mailer mancante).", "warning")
@@ -190,7 +201,7 @@ def upsert_contact_and_company(hubspot, form_contact, form_company):
 
     return get_contact_and_its_company(hubspot, form_contact["email"])
 
-def send_agent_email(mailer, sender, agent, contact, company, note):
+def send_agent_email(mailer, sender, agent, contact, company, note, logo_streams=[]):
     mailer.invia_email_singola(
         destinatari=agent['email'],
         oggetto=EMAIL_TEMPLATES["agent_ita"]["object"],
@@ -212,9 +223,12 @@ def send_agent_email(mailer, sender, agent, contact, company, note):
 
             note_interne=note or "",
 
+            informazioni_logo= "<br>" if not company.get("logo") else ("<br>Trovi allegato il logo aziendale fornito dal cliente con le seguenti informazioni:<br>" + (company.get("informazioni_logo", "") or "") + "<br><br>"),
+
             mittente=sender
         ),
-        hubspot_ccn=True
+        hubspot_ccn=True,
+        allegati_stream=logo_streams
     )
 
     mailer.invia_email_singola(
@@ -238,9 +252,12 @@ def send_agent_email(mailer, sender, agent, contact, company, note):
 
             note_interne=note or "",
 
+            informazioni_logo= "<br>" if not company.get("logo") else ("<br>Trovi allegato il logo aziendale fornito dal cliente con le seguenti informazioni:<br>" + (company.get("informazioni_logo", "") or "") + "<br><br>"),
+
             mittente=sender
         ),
-        hubspot_ccn=False
+        hubspot_ccn=False,
+        allegati_stream=logo_streams
     )
 
 def send_contact_email(mailer, sender, language, contact, agent):
@@ -274,5 +291,5 @@ def create_deal_for_agent(hubspot, agent, contact):
 def get_contact_and_its_company(hubspot, email):
     contact = hubspot.getContactByEmail(email, hubspot._DEFAULT_CONTACT_PROPERTY_LIST)
     company_id = get_first_company_id(contact)
-    company = hubspot.getCompany(company_id, ["name", "partita_iva", "categoria_mexal", "city", "provincia", "prodotto_di_interesse"]) if company_id else None
+    company = hubspot.getCompany(company_id, ["name", "partita_iva", "categoria_mexal", "city", "provincia", "prodotto_di_interesse", "logo", "informazioni_logo"]) if company_id else None
     return contact, company

@@ -144,15 +144,15 @@ Dopo aver cliccato sul pulsante:
                         </div>
 
                         <div class="row mb-3">
-                            <div class="col-md-4">
+                            <div class="col-md-5">
                                 <label for="citta" class="form-label">Città</label>
                                 <input type="text" class="form-control" name="citta" id="citta">
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <label for="provincia" class="form-label">Provincia</label>
                                 <input type="text" class="form-control" name="provincia" id="provincia">
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="prodotto_di_interesse" class="form-label">Prodotto di interesse</label>
                                 <select class="form-select" name="prodotto_di_interesse" id="prodotto_di_interesse">
                                     <option value="" disabled selected></option>
@@ -165,6 +165,33 @@ Dopo aver cliccato sul pulsante:
                                     <option value="Caramelle">Caramelle</option>
                                     <option value="Bicchieri">Bicchieri</option>
                                 </select>
+                            </div>
+                        </div>
+                        <!-- <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="logo" class="form-label">Anteprima Logo</label>
+                                <div class="d-inline-block">
+                                    <img alt="Logo Aziendale" style="max-height: 150px; max-width: 200px;" id="logo">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="informazioni_logo" class="form-label">Informazioni Logo</label>
+                                <textarea class="form-control" rows="3" name="informazioni_logo" id="informazioni_logo"
+                                placeholder="Informazioni logo"></textarea>
+                            </div>
+                        </div> -->
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <div class="d-inline-block mt-2"> 
+                                    <img alt="Logo Aziendale" style="max-height: 150px; max-width: 100%;" id="logo">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-9">
+                                <label for="informazioni_logo" class="form-label">Informazioni Logo</label>
+                                <textarea class="form-control" rows="4" name="informazioni_logo" id="informazioni_logo" readonly></textarea>
                             </div>
                         </div>
                     </div>
@@ -381,13 +408,23 @@ Dopo aver cliccato sul pulsante:
                     categoria_mexal: data.company?.categoria_mexal,
                     citta: data.company?.city,
                     provincia: data.company?.provincia,
-                    prodotto_di_interesse: data.company?.prodotto_di_interesse
+                    prodotto_di_interesse: data.company?.prodotto_di_interesse,
+                    logo: data.company?.logo,
+                    informazioni_logo: data.company?.informazioni_logo
                 };
 
                 const updateFields = (fields) => {
                     for (const [id, value] of Object.entries(fields)) {
                         const el = document.getElementById(id);
-                        el.value = value || "";
+                        if (!el) continue;
+                        // Correzione: Gestisci l'elemento immagine con id="logo"
+                        if (id === "logo") {
+                            el.src = value || "";
+                            el.style.display = (value && value.trim() !== "") ? 'inline-block' : 'none'; // Opzionale: nascondi se non c'è URL
+                        }
+                        else {
+                            el.value = value || "";
+                        }
                         el.dispatchEvent(new Event('input'));
                         el.dispatchEvent(new Event('change'));
                     }
