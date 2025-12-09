@@ -114,7 +114,8 @@ def assign_tickets_transaction(transaction, count, email):
         transaction.update(doc.reference, {
             "assigned": True,
             "assigned_to": email,
-            "assigned_at": firestore.SERVER_TIMESTAMP
+            "assigned_at": firestore.SERVER_TIMESTAMP,
+            "assigned_with": "personalzucchero.local"
         })
         codes.append(doc.get("code"))
     

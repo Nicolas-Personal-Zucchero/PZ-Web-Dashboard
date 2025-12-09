@@ -281,7 +281,7 @@ def associate_contact_agent(hubspot, contact, agent):
 
 def create_deal_for_agent(hubspot, agent, contact, company):
     deal_id = hubspot.createAgentDeal({
-        "dealname": f"AC: {company.get('name', '')} {contact.get('lastname', '')} -> {agent.get('lastname', '')}",
+        "dealname": f"AC: {company.get('name', '') or ''} {contact.get('lastname', '') or ''} -> {agent.get('lastname', '') or ''}",
         "dealstage": "3288687857",
     })
     hubspot.createContactsAssociatedDealsBatch([
