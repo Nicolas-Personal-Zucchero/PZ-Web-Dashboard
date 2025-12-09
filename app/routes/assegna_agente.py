@@ -205,7 +205,7 @@ def send_agent_email(mailer, sender, agent, contact, company, note, logo_streams
     mailer.invia_email_singola(
         destinatari=agent['email'],
         oggetto=EMAIL_TEMPLATES["agent_ita"]["object"]
-            .format(info_cliente = f"({company.get('name') or ''} - {contact.get('lastname') or ''})"),
+            .format(info_cliente = f"({company.get('name') or ''} - {contact.get('lastname') or ''} {contact.get('firstname') or ''})"),
         corpo=EMAIL_TEMPLATES["agent_ita"]["body"].format(
             nome_agente=agent.get("firstname") or "",
 
