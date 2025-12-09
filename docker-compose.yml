@@ -4,7 +4,7 @@ services:
     volumes:
       - /home/pz/firestore_backups:/backups  # monta la cartella dei backup
       - /home/pz/.secrets:/secrets
-      - /home/pz/.agents_map_volume:/app/app/static/agents_map
+      - /home/pz/agents_map:/app/app/static/agents_map
     ports:
       - "80:5000"
     restart: unless-stopped

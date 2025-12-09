@@ -234,8 +234,7 @@ def send_agent_email(mailer, sender, agent, contact, company, note, logo_streams
 
     mailer.invia_email_singola(
         destinatari="info@personalzucchero.com",
-        oggetto=EMAIL_TEMPLATES["agent_ita"]["object"]
-            .format(info_cliente = f"({company.get('name') or ''} - {contact.get('lastname') or ''})"),
+        oggetto=f"AC: {company.get('name') or ''} - {contact.get('lastname') or ''} {contact.get('firstname') or ''} -> {agent.get('lastname') or ''}",
         corpo=EMAIL_TEMPLATES["agent_ita"]["body"].format(
             nome_agente=agent.get("firstname") or "",
 
