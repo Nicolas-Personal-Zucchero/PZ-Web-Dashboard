@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Gestione Biglietti Sigep{% endblock %}
+{% block title %}Invio Biglietti Sigep{% endblock %}
 
 {% block content %}
 <div class="p-4">
     <a href="{{ home_link }}" class="btn btn-light mb-3">
         <i class="bi bi-arrow-left"></i> Torna indietro
     </a>
-    <h1>Gestione Biglietti Sigep</h1>
+    <h1>Invio Biglietti Sigep</h1>
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -43,28 +43,28 @@
 
     <div class="row">
         <!-- Send Tickets Section -->
-        <div class="col-lg-6 mb-4">
+        <div class="col-lg-12 mb-4">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-success">Invia Biglietti</h6>
                 </div>
                 <div class="card-body">
                     <form action="{{ url_for('sigep_ticket.send_tickets') }}" method="POST">
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email Cliente</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Nome Cliente</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
-                        </div>
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
+                                <label for="email" class="form-label">Email Cliente</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="name" class="form-label">Nome Cliente</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="col-md-2 mb-3">
                                 <label for="count" class="form-label">Numero Biglietti</label>
                                 <input type="number" class="form-control" id="count" name="count" min="1" value="1"
                                     required>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-2 mb-3">
                                 <label for="language" class="form-label">Lingua Email</label>
                                 <select class="form-select" id="language" name="language">
                                     <option value="ita" selected>Italiano 🇮🇹</option>
@@ -74,47 +74,6 @@
                         </div>
                         <button type="submit" class="btn btn-success w-100">
                             <i class="bi bi-send-fill me-2"></i>Invia Biglietti
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Ticket Management Section (Upload + Delete) -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Gestione Database Biglietti</h6>
-                </div>
-                <div class="card-body">
-                    <h6 class="font-weight-bold">Carica Nuovi Biglietti</h6>
-                    <form action="{{ url_for('sigep_ticket.upload') }}" method="POST" enctype="multipart/form-data"
-                        class="mb-4">
-                        <div class="mb-3">
-                            <label for="file" class="form-label">File CSV</label>
-                            <input class="form-control" type="file" id="file" name="file" accept=".csv" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="column_name" class="form-label">Nome Colonna Codice</label>
-                            <input type="text" class="form-control" id="column_name" name="column_name"
-                                placeholder="Es: code" required>
-                            <div class="form-text">Inserisci il nome esatto dell'intestazione della colonna che contiene
-                                i codici.</div>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-upload me-2"></i>Carica Nuovi Biglietti
-                        </button>
-                    </form>
-
-                    <hr>
-
-                    <h6 class="font-weight-bold text-danger">Zona Pericolo</h6>
-                    <p class="small text-muted">Questa azione eliminerà <strong>tutti</strong> i biglietti presenti nel
-                        database (assegnati e non). L'azione è irreversibile.</p>
-                    <form action="{{ url_for('sigep_ticket.clear_collection') }}" method="POST"
-                        onsubmit="return confirm('Sei sicuro di voler eliminare TUTTI i biglietti? Questa azione non può essere annullata.');">
-                        <button type="submit" class="btn btn-danger w-100">
-                            <i class="bi bi-trash-fill me-2"></i>Svuota Collezione Biglietti
                         </button>
                     </form>
                 </div>

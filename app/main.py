@@ -13,6 +13,7 @@ from routes.amministrazione.visualizza_impianti import visualizza_impianti_bp
 from routes.amministrazione import amministrazione_bp
 from routes.amministrazione.backups import backups_bp
 from routes.amministrazione.gestione_lotti import gestione_lotti_bp
+from routes.amministrazione.sigep_ticket_management import sigep_ticket_management_bp
 from routes.sigep_ticket import sigep_ticket_bp
 
 app = Flask(__name__)
@@ -28,6 +29,7 @@ amministrazione_bp.register_blueprint(gestione_lotti_bp)
 amministrazione_bp.register_blueprint(visualizza_impianti_bp)
 amministrazione_bp.register_blueprint(backups_bp)
 amministrazione_bp.register_blueprint(asset_bp)
+amministrazione_bp.register_blueprint(sigep_ticket_management_bp)
 app.register_blueprint(amministrazione_bp)
 
 app.register_blueprint(wip_bp)
