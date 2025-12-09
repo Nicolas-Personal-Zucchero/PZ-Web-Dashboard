@@ -7,7 +7,8 @@
     <a href="{{ home_link }}" class="btn-back">
         <i class="bi bi-arrow-left"></i> Torna indietro
     </a>
-    <iframe src="https://nicolas-personal-zucchero.github.io/agents_map/" frameborder="0" allowfullscreen></iframe>
+    <iframe src="{{ url_for('static', filename='generated_agents_map.html') }}" frameborder="0" allowfullscreen>
+    </iframe>
 </div>
 {% endblock %}
 
