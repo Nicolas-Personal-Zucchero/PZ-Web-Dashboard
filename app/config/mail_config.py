@@ -1,6 +1,6 @@
 REVIEW_EMAIL_OBJECT_ITA = "Ci farebbe piacere la tua opinione! 🌟"
 REVIEW_EMAIL_OBJECT_ENG = "We’d love to hear your thoughts! 🌟"
-AGENT_EMAIL_OBJECT_ITA = "Nuovo contatto assegnato"
+AGENT_EMAIL_OBJECT_ITA = "Nuovo contatto assegnato {info_cliente}"
 CONTACT_EMAIL_OBJECT_ITA = "Grazie per il Suo Interesse – Il Nostro Consulente Locale La Contatterà"
 CONTACT_EMAIL_OBJECT_ENG = "Thank You for Your Interest – Our Local Consultant Will Contact You"
 SIGEP_EMAIL_OBJECT_ITA = "Ecco i tuoi biglietti per il Sigep! 🎟️"
@@ -89,29 +89,32 @@ We hope to see you again soon!<br>
 """
 
 AGENT_EMAIL_BODY_ITA = """
-Ciao <b>{nome_agente}</b>,<br><br>
-
-abbiamo un nuovo contatto da assegnarti. Qui di seguito trovi tutte le informazioni disponibili:<br><br>
-
+Ciao <b>{nome_agente}</b>,<br>
+<br>
+abbiamo un nuovo contatto da assegnarti. Qui di seguito trovi tutte le informazioni disponibili:<br>
+<br>
 Nome: <b>{nome_cliente}</b><br>
 Cognome: <b>{cognome_cliente}</b><br>
 Email: <b>{email_cliente}</b><br>
 Telefono: <b>{telefono_cliente}</b><br>
-
 Società: <b>{nome_azienda}</b><br>
 Partita IVA: <b>{partita_iva}</b><br>
 Categoria: <b>{categoria}</b><br>
 Città: <b>{citta_azienda}</b><br>
 Provincia: <b>{provincia_azienda}</b><br>
 Prodotto di interesse: <b>{prodotto_di_interesse_azienda}</b><br>
-Fonte del contatto: <b>{fonte_contatto}</b><br>
+<br>
 Note interne:<br>
 <b>{note_interne}</b><br>
-
+<br>
 {informazioni_logo}
-
-Grazie e buon lavoro!<br><br>
-
+<br>
+<span style="background-color: yellow;">Fonte del contatto: <b>{fonte_contatto}</b></span><br>
+<br>
+<span style="color: red; font-weight: bold;">ATTENZIONE: È strettamente necessario indicare la "Fonte del contatto" (sopra evidenziata) al momento della trasmissione dell’ordine al nostro ufficio ordini.</span><br>
+<br>
+Grazie e buon lavoro!<br>
+<br>
 Cordiali saluti,<br>
 {mittente}
 """

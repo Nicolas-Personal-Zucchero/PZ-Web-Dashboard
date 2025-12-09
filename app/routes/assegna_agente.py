@@ -97,7 +97,7 @@ def assegnaAgente():
         flash("Attenzione: Email non inviate (configurazione mailer mancante).", "warning")
 
     associate_contact_agent(hubspot, updated_contact, agent)
-    create_deal_for_agent(hubspot, agent, updated_contact)
+    create_deal_for_agent(hubspot, agent, updated_contact, updated_company)
 
     flash("Contatto assegnato all'agente con successo!", "success")
     return redirect("/assegna-agente")
@@ -204,7 +204,8 @@ def upsert_contact_and_company(hubspot, form_contact, form_company):
 def send_agent_email(mailer, sender, agent, contact, company, note, logo_streams=[]):
     mailer.invia_email_singola(
         destinatari=agent['email'],
-        oggetto=EMAIL_TEMPLATES["agent_ita"]["object"],
+        oggetto=EMAIL_TEMPLATES["agent_ita"]["object"]
+            .format(info_cliente = f"({company.get('name') or ''} - {contact.get('lastname') or ''})"),
         corpo=EMAIL_TEMPLATES["agent_ita"]["body"].format(
             nome_agente=agent.get("firstname") or "",
 
@@ -233,7 +234,8 @@ def send_agent_email(mailer, sender, agent, contact, company, note, logo_streams
 
     mailer.invia_email_singola(
         destinatari="info@personalzucchero.com",
-        oggetto=EMAIL_TEMPLATES["agent_ita"]["object"],
+        oggetto=EMAIL_TEMPLATES["agent_ita"]["object"]
+            .format(info_cliente = f"({company.get('name') or ''} - {contact.get('lastname') or ''})"),
         corpo=EMAIL_TEMPLATES["agent_ita"]["body"].format(
             nome_agente=agent.get("firstname") or "",
 
@@ -278,9 +280,9 @@ def send_contact_email(mailer, sender, language, contact, agent):
 def associate_contact_agent(hubspot, contact, agent):
     hubspot.createContactsAssociatedContactsBatch([(contact["id"], agent["id"])])
 
-def create_deal_for_agent(hubspot, agent, contact):
+def create_deal_for_agent(hubspot, agent, contact, company):
     deal_id = hubspot.createAgentDeal({
-        "dealname": f"Assegnazione contatto a {agent.get('lastname', '')} {agent.get('firstname', '')}",
+        "dealname": f"AC: {company.get('name', '')} {contact.get('lastname', '')} -> {agent.get('lastname', '')}",
         "dealstage": "3288687857",
     })
     hubspot.createContactsAssociatedDealsBatch([
