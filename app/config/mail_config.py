@@ -162,64 +162,64 @@ Kind regards,<br>
 """
 
 SIGEP_EMAIL_BODY_ITA = """
-Buongiorno {nome_cliente}<br>
+Gentile {nome_cliente},<br>
 <br>
-Con piacere inviamo i codici per il biglietto d'ingresso giornaliero ridotto a Sigep 2026, acquistabile al prezzo di € 10,00 ognuno (anziché € 65,00) seguendo questi passaggi:<br>
+Siamo lieti di invitarti a <b>Sigep 2026</b>! Abbiamo riservato per te dei codici promozionali che ti permetteranno di acquistare il biglietto d'ingresso giornaliero al prezzo ridotto di <b>€ 10,00</b> (anziché € 75,00).<br>
 <br>
-Ecco i codici (ogni codice vale per un ingresso giornaliero):<br>
-{codici_biglietti}<br>
-Queste sono le procedure per l'iscrizione:<br>
+Ecco i tuoi codici sconto (un codice per ogni ingresso):<br>
+<b>{codici_biglietti}</b><br>
 <br>
-Per prima cosa sarà necessario inserire i propri dati e registrarsi a questa pagina web:<br>
+<b>COME ATTIVARE I CODICI:</b><br>
 <br>
-<a href="https://visita.sigep.it/reserved-area/iscrizione">https://visita.sigep.it/reserved-area/iscrizione</a><br>
+1. <b>Registrati:</b> Se non lo hai già fatto, crea un account visitatore su questa pagina:<br>
+<a href="https://www.sigep.it/it/reserved-area/user/registration">https://www.sigep.it/it/reserved-area/user/registration</a><br>
+(Dopo l'iscrizione, riceverai una mail per confermare e completare la registrazione).<br>
 <br>
-Dopo l'iscrizione, si riceverà una mail che riporterà il link per completare la registrazione.<br>
+2. <b>Accedi alla biglietteria:</b> Una volta registrato, vai alla sezione Ticket qui:<br>
+<a href="https://www.sigep.it/it/reserved-area/tickets">https://visita.sigep.it/reserved-area/ticket</a><br>
 <br>
-Una volta completata la registrazione, si avrà accesso alla pagina che permetterà di effettuare l’acquisto online, inserendo il codice che abbiamo fornito e successivamente potrete effettuare il pagamento ridotto.<br>
+3. <b>Inserisci il codice:</b> Inserisci il codice fornito sopra e clicca su <b>"Attiva"</b>, poi clicca su <b>"Gestisci"</b> e procedi con il pagamento ridotto seguendo le istruzioni della pagina.<br>
 <br>
-La pagina si trova nella sezione Ticket (<a href="https://visita.sigep.it/it/reserved-area/tickets">https://visita.sigep.it/reserved-area/ticket</a>).<br>
+Nell'attesa di incontrarci in fiera, ti invitiamo a scoprire in anteprima la nostra gamma completa di prodotti scaricando il <b>Catalogo 2025</b>:<br>
+👉 <a href="https://personalzucchero.com/wp-content/uploads/2024/12/PZ_CAT_-2025-web.pdf">Clicca qui per scaricare il catalogo</a><br>
 <br>
-Una volta attivato il codice, cliccare su “VALIDA” e seguire le istruzioni del sito per procedere con l’acquisto.<br>
+Ti aspettiamo al nostro stand!<br>
+📍 <b>Padiglione A4 – Stand 029</b><br>
 <br>
-Per qualsiasi dubbio, non esitate a contattarci.<br>
+Per qualsiasi dubbio sulla procedura, non esitare a contattarci.<br>
 <br>
-Nel frattempo vi invitiamo a scaricare e consultare il nostro catalogo cliccando <a href="https://personalzucchero.com/wp-content/uploads/2024/12/PZ_CAT_-2025-web.pdf">qui</a>, per scoprire la gamma completa dei nostri prodotti.<br>
-<br>
-Vi aspettiamo al nostro stand n. 029 – PAD A4<br>
-<br>
-Grazie mille e Cordiali saluti,<br>
-Personal Zucchero<br>
-"""
+Cordiali saluti,<br>
+<b>Personal Zucchero</b>"""
 
-SIGEP_EMAIL_BODY_ENG = """Good morning {nome_cliente}<br>
+SIGEP_EMAIL_BODY_ENG = """
+Dear {nome_cliente},<br>
 <br>
-We are pleased to send you the codes for a reduced daily entrance ticket to Sigep 2026, available for purchase at €10.00 each (instead of €65.00) by following these steps:<br>
+We are pleased to invite you to <b>Sigep 2026</b>! We have reserved special promotional codes for you, allowing you to purchase a daily entrance ticket for just <b>€10.00</b> (instead of €75.00).<br>
 <br>
-Here are the codes (each code is valid for one daily admission):<br>
-{codici_biglietti}<br>
-Here are the registration instructions:<br>
+Here are your discount codes (each code is valid for one daily admission):<br>
+<b>{codici_biglietti}</b><br>
 <br>
-First, you will need to enter your details and register on this webpage:<br>
+<b>HOW TO REDEEM YOUR CODE:</b><br>
 <br>
-<a href="https://visita.sigep.it/reserved-area/iscrizione">https://visita.sigep.it/reserved-area/iscrizione</a><br>
+1. <b>Register:</b> First, enter your details and create a visitor account here:<br>
+<a href="https://www.sigep.it/en/reserved-area/user/registration">https://www.sigep.it/en/reserved-area/user/registration</a><br>
+(You will receive a confirmation email to finalize your registration).<br>
 <br>
-After signing up, you will receive an email containing a link to complete your registration.<br>
+2. <b>Go to Tickets:</b> Once registered, access the Ticket section here:<br>
+<a href="https://www.sigep.it/en/reserved-area/tickets">https://www.sigep.it/en/reserved-area/tickets</a><br>
 <br>
-Once registration is complete, you will have access to the page where you can make the online purchase. Enter the code we provided to proceed with the reduced payment.<br>
+3. <b>Enter the Code:</b> Enter the code provided above, then click on <b>"Activate"</b>, then click on <b>"Manage"</b> and follow the instructions to complete the reduced payment.<br>
 <br>
-This page can be found in the Ticket section (<a href="https://visita.sigep.it/it/reserved-area/tickets">https://visita.sigep.it/reserved-area/ticket</a>).<br>
+In the meantime, we invite you to discover our complete range of products by downloading our <b>2025 Catalogue</b>:<br>
+👉 <a href="https://personalzucchero.com/wp-content/uploads/2024/12/PZ_CAT_-2025-web.pdf">Click here to download the catalogue</a><br>
 <br>
-Once the code is activated, click on “VALIDA” and follow the website instructions to proceed with the purchase.<br>
+We look forward to seeing you there!<br>
+📍 <b>Hall A4 – Stand 029</b><br>
 <br>
 Should you have any questions, please do not hesitate to contact us.<br>
 <br>
-In the meantime, we invite you to download and browse our catalogue by clicking <a href="https://personalzucchero.com/wp-content/uploads/2024/12/PZ_CAT_-2025-web.pdf">here</a> to discover our complete range of products.<br>
-<br>
-We look forward to seeing you at our stand no. 029 – PAD A4<br>
-<br>
-Thank you very much. Best regards,<br>
-Personal Zucchero<br>"""
+Best regards,<br>
+<b>Personal Zucchero</b>"""
 
 EMAIL_TEMPLATES = {
     "review_ita": {"object": REVIEW_EMAIL_OBJECT_ITA, "body": REVIEW_EMAIL_BODY_ITA},
