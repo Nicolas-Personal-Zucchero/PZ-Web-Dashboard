@@ -53,9 +53,9 @@ class SecretsManager:
     def get_all_secrets(self):
         return self._secrets
 
-    def get_hubspot(self):
+    def get_hubspot(self, token_id = "HUBSPOT_AGENT_ASSIGNMENT_TOKEN"):
         if not self._hubspot:
-            token = self.get_secret("HUBSPOT_AGENT_ASSIGNMENT_TOKEN")
+            token = self.get_secret(token_id)
             if token:
                 self._hubspot = HubspotPZ(token)
         return self._hubspot

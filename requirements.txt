@@ -8,5 +8,5 @@ qrcode[pil]
 pillow
 gunicorn
 
-git+https://github.com/Nicolas-Personal-Zucchero/HubspotPZ.git
+git+https://github.com/Nicolas-Personal-Zucchero/HubspotPZ.git@086133e0f8584bcc9a043aff20ba8e8ee0df861b
 git+https://github.com/Nicolas-Personal-Zucchero/MailerPZ.git

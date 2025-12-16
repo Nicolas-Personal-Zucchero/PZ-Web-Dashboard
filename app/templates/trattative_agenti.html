@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Trattative Agenti{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <a href="{{ home_link }}" class="btn btn-light mb-3">
+        <i class="bi bi-arrow-left"></i> Torna indietro
+    </a>
+    <h1>Trattative Agenti</h1>
+    <h3>Trattative NON chiuse più vecchie di 30 giorni ({{trattative|length}})</h3>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+    {% endfor %}
+    {% endwith %}
+
+    {% if trattative %}
+    <!-- <div class="mb-3 row g-2">
+        <div class="col-md-2">
+            <input type="text" class="form-control" id="searchInput" placeholder="Cerca trattativa" maxlength="6">
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="tipologiaFilter">
+                <option value="">Tutte le tipologie</option>
+                {% for t in trattative|map(attribute='tipologia_zucchero')|unique %}
+                <option value="{{ t }}">{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" id="fornitoreFilter">
+                <option value="">Tutti i fornitori</option>
+                {% for f in trattative|map(attribute='fornitore')|unique %}
+                <option value="{{ f }}">{{ f }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="origineFilter">
+                <option value="">Tutte le origini</option>
+                {% for o in trattative|map(attribute='origine')|unique %}
+                <option value="{{ o }}">{{ o }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" id="statoFilter">
+                <option value="">Tutti i trattative</option>
+                <option value="in_caricamento" selected>Solo trattative in caricamento</option>
+                <option value="caricati">Solo trattative caricati</option>
+            </select>
+        </div>
+    </div> -->
+
+    <div style="max-height: 500px; overflow-y: auto;">
+        <ul class="list-group styled-table" id="listaTrattative">
+            <li class="list-group-item static-header">
+                <div class="row">
+                    <div class="col-md-5">Nome</div>
+                    <div class="col-md-5">Fase</div>
+                    <div class="col-md-2">Data di creazione</div>
+                </div>
+            </li>
+
+            {% for trattativa in trattative %}
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-md-5"><strong>{{ trattativa.dealname }}</strong></div>
+                    <div class="col-md-5">{{ trattativa.dealstage }}</div>
+                    <div class="col-md-2">{{ trattativa.createdate }}</div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+{% endblock %}
