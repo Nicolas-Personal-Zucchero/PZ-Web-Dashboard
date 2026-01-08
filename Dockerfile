@@ -2,15 +2,14 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+COPY requirements.txt .
+
 # Installa Git (necessario per pip install da repo Git) e pip aggiornato
 RUN apt-get update && \
-    apt-get install -y git && \
-    pip install --upgrade pip && \
+    apt-get install -y --no-install-recommends git && \
+    pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
     rm -rf /var/lib/apt/lists/*
-
-# Installa tutte le dipendenze standard (da PyPI)
-COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # Copia il codice dell'app Flask
 COPY app/ ./app
