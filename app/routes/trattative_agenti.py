@@ -22,27 +22,31 @@ def index():
     # Prendo le trattative non chiuse
     temp = []
     for t in deals:
-        probability = stages_by_id.get(t.get("dealstage"), {}).get("metadata", {}).get("probability", 0.5)
-        if probability == 0.0 or probability == 1.0:
-            continue
-        temp.append(t)
+        probability = float(stages_by_id.get(t.get("dealstage"), {}).get("metadata", {}).get("probability", 0.5))
+        t["p"] = str(probability)
+        if probability > 0.0 and probability < 1.0:
+            temp.append(t)
     deals = temp
 
-    # Prendo le trattative più vecchie di DAYS giorni
-    DAYS = 30
-    thirty_days_ago = datetime.now(ITALY_TZ).timestamp() - (DAYS * 24 * 60 * 60)
+    # Prendo le trattative più vecchie di DAYS giorni (LOGICA SPOSTATA CLIENT SIDE)
+    # DAYS = 30
+    # thirty_days_ago = datetime.now(ITALY_TZ).timestamp() - (DAYS * 24 * 60 * 60)
 
     temp = []
+    now = datetime.now(ITALY_TZ)
     for t in deals:
         t["dealstage"] = stages_by_id.get(t.get("dealstage"), {}).get("label", t.get("dealstage"))
         createdate = t.get("createdate")
         if createdate:
             createdate_dt = datetime.fromisoformat(createdate).astimezone(ITALY_TZ)
-            if createdate_dt.timestamp() < thirty_days_ago:
-                t["createdate"] = createdate_dt.strftime("%d/%m/%Y")
-                temp.append(t)
+            t["createdate_formatted"] = createdate_dt.strftime("%d/%m/%Y")
+            t["days_open"] = (now - createdate_dt).days
+            temp.append(t)
         else:
-            t["createdate"] = "N/A"
+            t["createdate_formatted"] = "N/A"
+            t["days_open"] = 0
+            # temp.append(t) # Should we include deals with no create date? Assuming yes if they are open.
+            temp.append(t)
     deals = temp
 
     #Prendo tutti i contatti e le aziende associate

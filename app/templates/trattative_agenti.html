@@ -8,7 +8,8 @@
         <i class="bi bi-arrow-left"></i> Torna indietro
     </a>
     <h1>Trattative Agenti</h1>
-    <h3>Trattative NON chiuse più vecchie di 30 giorni ({{trattative|length}})</h3>
+    <h3>Trattative NON chiuse più vecchie di <span id="daysTitle">30</span> giorni (<span
+            id="visibleCount">{{trattative|length}}</span>)</h3>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% for category, message in messages %}
@@ -17,19 +18,13 @@
     {% endwith %}
 
     {% if trattative %}
-    <!-- <div class="mb-3 row g-2">
-        <div class="col-md-2">
-            <input type="text" class="form-control" id="searchInput" placeholder="Cerca trattativa" maxlength="6">
-        </div>
+    <div class="mb-3 row g-2">
         <div class="col-md-3">
-            <select class="form-select" id="tipologiaFilter">
-                <option value="">Tutte le tipologie</option>
-                {% for t in trattative|map(attribute='tipologia_zucchero')|unique %}
-                <option value="{{ t }}">{{ t }}</option>
-                {% endfor %}
-            </select>
+            <label for="daysSlider" class="form-label">Giorni: <span id="daysDisplay">30</span></label>
+            <input type="range" class="form-range" id="daysSlider" min="10" max="365" step="1" value="30"
+                oninput="filterDeals(this.value)">
         </div>
-        <div class="col-md-2">
+        <!-- <div class="col-md-2">
             <select class="form-select" id="fornitoreFilter">
                 <option value="">Tutti i fornitori</option>
                 {% for f in trattative|map(attribute='fornitore')|unique %}
@@ -51,29 +46,66 @@
                 <option value="in_caricamento" selected>Solo trattative in caricamento</option>
                 <option value="caricati">Solo trattative caricati</option>
             </select>
-        </div>
-    </div> -->
+        </div> -->
+    </div>
 
     <div style="max-height: 500px; overflow-y: auto;">
         <ul class="list-group styled-table" id="listaTrattative">
             <li class="list-group-item static-header">
                 <div class="row">
-                    <div class="col-md-5">Nome</div>
-                    <div class="col-md-5">Fase</div>
+                    <div class="col-md-4">Nome</div>
+                    <div class="col-md-4">Fase</div>
                     <div class="col-md-2">Data di creazione</div>
+                    <div class="col-md-2"></div>
                 </div>
             </li>
 
             {% for trattativa in trattative %}
-            <li class="list-group-item">
+            <li class="list-group-item deal-row" data-days-open="{{ trattativa.days_open }}">
                 <div class="row">
-                    <div class="col-md-5"><strong>{{ trattativa.dealname }}</strong></div>
-                    <div class="col-md-5">{{ trattativa.dealstage }}</div>
-                    <div class="col-md-2">{{ trattativa.createdate }}</div>
+                    <div class="col-md-4"><strong>{{ trattativa.dealname }}</strong></div>
+                    <div class="col-md-4">{{ trattativa.dealstage }}</div>
+                    <div class="col-md-2">{{ trattativa.createdate_formatted }}</div>
+                    <div class="col-md-2 text-end">
+                        <a href="https://app-eu1.hubspot.com/contacts/25378285/record/0-3/{{ trattativa.id }}/"
+                            target="_blank" class="btn btn-sm"
+                            style="background-color: #FF7A59; border-color: #FF7A59; color: white;"
+                            title="Apri in HubSpot">
+                            <i class="bi bi-box-arrow-up-right"></i> HubSpot
+                        </a>
+                    </div>
                 </div>
             </li>
             {% endfor %}
         </ul>
     </div>
     {% endif %}
-{% endblock %}
+
+    <script>
+        function filterDeals(minDays) {
+            document.getElementById('daysDisplay').innerText = minDays;
+            document.getElementById('daysTitle').innerText = minDays;
+
+            const rows = document.getElementsByClassName('deal-row');
+            let visibleCount = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const daysOpen = parseInt(row.getAttribute('data-days-open'));
+
+                if (daysOpen >= minDays) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+            document.getElementById('visibleCount').innerText = visibleCount;
+        }
+
+        // Initialize filter on load
+        document.addEventListener('DOMContentLoaded', function () {
+            filterDeals(document.getElementById('daysSlider').value);
+        });
+    </script>
+    {% endblock %}
