@@ -19,7 +19,7 @@
         <form method="POST" id="lottoForm">
             <div class="row mb-3">
                 <div class="col-md-2">
-                    <label for="lotto" class="form-label">Lotto</label>
+                    <label for="lotto" class="form-label">Lotto*</label>
                     <div class="input-group">
                         <input type="text" class="form-control" name="lotto" id="lotto" readonly required maxlength="9">
                         <span class="input-group-text">
@@ -29,11 +29,11 @@
                     <small class="text-muted">Forza il lotto spuntando</small>
                 </div>
                 <div class="col-md-2">
-                    <label for="data" class="form-label">Data</label>
+                    <label for="data" class="form-label">Data*</label>
                     <input type="date" class="form-control" name="data" id="data" required>
                 </div>
                 <div class="col-md-3">
-                    <label for="tipologia" class="form-label">Tipologia prodotto</label>
+                    <label for="tipologia" class="form-label">Tipologia prodotto*</label>
                     <select class="form-select" name="tipologia" id="tipologia" required>
                         <option value="" disabled selected>Seleziona tipologia</option>
                         <option>Zucchero Bianco Semolato</option>
@@ -45,7 +45,7 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label for="fornitore" class="form-label">Fornitore</label>
+                    <label for="fornitore" class="form-label">Fornitore*</label>
                     <select class="form-select" name="fornitore" id="fornitore" required>
                         <option value="" disabled selected>Seleziona fornitore</option>
                         <option value="ITALIAZUCCHERI">ITALIAZUCCHERI</option>
@@ -57,19 +57,19 @@
                 </div>
                 <div class="col-md-3">
                     <label for="ddt" class="form-label">DDT</label>
-                    <input type="text" class="form-control" name="ddt" id="ddt" placeholder="Inserisci DDT" required>
+                    <input type="text" class="form-control" name="ddt" id="ddt" placeholder="Inserisci DDT">
                 </div>
             </div>
 
             <div class="row mb-3">
                 <div class="col-md-4">
                     <label for="origine" class="form-label">Origine</label>
-                    <select class="form-select" name="origine" id="origine" required>
+                    <select class="form-select" name="origine" id="origine">
                         <option value="" disabled selected>Seleziona origine</option>
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label for="n_etichette" class="form-label">Numero etichette</label>
+                    <label for="n_etichette" class="form-label">Numero etichette*</label>
                     <input type="number" class="form-control" name="n_etichette" id="n_etichette"
                         placeholder="Numero etichette" value="24" min="1" required>
                 </div>
@@ -83,9 +83,9 @@
             <div class="mb-3">
                 <label for="lottiContainer" class="form-label">Lotti fornitore</label>
                 <div id="lottiContainer">
-                    <div class="input-group mb-2">
+                    <!-- <div class="input-group mb-2">
                         <input type="text" name="lotti[]" class="form-control" placeholder="Lotto 1" required>
-                    </div>
+                    </div> -->
                 </div>
                 <button type="button" class="btn btn-secondary btn-sm" id="addLottoBtn">Aggiungi Lotto
                     fornitore</button>
@@ -152,7 +152,7 @@
                     <div class="col-md-1">Lotti fornitore</div>
                     <div class="col-md-1">Origine</div>
                     <div class="col-md-2">Data creazione</div>
-                    <div class="col-md-1">Scansioni</div>
+                    <div class="col-md-1">Azioni</div>
                 </div>
             </li>
 
@@ -166,16 +166,32 @@
                     <div class="col-md-1">{{ lotto.lotti_fornitore | join(', ') }}</div>
                     <div class="col-md-1">{{ lotto.origine }}</div>
                     <div class="col-md-2">{{ lotto.formatted_time }}</div>
-                    <div class="col-md-1">
-                        <button class="btn btn-sm btn-primary view-scansioni-btn"
-                            data-scansioni='{{ lotto.scansioni_etichette | tojson | safe }}'
-                            data-lotto-id="{{ lotto.id }}" data-lotto-etichette="{{ lotto.etichette }}"> {{
-                            lotto.etichette }}
+                    <div class="col-md-1 d-flex gap-1 flex-wrap align-items-center">
+                        <button
+                            class="btn btn-warning btn-sm edit-lotto-btn p-0 d-flex align-items-center justify-content-center"
+                            data-lotto-id="{{ lotto.id }}" data-lotto-code="{{ lotto.lotto }}"
+                            data-date="{{ lotto.formatted_time }}" data-tipologia="{{ lotto.tipologia_zucchero }}"
+                            data-fornitore="{{ lotto.fornitore }}" data-ddt="{{ lotto.ddt }}"
+                            data-origine="{{ lotto.origine }}" data-n-etichette="{{ lotto.numero_etichette }}"
+                            data-note="{{ lotto.note }}"
+                            data-lotti-fornitore='{{ lotto.lotti_fornitore | tojson | safe }}' title="Modifica"
+                            style="width: 30px; height: 30px;">
+                            <i class="bi bi-pencil"></i>
                         </button>
-                        <form method="POST" action="{{ url_for('.etichetta') }}" target="_blank">
+                        <button
+                            class="btn btn-sm btn-primary view-scansioni-btn px-2 d-flex align-items-center justify-content-center"
+                            data-scansioni='{{ lotto.scansioni_etichette | tojson | safe }}'
+                            data-lotto-id="{{ lotto.id }}" data-lotto-etichette="{{ lotto.etichette }}"
+                            title="Scansioni" style="height: 30px;">
+                            {{ lotto.etichette }}
+                        </button>
+                        <form method="POST" action="{{ url_for('.etichetta') }}" target="_blank" class="d-flex">
                             <input type="hidden" name="id_lotto" value="{{ lotto.id }}">
-                            <button type="submit" class="btn btn-success btn-sm"><i
-                                    class="bi bi-filetype-pdf"></i></button>
+                            <button type="submit"
+                                class="btn btn-success btn-sm p-0 d-flex align-items-center justify-content-center"
+                                title="Stampa Etichetta" style="width: 80px; height: 30px;">
+                                <i class="bi bi-filetype-pdf"></i>
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -184,6 +200,79 @@
         </ul>
     </div>
     {% endif %}
+
+    <!-- Modal Modifica Lotto -->
+    <div class="modal fade" id="editLottoModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifica Lotto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editLottoForm">
+                        <input type="hidden" id="editLottoId">
+
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Lotto</label>
+                                <input type="text" class="form-control" id="editLottoCode" readonly disabled>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Data</label>
+                                <input type="text" class="form-control" id="editData" readonly disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tipologia</label>
+                                <input type="text" class="form-control" id="editTipologia" readonly disabled>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Fornitore</label>
+                                <input type="text" class="form-control" id="editFornitore" readonly disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editDdt" class="form-label">DDT</label>
+                                <input type="text" class="form-control" id="editDdt">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="editOrigine" class="form-label">Origine</label>
+                                <select class="form-select" id="editOrigine">
+                                    <option value="" disabled selected>Seleziona origine</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="editNEtichette" class="form-label">Numero etichette</label>
+                                <input type="number" class="form-control" id="editNEtichette" min="1">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="editNote" class="form-label">Note</label>
+                                <input type="text" class="form-control" id="editNote" maxlength="15">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Lotti fornitore</label>
+                            <div id="editLottiContainer">
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-sm" id="addEditLottoBtn">Aggiungi Lotto
+                                fornitore</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger me-auto" id="deleteLottoBtn">Elimina Lotto</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                    <button type="button" class="btn btn-primary" id="saveEditLottoBtn">Salva Modifiche</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="modal fade" id="scansioniModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
@@ -238,11 +327,6 @@
                         </thead>
                         <tbody></tbody>
                     </table>
-                    <!-- </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
-          </div>
-        </div> -->
                 </div>
             </div>
 
@@ -278,7 +362,7 @@
                 // Gestione aggiunta/rimozione lotti
                 const addLottoBtn = document.getElementById('addLottoBtn');
                 const lottiContainer = document.getElementById('lottiContainer');
-                let lottoCount = 1;
+                let lottoCount = 0;
 
                 addLottoBtn.addEventListener('click', function () {
                     lottoCount++;
@@ -293,7 +377,7 @@
                 });
 
                 lottiContainer.addEventListener('click', function (e) {
-                    if (e.target.classList.contains('remove-btn') && lottoCount > 1 && e.target.id == `btn${lottoCount}`) {
+                    if (e.target.classList.contains('remove-btn') && e.target.id == `btn${lottoCount}`) {
                         e.target.parentElement.remove();
                         lottoCount--;
                     }
@@ -488,6 +572,146 @@
                     } catch (err) {
                         console.error("Errore fetch lotto:", err);
                         alert("Errore durante la generazione del lotto");
+                    }
+                });
+
+                // === Logica Modifica Lotto ===
+                const editLottoModalElement = document.getElementById('editLottoModal');
+                const editLottoModal = new bootstrap.Modal(editLottoModalElement);
+                const editLottiContainer = document.getElementById('editLottiContainer');
+                const addEditLottoBtn = document.getElementById('addEditLottoBtn');
+                let editLottoCount = 0;
+
+                // Copia le opzioni origine dal form di registrazione
+                const editOrigineSelect = document.getElementById('editOrigine');
+
+                function syncOrigineOptions() {
+                    const originalOrigine = document.getElementById('origine');
+                    if (originalOrigine.options.length > 1) {
+                        editOrigineSelect.innerHTML = originalOrigine.innerHTML;
+                    }
+                }
+
+                function addEditLottoInput(value = "") {
+                    editLottoCount++;
+                    const div = document.createElement('div');
+                    div.classList.add('input-group', 'mb-2');
+                    div.innerHTML = `
+                        <input type="text" class="form-control edit-lotto-input" placeholder="Lotto ${editLottoCount}" value="${value}" required>
+                        <button class="btn btn-outline-danger remove-edit-lotto-btn" id="btn${editLottoCount}" type="button">×</button>
+                    `;
+                    editLottiContainer.appendChild(div);
+
+                    editLottiContainer.addEventListener('click', function (e) {
+                        if (e.target.classList.contains('remove-edit-lotto-btn') && e.target.id == `btn${editLottoCount}`) {
+                            e.target.parentElement.remove();
+                            editLottoCount--;
+                        }
+                    });
+                }
+
+                addEditLottoBtn.addEventListener('click', () => addEditLottoInput());
+
+                document.querySelectorAll('.edit-lotto-btn').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const id = this.dataset.lottoId;
+                        const code = this.dataset.lottoCode;
+                        const date = this.dataset.date;
+                        const tipologia = this.dataset.tipologia;
+                        const fornitore = this.dataset.fornitore;
+                        const ddt = this.dataset.ddt;
+                        const origine = this.dataset.origine;
+                        const nEtichette = this.dataset.nEtichette;
+                        const note = this.dataset.note;
+                        const lottiFornitore = JSON.parse(this.dataset.lottiFornitore || '[]');
+
+                        document.getElementById('editLottoId').value = id;
+                        document.getElementById('editLottoCode').value = code;
+                        document.getElementById('editData').value = date;
+                        document.getElementById('editTipologia').value = tipologia;
+                        document.getElementById('editFornitore').value = fornitore;
+                        document.getElementById('editDdt').value = ddt;
+                        document.getElementById('editNEtichette').value = nEtichette;
+                        document.getElementById('editNote').value = note;
+
+                        // Ensure origine options are populated
+                        syncOrigineOptions();
+                        document.getElementById('editOrigine').value = origine;
+
+                        // Populate lotti
+                        editLottiContainer.innerHTML = '';
+                        editLottoCount = 0;
+                        if (lottiFornitore.length > 0) {
+                            lottiFornitore.forEach(l => addEditLottoInput(l));
+                        }
+
+                        editLottoModal.show();
+                    });
+                });
+
+                document.getElementById('deleteLottoBtn').addEventListener('click', async function () {
+                    if (!confirm("Sei sicuro di voler eliminare il lotto?")) {
+                        return;
+                    }
+
+                    const id = document.getElementById('editLottoId').value;
+                    const payload = {
+                        id_lotto: id,
+                    }
+
+                    try {
+                        const response = await fetch('/amministrazione/gestione_lotti/elimina_lotto', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        const result = await response.json();
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            alert("Errore: " + (result.error || "Impossibile eliminare il lotto"));
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        alert("Errore di comunicazione con il server.");
+                    }
+                });
+                document.getElementById('saveEditLottoBtn').addEventListener('click', async function () {
+                    const id = document.getElementById('editLottoId').value;
+                    const ddt = document.getElementById('editDdt').value;
+                    const origine = document.getElementById('editOrigine').value;
+                    const nEtichette = document.getElementById('editNEtichette').value;
+                    const note = document.getElementById('editNote').value;
+
+                    const lottiInputs = document.querySelectorAll('.edit-lotto-input');
+                    const lottiFornitore = Array.from(lottiInputs).map(input => input.value).filter(val => val.trim() !== "");
+
+                    const payload = {
+                        id_lotto: id,
+                        ddt: ddt,
+                        origine: origine,
+                        n_etichette: nEtichette,
+                        note: note,
+                        lotti_fornitore: lottiFornitore
+                    };
+
+                    try {
+                        const response = await fetch('/amministrazione/gestione_lotti/modifica_lotto', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        const result = await response.json();
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            alert("Errore: " + (result.error || "Impossibile aggiornare il lotto"));
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        alert("Errore di comunicazione con il server.");
                     }
                 });
 

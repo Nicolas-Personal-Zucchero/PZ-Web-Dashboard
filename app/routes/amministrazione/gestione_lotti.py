@@ -195,3 +195,58 @@ def aggiungi_scansione():
 
     except Exception as e:
         return {"success": False, "error": str(e)}, 500
+
+@gestione_lotti_bp.route("/modifica_lotto", methods=["POST"])
+def modifica_lotto():
+    try:
+        data = request.get_json()
+        lotto_id = data.get("id_lotto")
+
+        if not lotto_id:
+             return {"success": False, "error": "ID Lotto mancante"}, 400
+
+        doc_ref = lotti_zucchero_collection.document(lotto_id)
+        if not doc_ref.get().exists:
+             return {"success": False, "error": "Lotto non trovato"}, 404
+
+        updates = {}
+        if "ddt" in data:
+            updates["ddt"] = data["ddt"]
+        if "origine" in data:
+            updates["origine"] = data["origine"]
+        if "n_etichette" in data:
+            try:
+                updates["numero_etichette"] = int(data["n_etichette"])
+            except ValueError:
+                 return {"success": False, "error": "Numero etichette non valido"}, 400
+        if "note" in data:
+            updates["note"] = data["note"]
+        if "lotti_fornitore" in data:
+            updates["lotti_fornitore"] = data["lotti_fornitore"]
+
+        doc_ref.update(updates)
+
+        return {"success": True, "message": "Lotto aggiornato"}, 200
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}, 500
+
+@gestione_lotti_bp.route("/elimina_lotto", methods=["POST"])
+def elimina_lotto():
+    try:
+        data = request.get_json()
+        lotto_id = data.get("id_lotto")
+
+        if not lotto_id:
+             return {"success": False, "error": "ID Lotto mancante"}, 400
+
+        doc_ref = lotti_zucchero_collection.document(lotto_id)
+        if not doc_ref.get().exists:
+             return {"success": False, "error": "Lotto non trovato"}, 404
+
+        doc_ref.delete()
+
+        return {"success": True, "message": "Lotto eliminato"}, 200
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}, 500
