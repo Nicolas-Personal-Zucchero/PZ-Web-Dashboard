@@ -106,7 +106,7 @@ def generate_pdf(filename, lotto_personal_zucchero, fornitore, ddt, tipologia_zu
     c.drawString(text_x + 20, lotto_y - SPACING_NOTE, f"{note.upper()}")
 
     # QR Code
-    qr_data = f"https://nicolas-personal-zucchero.github.io/scan?lottoId={lotto_personal_zucchero}"
+    qr_data = f"https://nicolas-personal-zucchero.github.io/lotto/scan/?id={lotto_personal_zucchero}"
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_H,
