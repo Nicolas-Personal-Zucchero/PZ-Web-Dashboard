@@ -15,7 +15,8 @@ PRODUCT_MAP = {
     "Zucchero Canna Grezzo": "06",
     "Zucchero Canna Barbabietola": "07",
     "Zucchero BIO Golden": "08",
-    "Zucchero BIO White": "09"
+    "Zucchero BIO White": "09",
+    "Fruttosio": "10"
 }
 
 gestione_lotti_bp = Blueprint("gestione_lotti", __name__, url_prefix="/gestione_lotti")
