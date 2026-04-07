@@ -1,0 +1,17 @@
+<form method="POST" action="{{ url_for('etichette_spedizioni.etichette_spedizioni') }}">
+    <label for="mexal_code">Codice Mexal:</label>
+    <input type="text" id="mexal_code" name="mexal_code" required>
+    <button type="submit">Cerca</button>
+</form>
+
+{% if customer %}
+    <div class="customer-results">
+        <h3>Dettagli Cliente</h3>
+        <ul>
+            <li><strong>Codice:</strong> {{ customer.codice }}</li>
+            <li><strong>Ragione Sociale:</strong> {{ customer.ragione_sociale }}</li>
+            <li><strong>Località:</strong> {{ customer.localita }} ({{ customer.provincia }})</li>
+            <li><strong>Telefono:</strong> {{ customer.telefono }}</li>
+        </ul>
+    </div>
+{% endif %}

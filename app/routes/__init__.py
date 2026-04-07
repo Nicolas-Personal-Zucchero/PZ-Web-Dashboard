@@ -10,6 +10,7 @@ register_links("home", [{
         {"name": "Assegna Agente", "url": "/assegna-agente", "description": "Assegna un agente ad un contatto specifico con pochi click.", "icon": "bi bi-person-badge-fill me-2"},
         {"name": "Mappa Agenti", "url": "/agents_map", "description": "Visualizza la mappa degli agenti divisi per provincia.", "icon": "bi bi-geo-alt-fill me-2"},
         {"name": "Trattative Agenti", "url": "/trattative_agenti", "description": "Visualizzazione e gestione delle trattative agenti", "icon": "bi bi-suitcase-lg-fill me-2"},
+        {"name": "Creazione etichette spedizioni", "url": "/etichette_spedizioni", "description": "Creazione delle etichette di spedizione tramite codice mexal.", "icon": "bi bi-tag-fill me-2"},
         {"name": "Invio Biglietti Sigep", "url": "/sigep-ticket", "description": "Gestione invio biglietti omaggio per il Sigep.", "icon": "bi bi-ticket-perforated-fill me-2"}
     ]
 }])

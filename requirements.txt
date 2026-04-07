@@ -10,3 +10,4 @@ gunicorn
 
 git+https://github.com/Nicolas-Personal-Zucchero/HubspotPZ.git@086133e0f8584bcc9a043aff20ba8e8ee0df861b
 git+https://github.com/Nicolas-Personal-Zucchero/MailerPZ.git
+git+https://github.com/Nicolas-Personal-Zucchero/MexalPZ.git@8e7884557a4ae02bd6ea198d88fc104f451c0e88

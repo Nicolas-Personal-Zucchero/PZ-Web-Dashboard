@@ -10,6 +10,7 @@ from routes.assegna_agente import assegna_agente_bp
 from routes.agents_map import agents_map_bp
 from routes.sigep_ticket import sigep_ticket_bp
 from routes.trattative_agenti import trattative_agenti_bp
+from routes.etichette_spedizioni import etichette_spedizioni_bp
 
 from routes.amministrazione.asset import asset_bp
 from routes.amministrazione.visualizza_impianti import visualizza_impianti_bp
@@ -29,6 +30,7 @@ app.register_blueprint(assegna_agente_bp)
 app.register_blueprint(agents_map_bp)
 app.register_blueprint(sigep_ticket_bp)
 app.register_blueprint(trattative_agenti_bp)
+app.register_blueprint(etichette_spedizioni_bp)
 
 amministrazione_bp.register_blueprint(gestione_lotti_bp)
 amministrazione_bp.register_blueprint(visualizza_impianti_bp)
