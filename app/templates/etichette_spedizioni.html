@@ -1,17 +1,66 @@
-<form method="POST" action="{{ url_for('etichette_spedizioni.etichette_spedizioni') }}">
-    <label for="mexal_code">Codice Mexal:</label>
-    <input type="text" id="mexal_code" name="mexal_code" required>
-    <button type="submit">Cerca</button>
-</form>
+{% extends "base.html" %}
 
-{% if customer %}
-    <div class="customer-results">
-        <h3>Dettagli Cliente</h3>
-        <ul>
-            <li><strong>Codice:</strong> {{ customer.codice }}</li>
-            <li><strong>Ragione Sociale:</strong> {{ customer.ragione_sociale }}</li>
-            <li><strong>Località:</strong> {{ customer.localita }} ({{ customer.provincia }})</li>
-            <li><strong>Telefono:</strong> {{ customer.telefono }}</li>
+{% block title %}Etichette Spedizioni{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <a href="{{ home_link }}" class="btn btn-light mb-3">
+        <i class="bi bi-arrow-left"></i> Torna indietro
+    </a>
+    
+    <h1>Ricerca Cliente per Spedizione</h1>
+    
+    <form method="POST" action="{{ url_for('etichette_spedizioni.etichette_spedizioni') }}">
+        <div class="row mb-3 align-items-end">
+            <div class="col-md-4">
+                <label for="mexal_code" class="form-label">Codice Mexal</label>
+                <input type="text" class="form-control" id="mexal_code" name="mexal_code" required>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Cerca</button>
+            </div>
+        </div>
+    </form>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if customer %}
+    <hr>
+    <h3>Dettagli Cliente</h3>
+    <div class="card shadow-sm col-md-6 mt-3">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-sm-4 text-muted">Codice</div>
+                    <div class="col-sm-8 fw-bold">{{ customer.codice }}</div>
+                </div>
+            </li>
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-sm-4 text-muted">Ragione Sociale</div>
+                    <div class="col-sm-8">{{ customer.ragione_sociale }}</div>
+                </div>
+            </li>
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-sm-4 text-muted">Località</div>
+                    <div class="col-sm-8">{{ customer.localita }} ({{ customer.provincia }})</div>
+                </div>
+            </li>
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-sm-4 text-muted">Telefono</div>
+                    <div class="col-sm-8">{{ customer.telefono }}</div>
+                </div>
+            </li>
         </ul>
     </div>
-{% endif %}
+    {% endif %}
+</div>
+{% endblock %}
