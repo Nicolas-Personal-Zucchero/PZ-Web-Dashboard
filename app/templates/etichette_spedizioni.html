@@ -43,7 +43,6 @@
         </div>
 
         <div class="col-lg-8 col-md-7">
-            {% if customer %}
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
                     <h3 class="mb-4">Dettagli Spedizione</h3>
@@ -51,8 +50,8 @@
                     <form method="POST" action="{{ url_for('etichette_spedizioni.stampa_etichetta') }}">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="ragione_sociale" class="form-label">Ragione Sociale</label>
-                                <input type="text" class="form-control" id="ragione_sociale" name="ragione_sociale" value="{{ customer.ragione_sociale | default('') }}" required>
+                                <label for="ragione_sociale" class="form-label"><b>Ragione Sociale</b></label>
+                                <input type="text" class="form-control input-required" id="ragione_sociale" name="ragione_sociale" value="{{ customer.ragione_sociale | default('') }}" required aria-required="true">
                             </div>
                             <div class="col-md-6">
                                 <label for="c_a" class="form-label">C.A. (Cortese Attenzione)</label>
@@ -60,8 +59,8 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label for="indirizzo" class="form-label">Via / Indirizzo</label>
-                                <input type="text" class="form-control" id="indirizzo" name="indirizzo" value="{{ customer.indirizzo | default('') }}" required>
+                                <label for="indirizzo" class="form-label"><b>Via / Indirizzo</b></label>
+                                <input type="text" class="form-control input-required" id="indirizzo" name="indirizzo" value="{{ customer.indirizzo | default('') }}" required aria-required="true">
                             </div>
                             <div class="col-md-6">
                                 <label for="telefono" class="form-label">Telefono</label>
@@ -69,20 +68,20 @@
                             </div>
 
                             <div class="col-md-2">
-                                <label for="cap" class="form-label">CAP</label>
-                                <input type="text" class="form-control" id="cap" name="cap" value="{{ customer.cap | default('') }}" required>
+                                <label for="cap" class="form-label"><b>CAP</b></label>
+                                <input type="text" class="form-control input-required" id="cap" name="cap" value="{{ customer.cap | default('') }}" required aria-required="true">
                             </div>
                             <div class="col-md-5">
-                                <label for="localita" class="form-label">Città</label>
-                                <input type="text" class="form-control" id="localita" name="localita" value="{{ customer.localita | default('') }}" required>
+                                <label for="localita" class="form-label"><b>Città</b></label>
+                                <input type="text" class="form-control input-required" id="localita" name="localita" value="{{ customer.localita | default('') }}" required aria-required="true">
                             </div>
                             <div class="col-md-2">
-                                <label for="provincia" class="form-label">Provincia</label>
-                                <input type="text" class="form-control" id="provincia" name="provincia" value="{{ customer.provincia | default('') }}" required>
+                                <label for="provincia" class="form-label"><b>Provincia</b></label>
+                                <input type="text" class="form-control input-required" id="provincia" name="provincia" value="{{ customer.provincia | default('') }}" required aria-required="true">
                             </div>
                             <div class="col-md-3">
-                                <label for="cod_paese" class="form-label">Stato</label>
-                                <input type="text" class="form-control" id="cod_paese" name="cod_paese" value="{{ customer.cod_paese | default('') }}" required>
+                                <label for="cod_paese" class="form-label"><b>Stato</b></label>
+                                <input type="text" class="form-control input-required" id="cod_paese" name="cod_paese" value="{{ customer.cod_paese | default('') }}" required aria-required="true">
                             </div>
 
                             <div class="col-12">
@@ -116,8 +115,14 @@
                     </form>
                 </div>
             </div>
-            {% endif %}
         </div>
     </div>
 </div>
+
+<style>
+    /* Custom class se non si vogliono usare solo utility Bootstrap */
+    .input-required {
+        border-left: 4px solid #0d6efd; /* Colore primary di Bootstrap */
+    }
+</style>
 {% endblock %}
