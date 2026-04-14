@@ -4,63 +4,120 @@
 
 {% block content %}
 <div class="p-4">
-    <a href="{{ home_link }}" class="btn btn-light mb-3">
+    <a href="{{ home_link }}" class="btn btn-light mb-4">
         <i class="bi bi-arrow-left"></i> Torna indietro
     </a>
     
-    <h1>Ricerca Cliente per Spedizione</h1>
-    
-    <form method="POST" action="{{ url_for('etichette_spedizioni.etichette_spedizioni') }}">
-        <div class="row mb-3 align-items-end">
-            <div class="col-md-4">
-                <label for="mexal_code" class="form-label">Codice Mexal</label>
-                <input type="text" class="form-control" id="mexal_code" name="mexal_code" required>
+    <div class="row">
+        <div class="col-lg-4 col-md-5">
+            <h1 class="h3 mb-3">Ricerca Cliente</h1>
+            
+            <div class="alert alert-info shadow-sm mb-4" role="alert">
+                <strong>Come usare questa pagina:</strong>
+                <ol class="mb-0 mt-1 small">
+                    <li>Inserisci il codice Mexal del cliente.</li>
+                    <li>Modifica i dati se necessario per l'etichetta o le note.</li>
+                    <li>Scegliere il numero di etichette da stampare e cliccare Stampa.</li>
+                </ol>
             </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-primary w-100">Cerca</button>
-            </div>
+
+            <form method="POST" action="{{ url_for('etichette_spedizioni.etichette_spedizioni') }}">
+                <div class="row g-2 align-items-end mb-3">
+                    <div class="col-sm-8">
+                        <label for="mexal_code" class="form-label">Codice Mexal</label>
+                        <input type="text" class="form-control" id="mexal_code" name="mexal_code" required>
+                    </div>
+                    <div class="col-sm-4">
+                        <button type="submit" class="btn btn-primary w-100">Cerca</button>
+                    </div>
+                </div>
+            </form>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} mt-3 shadow-sm">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
         </div>
-    </form>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+        <div class="col-lg-8 col-md-7">
+            {% if customer %}
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h3 class="mb-4">Dettagli Spedizione</h3>
+                    
+                    <form method="POST" action="{{ url_for('etichette_spedizioni.stampa_etichetta') }}">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="ragione_sociale" class="form-label">Ragione Sociale</label>
+                                <input type="text" class="form-control" id="ragione_sociale" name="ragione_sociale" value="{{ customer.ragione_sociale | default('') }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="c_a" class="form-label">C.A. (Cortese Attenzione)</label>
+                                <input type="text" class="form-control" id="c_a" name="c_a" placeholder="">
+                            </div>
 
-    {% if customer %}
-    <hr>
-    <h3>Dettagli Cliente</h3>
-    <div class="card shadow-sm col-md-6 mt-3">
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item">
-                <div class="row">
-                    <div class="col-sm-4 text-muted">Codice</div>
-                    <div class="col-sm-8 fw-bold">{{ customer.codice }}</div>
+                            <div class="col-md-6">
+                                <label for="indirizzo" class="form-label">Via / Indirizzo</label>
+                                <input type="text" class="form-control" id="indirizzo" name="indirizzo" value="{{ customer.indirizzo | default('') }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="telefono" class="form-label">Telefono</label>
+                                <input type="text" class="form-control" id="telefono" name="telefono" value="{{ customer.telefono | default('') }}">
+                            </div>
+
+                            <div class="col-md-2">
+                                <label for="cap" class="form-label">CAP</label>
+                                <input type="text" class="form-control" id="cap" name="cap" value="{{ customer.cap | default('') }}" required>
+                            </div>
+                            <div class="col-md-5">
+                                <label for="localita" class="form-label">Città</label>
+                                <input type="text" class="form-control" id="localita" name="localita" value="{{ customer.localita | default('') }}" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="provincia" class="form-label">Provincia</label>
+                                <input type="text" class="form-control" id="provincia" name="provincia" value="{{ customer.provincia | default('') }}" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="cod_paese" class="form-label">Stato</label>
+                                <input type="text" class="form-control" id="cod_paese" name="cod_paese" value="{{ customer.cod_paese | default('') }}" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="note" class="form-label">Note aggiuntive</label>
+                                <textarea class="form-control" id="note" name="note" rows="2" placeholder="Istruzioni per il corriere, note aggiuntive..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-4 border-top d-flex align-items-end gap-3">
+                            <div style="max-width: 160px;">
+                                <label for="numero_etichette" class="form-label fw-bold mb-1">Quantità etichette</label>
+                                <div class="input-group shadow-sm">
+                                    <span class="input-group-text bg-light">
+                                        <i class="bi bi-tag"></i>
+                                    </span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="numero_etichette" 
+                                           name="numero_etichette" 
+                                           value="1" 
+                                           min="1" 
+                                           step="1" 
+                                           required>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-success btn-lg px-4 shadow-sm">
+                                <i class="bi bi-printer"></i> Stampa
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            </li>
-            <li class="list-group-item">
-                <div class="row">
-                    <div class="col-sm-4 text-muted">Ragione Sociale</div>
-                    <div class="col-sm-8">{{ customer.ragione_sociale }}</div>
-                </div>
-            </li>
-            <li class="list-group-item">
-                <div class="row">
-                    <div class="col-sm-4 text-muted">Località</div>
-                    <div class="col-sm-8">{{ customer.localita }} ({{ customer.provincia }})</div>
-                </div>
-            </li>
-            <li class="list-group-item">
-                <div class="row">
-                    <div class="col-sm-4 text-muted">Telefono</div>
-                    <div class="col-sm-8">{{ customer.telefono }}</div>
-                </div>
-            </li>
-        </ul>
+            </div>
+            {% endif %}
+        </div>
     </div>
-    {% endif %}
 </div>
 {% endblock %}
