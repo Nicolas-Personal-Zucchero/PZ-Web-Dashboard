@@ -23,7 +23,7 @@
                     <div class="input-group">
                         <input type="text" class="form-control" name="lotto" id="lotto" readonly required maxlength="9">
                         <span class="input-group-text">
-                            <input class="form-check-input mt-0" type="checkbox" id="forceLotto">
+                            <input class="form-check-input mt-0" type="checkbox" id="forceLotto" name="forceLotto">
                         </span>
                     </div>
                     <small class="text-muted">Forza il lotto spuntando</small>
@@ -42,6 +42,7 @@
                         <option>Zucchero Canna Barbabietola</option>
                         <option>Zucchero BIO Golden</option>
                         <option>Zucchero BIO White</option>
+                        <option>Fruttosio</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -53,6 +54,7 @@
                         <option value="FASTZUCCHERI">FASTZUCCHERI</option>
                         <option value="GRANDAZUCCHERI">GRANDAZUCCHERI</option>
                         <option value="PININPERO">PININPERO</option>
+                        <option value="TATO">TATO</option>
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -157,7 +159,15 @@
             </li>
 
             {% for lotto in lotti %}
-            <li class="list-group-item">
+            <li class="list-group-item lotto-item"
+                data-lotto-id="{{ lotto.lotto | lower }}"
+                data-tipologia="{{ lotto.tipologia_zucchero | lower }}"
+                data-fornitore="{{ lotto.fornitore | lower }}"
+                data-origine="{{ lotto.origine | lower }}"
+                data-scansioni="{{ lotto.get('scansioni_etichette', []) | length }}"
+                data-totale="{{ lotto.numero_etichette }}"
+                data-is-chiuso="{{ 'true' if lotto.is_chiuso_manualmente else 'false' }}">
+
                 <div class="row">
                     <div class="col-md-1"><strong>{{ lotto.lotto }}</strong></div>
                     <div class="col-md-3">{{ lotto.tipologia_zucchero }}</div>
@@ -166,33 +176,52 @@
                     <div class="col-md-1">{{ lotto.lotti_fornitore | join(', ') }}</div>
                     <div class="col-md-1">{{ lotto.origine }}</div>
                     <div class="col-md-2">{{ lotto.formatted_time }}</div>
-                    <div class="col-md-1 d-flex gap-1 flex-wrap align-items-center">
-                        <button
-                            class="btn btn-warning btn-sm edit-lotto-btn p-0 d-flex align-items-center justify-content-center"
-                            data-lotto-id="{{ lotto.id }}" data-lotto-code="{{ lotto.lotto }}"
-                            data-date="{{ lotto.formatted_time }}" data-tipologia="{{ lotto.tipologia_zucchero }}"
-                            data-fornitore="{{ lotto.fornitore }}" data-ddt="{{ lotto.ddt }}"
-                            data-origine="{{ lotto.origine }}" data-n-etichette="{{ lotto.numero_etichette }}"
-                            data-note="{{ lotto.note }}"
-                            data-lotti-fornitore='{{ lotto.lotti_fornitore | tojson | safe }}' title="Modifica"
-                            style="width: 30px; height: 30px;">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button
-                            class="btn btn-sm btn-primary view-scansioni-btn px-2 d-flex align-items-center justify-content-center"
-                            data-scansioni='{{ lotto.scansioni_etichette | tojson | safe }}'
-                            data-lotto-id="{{ lotto.id }}" data-lotto-etichette="{{ lotto.etichette }}"
-                            title="Scansioni" style="height: 30px;">
-                            {{ lotto.etichette }}
-                        </button>
-                        <form method="POST" action="{{ url_for('.etichetta') }}" target="_blank" class="d-flex">
-                            <input type="hidden" name="id_lotto" value="{{ lotto.id }}">
-                            <button type="submit"
-                                class="btn btn-success btn-sm p-0 d-flex align-items-center justify-content-center"
-                                title="Stampa Etichetta" style="width: 80px; height: 30px;">
-                                <i class="bi bi-filetype-pdf"></i>
-                            </button>
-                        </form>
+                    <div class="col-md-1">
+                        <div class="row g-1">
+                            <div class="col-6">
+                                <button
+                                    class="btn btn-warning btn-sm edit-lotto-btn w-100 d-flex align-items-center justify-content-center"
+                                    data-lotto-id="{{ lotto.id }}"
+                                    data-lotto-code="{{ lotto.lotto }}"
+                                    data-date="{{ lotto.formatted_time }}"
+                                    data-tipologia="{{ lotto.tipologia_zucchero }}"
+                                    data-fornitore="{{ lotto.fornitore }}"
+                                    data-ddt="{{ lotto.ddt }}"
+                                    data-origine="{{ lotto.origine }}"
+                                    data-n-etichette="{{ lotto.numero_etichette }}"
+                                    data-note="{{ lotto.note }}"
+                                    data-is-chiuso-manualmente="{{ lotto.is_chiuso_manualmente }}"
+                                    data-lotti-fornitore='{{ lotto.lotti_fornitore | tojson | safe }}'
+                                    title="Modifica"
+                                    style="height: 30px;">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </div>
+
+                            <div class="col-6">
+                                <form method="POST" action="{{ url_for('.etichetta') }}" target="_blank" class="m-0">
+                                    <input type="hidden" name="id_lotto" value="{{ lotto.id }}">
+                                    <button type="submit"
+                                        class="btn btn-success btn-sm w-100 d-flex align-items-center justify-content-center"
+                                        title="Stampa Etichetta"
+                                        style="height: 30px;">
+                                        <i class="bi bi-filetype-pdf"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <div class="col-12">
+                                <button
+                                    class="btn btn-sm btn-primary view-scansioni-btn w-100 d-flex align-items-center justify-content-center"
+                                    data-scansioni='{{ lotto.scansioni_etichette | tojson | safe }}'
+                                    data-lotto-id="{{ lotto.id }}"
+                                    data-lotto-etichette="{{ lotto.etichette }}"
+                                    title="Scansioni"
+                                    style="height: 30px;">
+                                    {{ lotto.etichette }}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </li>
@@ -206,7 +235,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Modifica Lotto</h5>
+                    <h5>Modifica Lotto</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -256,6 +285,17 @@
                             </div>
                         </div>
 
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="editChiusuraManuale">
+                                    <label class="form-check-label" for="editChiusuraManuale">
+                                        Forza il lotto come <strong>Chiuso</strong>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="mb-3">
                             <label class="form-label">Lotti fornitore</label>
                             <div id="editLottiContainer">
@@ -278,7 +318,7 @@
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Scansioni Etichette</h5>
+                    <h5 id="scansioni-modal-title">Scansioni Etichette</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -390,7 +430,8 @@
                 const fornitoreFilter = document.getElementById('fornitoreFilter');
                 const origineFilter = document.getElementById('origineFilter');
                 const statoFilter = document.getElementById('statoFilter');
-                const items = document.querySelectorAll('#listaLotti .list-group-item');
+                // Assicurati di selezionare solo gli elementi con la classe .lotto-item
+                const items = document.querySelectorAll('.lotto-item');
 
                 function filterLotti() {
                     const searchText = searchInput.value.toLowerCase();
@@ -400,31 +441,33 @@
                     const stato = statoFilter.value;
 
                     items.forEach(item => {
-                        if (item.classList.contains('static-header')) return;
+                        // Leggiamo i dati puliti direttamente dai data-attributes
+                        const lottoId = item.dataset.lottoId || '';
+                        const itemTipologia = item.dataset.tipologia || '';
+                        const itemFornitore = item.dataset.fornitore || '';
+                        const itemOrigine = item.dataset.origine || '';
+                        
+                        const scansioniCount = parseInt(item.dataset.scansioni || '0', 10);
+                        const totaleEtichette = parseInt(item.dataset.totale || '0', 10);
+                        const isChiusoManualmente = item.dataset.isChiuso === 'true';
 
-                        const lottoId = item.querySelector('.col-md-1 strong')?.textContent.toLowerCase() || '';
-                        const itemTipologia = item.querySelector('.col-md-3')?.textContent.toLowerCase() || '';
-                        const itemFornitore = item.querySelector('.col-md-2')?.textContent.toLowerCase() || '';
-                        const itemOrigine = item.querySelector('.col-md-1:nth-child(6)')?.textContent.toLowerCase() || '';
-
-                        // Recupera il numero di scansioni e numero di etichette
-                        const scansioniCount = JSON.parse(item.querySelector('.view-scansioni-btn')?.dataset.scansioni || '[]').length;
-                        const totaleEtichette = parseInt(item.querySelector('.view-scansioni-btn')?.textContent.split('/')[1] || '0');
-
+                        // Logica per lo stato
                         let statoMatch = true;
                         if (stato === 'in_caricamento') {
-                            statoMatch = scansioniCount < totaleEtichette;
+                            statoMatch = (scansioniCount < totaleEtichette) && !isChiusoManualmente;
                         } else if (stato === 'caricati') {
-                            statoMatch = scansioniCount >= totaleEtichette;
+                            statoMatch = (scansioniCount >= totaleEtichette) || isChiusoManualmente;
                         }
 
+                        // Check dei filtri
                         const match =
                             lottoId.includes(searchText) &&
-                            (tipologia === '' || itemTipologia.includes(tipologia)) && // Uso includes per match parziali nel filtro
+                            (tipologia === '' || itemTipologia.includes(tipologia)) &&
                             (fornitore === '' || itemFornitore.includes(fornitore)) &&
                             (origine === '' || itemOrigine.includes(origine)) &&
                             statoMatch;
 
+                        // Mostra/Nascondi
                         item.style.display = match ? '' : 'none';
                     });
                 }
@@ -435,12 +478,13 @@
                 if (origineFilter) origineFilter.addEventListener('change', filterLotti);
                 if (statoFilter) statoFilter.addEventListener('change', filterLotti);
 
+                filterLotti();
 
                 const scansioniModalElement = document.getElementById('scansioniModal');
                 if (scansioniModalElement) {
                     const scansioniModal = new bootstrap.Modal(scansioniModalElement);
                     const scansioniTableBody = document.querySelector('#scansioniTable tbody');
-                    const modalTitle = document.querySelector('.modal-title');
+                    const scansioniModalTitle = document.querySelector('#scansioni-modal-title');
 
                     // Riferimenti al form di aggiunta
                     const addScansioneForm = document.getElementById('addScansioneForm');
@@ -455,7 +499,7 @@
                             const lottoEtichetteNumero = this.dataset.lottoEtichette;
 
                             // Imposta ID nel form nascosto e resetta select
-                            modalTitle.textContent = `Scansioni Etichette per ${lottoId} (${lottoEtichetteNumero})`;
+                            scansioniModalTitle.textContent = `Scansioni Etichette per ${lottoId} - ${lottoEtichetteNumero}`;
                             scanLottoIdInput.value = lottoId;
                             scanImpiantoSelect.value = "Scansione Manuale";
                             scanOperatoreSelect.value = "Denis Severini";
@@ -623,7 +667,8 @@
                         const origine = this.dataset.origine;
                         const nEtichette = this.dataset.nEtichette;
                         const note = this.dataset.note;
-                        const lottiFornitore = JSON.parse(this.dataset.lottiFornitore || '[]');
+                        const isChiuso = this.dataset.isChiusoManualmente === "True" || this.dataset.isChiusoManualmente === "true";
+                        const lottiFornitore = JSON.parse(this.dataset.lottiFornitore || '[]') || [];
 
                         document.getElementById('editLottoId').value = id;
                         document.getElementById('editLottoCode').value = code;
@@ -633,6 +678,7 @@
                         document.getElementById('editDdt').value = ddt;
                         document.getElementById('editNEtichette').value = nEtichette;
                         document.getElementById('editNote').value = note;
+                        document.getElementById('editChiusuraManuale').checked = isChiuso;
 
                         // Ensure origine options are populated
                         syncOrigineOptions();
@@ -683,6 +729,7 @@
                     const origine = document.getElementById('editOrigine').value;
                     const nEtichette = document.getElementById('editNEtichette').value;
                     const note = document.getElementById('editNote').value;
+                    const isChiusoManualmente = document.getElementById('editChiusuraManuale').checked;
 
                     const lottiInputs = document.querySelectorAll('.edit-lotto-input');
                     const lottiFornitore = Array.from(lottiInputs).map(input => input.value).filter(val => val.trim() !== "");
@@ -693,6 +740,7 @@
                         origine: origine,
                         n_etichette: nEtichette,
                         note: note,
+                        is_chiuso_manualmente: isChiusoManualmente,
                         lotti_fornitore: lottiFornitore
                     };
 

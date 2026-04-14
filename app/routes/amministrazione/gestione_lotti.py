@@ -15,7 +15,8 @@ PRODUCT_MAP = {
     "Zucchero Canna Grezzo": "06",
     "Zucchero Canna Barbabietola": "07",
     "Zucchero BIO Golden": "08",
-    "Zucchero BIO White": "09"
+    "Zucchero BIO White": "09",
+    "Fruttosio": "10"
 }
 
 gestione_lotti_bp = Blueprint("gestione_lotti", __name__, url_prefix="/gestione_lotti")
@@ -50,12 +51,28 @@ def get_lotto_route():
 def index():
     if request.method == "POST":
         # --- Logica di Registrazione (Da registrazione_lotti.py) ---
-        
-        lotto = request.form.get("lotto", "").strip()
-        if not lotto:
-            flash("Lotto non valido.", "danger")
-            return redirect("/amministrazione/gestione_lotti")
+        tipologia = request.form.get("tipologia", "").strip()
+        is_forced = request.form.get("forceLotto") == "on"
 
+        if is_forced:
+            lotto = request.form.get("lotto", "").strip()
+            if not lotto:
+                flash("Lotto non valido.", "danger")
+                return redirect("/amministrazione/gestione_lotti")
+        else:
+            if not tipologia or tipologia not in PRODUCT_MAP:
+                flash("Tipologia non valida.", "danger")
+                return redirect("/amministrazione/gestione_lotti")
+            lotto = get_lotto(tipologia)
+
+        doc_ref = lotti_zucchero_collection.document(lotto)
+        if doc_ref.get().exists:
+            if is_forced:
+                flash(f"Il lotto manuale {lotto} è già stato utilizzato.", "danger")
+            else:
+                flash(f"Conflitto di salvataggio (il lotto {lotto} è appena stato occupato). Riprova.", "danger")
+            return redirect("/amministrazione/gestione_lotti")
+        
         # Gestione della Data
         data_str = request.form.get("data", "").strip()
         if data_str:
@@ -64,37 +81,31 @@ def index():
         else:
             uploaded_at = datetime.now(ITALY_TZ)
         
-        tipologia = request.form.get("tipologia", "").strip()
         fornitore = request.form.get("fornitore", "").strip()
         ddt = request.form.get("ddt", "").strip()
         origine = request.form.get("origine", "").strip()
-        
+        note = request.form.get("note", "").strip()
+
         try:
             n_etichette = int(request.form.get("n_etichette", "").strip())
         except ValueError:
             flash("Numero etichette non valido.", "danger")
             return redirect("/amministrazione/gestione_lotti")
 
-        lotti = request.form.getlist("lotti[]")
-        note = request.form.get("note", "").strip()
-
-        # Salvataggio su Firestore
-        doc_ref = lotti_zucchero_collection.document(lotto)
-        if doc_ref.get().exists:
-            flash(f"Lotto {lotto} già esistente.", "danger")
-            return redirect("/amministrazione/gestione_lotti")
+        lotti_fornitore = request.form.getlist("lotti[]")
         
         doc_ref.set({
             "lotto" : lotto,
             "fornitore": fornitore,
             "ddt": ddt,
             "tipologia_zucchero": tipologia,
-            "lotti_fornitore": lotti,
+            "lotti_fornitore": lotti_fornitore,
             "origine": origine,
             "numero_etichette": n_etichette,
             "scansioni_etichette": [],
             "note": note,
-            "uploaded_at": uploaded_at
+            "uploaded_at": uploaded_at,
+            "is_chiuso_manualmente": False
         })
 
         flash("Lotto caricato con successo!", "success")
@@ -114,8 +125,10 @@ def index():
         
         etichette_scansionate = len(data.get("scansioni_etichette", []))
         totale_etichette = data.get("numero_etichette", 0)
-        data["etichette"] = '{}/{}'.format(etichette_scansionate, totale_etichette)
+        data["etichette"] = f"{etichette_scansionate}/{totale_etichette} ({totale_etichette - etichette_scansionate})"
         
+        data["is_chiuso_manualmente"] = data.get("is_chiuso_manualmente", False)
+
         # Formatta la data in ora locale italiana
         uploaded_at = data.get("uploaded_at")
         if uploaded_at:
@@ -221,6 +234,8 @@ def modifica_lotto():
                  return {"success": False, "error": "Numero etichette non valido"}, 400
         if "note" in data:
             updates["note"] = data["note"]
+        if "is_chiuso_manualmente" in data:
+            updates["is_chiuso_manualmente"] = data["is_chiuso_manualmente"]
         if "lotti_fornitore" in data:
             updates["lotti_fornitore"] = data["lotti_fornitore"]
 
