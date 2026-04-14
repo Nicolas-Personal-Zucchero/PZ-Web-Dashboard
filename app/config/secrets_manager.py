@@ -2,6 +2,7 @@ import json
 import os
 from hubspot_pz import HubspotPZ
 from mailer_pz import MailerPZ
+from mexal_pz import MexalPZ
 
 # Path to the secrets file inside the container
 SECRETS_FILE = "/secrets/secrets.json"
@@ -11,6 +12,7 @@ class SecretsManager:
         self._secrets = {}
         self._hubspot = None
         self._mailer = None
+        self._mexal = None
         self.load_secrets()
 
     def load_secrets(self):
@@ -46,6 +48,7 @@ class SecretsManager:
         """Clear cached instances to force recreation with new secrets."""
         self._hubspot = None
         self._mailer = None
+        self._mexal = None
 
     def get_secret(self, key, default=None):
         return self._secrets.get(key, default)
@@ -68,6 +71,17 @@ class SecretsManager:
             if name and address and password:
                 self._mailer = MailerPZ(name, address, password)
         return self._mailer
+    
+    def get_mexal(self):
+        if not self._mexal:
+            domain = self.get_secret("MEXAL_DOMAIN")
+            user = self.get_secret("MEXAL_USER")
+            password = self.get_secret("MEXAL_PASSWORD")
+            company = self.get_secret("MEXAL_COMPANY")
+            year = self.get_secret("MEXAL_YEAR")
+            if domain and user and password and company and year:
+                self._mexal = MexalPZ(domain, user, password, company, year)
+        return self._mexal
 
 # Global instance
 secrets_manager = SecretsManager()
