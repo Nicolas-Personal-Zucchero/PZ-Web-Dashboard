@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11pt;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .header-table td {
+            vertical-align: top;
+            border: none;
+        }
+        .section-title {
+            background-color: #f2f2f2;
+            padding: 5px 10px;
+            font-weight: bold;
+            border: 1px solid #000;
+        }
+        .data-table td {
+            border: 1px solid #000;
+            padding: 8px;
+        }
+        .label {
+            font-weight: bold;
+            width: 30%;
+        }
+        .barcode-placeholder {
+            border: 2px dashed #999;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 9pt;
+            color: #666;
+        }
+        .signature-box {
+            margin-top: 50px;
+            border-top: 1px solid #000;
+            width: 250px;
+            text-align: center;
+            float: right;
+        }
+    </style>
+</head>
+<body>
+
+    <table class="header-table">
+        <tr>
+            <td style="width: 50%;">
+                {% if brt_logo %}
+                    <img src="{{ brt_logo }}" alt="Logo BRT" style="max-width: 120px; height: auto;">
+                {% else %}
+                    <div style="font-weight: bold; font-size: 18pt; color: #e30613;">BRT</div>
+                {% endif %}
+                <div style="font-size: 9pt; margin-top: 5px;">
+                    <strong>Mittente:</strong><br>
+                    Personal Zucchero SRL<br>
+                    Piazza Allende 1<br>
+                    47824 Poggio Torriana (RN)
+                </div>
+            </td>
+            <td style="width: 50%;">
+                <div class="barcode-placeholder">
+                    SPAZIO PER ETICHETTA BARCODE<br>(Applicare dopo la stampa)
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="section-title">DESTINATARIO</div>
+    <table class="data-table">
+        <tr>
+            <td class="label">Ragione Sociale</td>
+            <td>{{ destinatario.ragione_sociale }}</td>
+        </tr>
+        <tr>
+            <td class="label">Indirizzo</td>
+            <td>{{ destinatario.indirizzo }}</td>
+        </tr>
+        <tr>
+            <td class="label">Località</td>
+            <td>{{ destinatario.cap }} - {{ destinatario.localita }} ({{ destinatario.provincia }})</td>
+        </tr>
+        <tr>
+            <td class="label">Stato</td>
+            <td>{{ destinatario.cod_paese }}</td>
+        </tr>
+        <tr>
+            <td class="label">Telefono</td>
+            <td>{{ destinatario.telefono }}</td>
+        </tr>
+    </table>
+
+    <div class="section-title">DETTAGLI SPEDIZIONE</div>
+    <table class="data-table">
+        <tr>
+            <td class="label">Data Documento</td>
+            <td>{{ spedizione.data }}</td>
+            <td class="label">Resa</td>
+            <td>FRANCO</td>
+        </tr>
+        <tr>
+            <td class="label">Numero Colli</td>
+            <td>{{ spedizione.colli }}</td>
+            <td class="label">Peso Totale (Kg)</td>
+            <td>{{ spedizione.peso }}</td>
+        </tr>
+    </table>
+
+    <div style="margin-top: 40px;">
+        <div class="signature-box">
+            <p>Firma per ritiro</p>
+        </div>
+    </div>
+
+</body>
+</html>
