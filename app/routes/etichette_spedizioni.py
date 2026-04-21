@@ -60,9 +60,7 @@ def genera_pdf_ritiro(data_destinatario, data_spedizione):
             "data": datetime.now().strftime("%d/%m/%Y")
         }
     )
-    
-    # Conversione in PDF
-    # In Docker, assicurarsi che il volume di output sia scrivibile
+
     HTML(string=html_content).write_pdf("ritiro_brt.pdf")
     print("PDF generato con successo.")
 
