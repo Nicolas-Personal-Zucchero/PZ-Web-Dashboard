@@ -47,15 +47,15 @@
                 <div class="card-body p-4">
                     <h3 class="mb-4">Dettagli Spedizione</h3>
                     
-                    <form method="POST" action="{{ url_for('etichette_spedizioni.stampa_etichetta') }}">
+                    <form method="POST" action="{{ url_for('etichette_spedizioni.stampa_etichetta') }}" target="_blank">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="ragione_sociale" class="form-label"><b>Ragione Sociale</b></label>
                                 <input type="text" class="form-control input-required" id="ragione_sociale" name="ragione_sociale" value="{{ customer.ragione_sociale | default('') }}" required aria-required="true">
                             </div>
                             <div class="col-md-6">
-                                <label for="c_a" class="form-label">C.A. (Cortese Attenzione)</label>
-                                <input type="text" class="form-control" id="c_a" name="c_a" placeholder="">
+                                <label for="cortese_attenzione" class="form-label">C.A. (Cortese Attenzione)</label>
+                                <input type="text" class="form-control" id="cortese_attenzione" name="cortese_attenzione" placeholder="">
                             </div>
 
                             <div class="col-md-6">
@@ -90,7 +90,30 @@
                             </div>
                         </div>
 
-                        <div class="mt-4 pt-4 border-top d-flex align-items-end gap-3">
+                        <div class="mt-4 pt-4 border-top d-flex flex-wrap align-items-end gap-3">
+                            <div style="max-width: 120px;">
+                                <label for="colli" class="form-label fw-bold mb-1">Colli</label>
+                                <input type="number" 
+                                    class="form-control shadow-sm" 
+                                    id="colli" 
+                                    name="colli" 
+                                    value="1" 
+                                    min="1" 
+                                    step="1">
+                            </div>
+
+                            <div style="max-width: 120px;">
+                                <label for="peso" class="form-label fw-bold mb-1">Peso (kg)</label>
+                                <input type="number" 
+                                    class="form-control shadow-sm" 
+                                    id="peso" 
+                                    name="peso" 
+                                    min="0" 
+                                    step="0.1" 
+                                    placeholder="0.0"
+                                    value="1.0">
+                            </div>
+
                             <div style="max-width: 160px;">
                                 <label for="numero_etichette" class="form-label fw-bold mb-1">Quantità etichette</label>
                                 <div class="input-group shadow-sm">
@@ -98,13 +121,13 @@
                                         <i class="bi bi-tag"></i>
                                     </span>
                                     <input type="number" 
-                                           class="form-control" 
-                                           id="numero_etichette" 
-                                           name="numero_etichette" 
-                                           value="1" 
-                                           min="1" 
-                                           step="1" 
-                                           required>
+                                        class="form-control" 
+                                        id="numero_etichette" 
+                                        name="numero_etichette" 
+                                        value="1" 
+                                        min="1" 
+                                        step="1" 
+                                        required>
                                 </div>
                             </div>
 

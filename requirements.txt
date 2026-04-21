@@ -8,6 +8,9 @@ qrcode[pil]
 pillow
 gunicorn
 
+weasyprint
+Jinja2
+
 git+https://github.com/Nicolas-Personal-Zucchero/HubspotPZ.git@086133e0f8584bcc9a043aff20ba8e8ee0df861b
 git+https://github.com/Nicolas-Personal-Zucchero/MexalPZ.git@8e7884557a4ae02bd6ea198d88fc104f451c0e88
 git+https://github.com/Nicolas-Personal-Zucchero/MailerPZ.git@41f9b8e9caded32c0d8f0e97f864202858875998
