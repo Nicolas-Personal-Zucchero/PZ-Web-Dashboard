@@ -41,6 +41,30 @@
                     {% endfor %}
                 {% endif %}
             {% endwith %}
+
+            <div class="mt-4 pt-4 border-top">
+                <h4 class="h5 mb-3">Notifica Spedizione BRT</h4>
+                <form method="POST" action="{{ url_for('etichette_spedizioni.stampa_etichetta') }}">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-6">
+                            <label for="email_cliente" class="form-label fw-bold mb-1">Email Cliente</label>
+                            <div class="input-group shadow-sm">
+                                <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                                <input type="email" class="form-control" id="email_cliente" name="email_cliente" value="{{ customer.email | default('') }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="codice_brt" class="form-label fw-bold mb-1">Codice BRT</label>
+                            <input type="text" class="form-control shadow-sm" id="codice_brt" name="codice_brt" placeholder="AA00123456789 1" required>
+                        </div>
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary w-100 shadow-sm">
+                                <i class="bi bi-send"></i> Invia Email
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <div class="col-lg-8 col-md-7">
