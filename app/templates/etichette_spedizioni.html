@@ -17,7 +17,7 @@
                 <ol class="mb-0 mt-1 small">
                     <li>Inserisci il codice Mexal del cliente.</li>
                     <li>Modifica i dati se necessario per l'etichetta o le note.</li>
-                    <li>Impostare il numero di colli e il peso.</li>
+                    <li>Impostare la natura della merce, il numero di colli e il peso.</li>
                     <li>Scegliere il numero di etichette da stampare e cliccare Stampa.</li>
                 </ol>
             </div>
@@ -91,50 +91,65 @@
                             </div>
                         </div>
 
-                        <div class="mt-4 pt-4 border-top d-flex flex-wrap align-items-end gap-3">
-                            <div style="max-width: 120px;">
-                                <label for="colli" class="form-label fw-bold mb-1">Colli</label>
-                                <input type="number" 
-                                    class="form-control shadow-sm" 
-                                    id="colli" 
-                                    name="colli" 
-                                    value="1" 
-                                    min="1" 
-                                    step="1">
-                            </div>
+                        <div class="mt-4 pt-4 border-top">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label for="natura_merce" class="form-label fw-bold mb-1">Natura Merce</label>
+                                            <input type="text" 
+                                                class="form-control shadow-sm" 
+                                                id="natura_merce" 
+                                                name="natura_merce" 
+                                                value="CAMPIONI">
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <label for="colli" class="form-label fw-bold mb-1">Colli</label>
+                                            <input type="number" 
+                                                class="form-control shadow-sm" 
+                                                id="colli" 
+                                                name="colli" 
+                                                value="1" 
+                                                min="1" 
+                                                step="1">
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <label for="peso" class="form-label fw-bold mb-1">Peso (kg)</label>
+                                            <input type="number" 
+                                                class="form-control shadow-sm" 
+                                                id="peso"
+                                                name="peso"
+                                                min="0"
+                                                max="50"
+                                                step="0.1"
+                                                placeholder="0.0"
+                                                value="1.0">
+                                        </div>
+                                    </div>
+                                </div>
 
-                            <div style="max-width: 120px;">
-                                <label for="peso" class="form-label fw-bold mb-1">Peso (kg)</label>
-                                <input type="number" 
-                                    class="form-control shadow-sm" 
-                                    id="peso" 
-                                    name="peso" 
-                                    min="0" 
-                                    step="0.1" 
-                                    placeholder="0.0"
-                                    value="1.0">
-                            </div>
-
-                            <div style="max-width: 160px;">
-                                <label for="numero_etichette" class="form-label fw-bold mb-1">Quantità etichette</label>
-                                <div class="input-group shadow-sm">
-                                    <span class="input-group-text bg-light">
-                                        <i class="bi bi-tag"></i>
-                                    </span>
-                                    <input type="number" 
-                                        class="form-control" 
-                                        id="numero_etichette" 
-                                        name="numero_etichette" 
-                                        value="1" 
-                                        min="1" 
-                                        step="1" 
-                                        required>
+                                <div class="col-12 d-flex align-items-end gap-3 mt-3">
+                                    <div style="max-width: 200px;">
+                                        <label for="numero_etichette" class="form-label fw-bold mb-1">Quantità etichette</label>
+                                        <div class="input-group shadow-sm">
+                                            <span class="input-group-text bg-light">
+                                                <i class="bi bi-tag"></i>
+                                            </span>
+                                            <input type="number" 
+                                                class="form-control" 
+                                                id="numero_etichette" 
+                                                name="numero_etichette" 
+                                                value="1" 
+                                                min="1" 
+                                                step="1" 
+                                                required>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-success btn-lg px-5 shadow-sm">
+                                        <i class="bi bi-printer"></i> Stampa
+                                    </button>
                                 </div>
                             </div>
-
-                            <button type="submit" class="btn btn-success btn-lg px-4 shadow-sm">
-                                <i class="bi bi-printer"></i> Stampa
-                            </button>
                         </div>
                     </form>
                 </div>
