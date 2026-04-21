@@ -86,16 +86,16 @@ def stampa_etichetta():
         "note": request.form.get("note") or ""
     }
     
-    # for _ in range(numero_etichette):
-    #     send_to_zebra("192.168.1.172", generate_sugar_label(
-    #         ragione_sociale=dati_etichetta["ragione_sociale"],
-    #         via=dati_etichetta["indirizzo"],
-    #         cap_citta_provincia=f"{dati_etichetta['cap']} {dati_etichetta['localita']} {dati_etichetta['provincia']}",
-    #         stato=dati_etichetta["cod_paese"],
-    #         telefono=dati_etichetta["telefono"],
-    #         ca=dati_etichetta["cortese_attenzione"],
-    #         notes=dati_etichetta["note"]
-    #     ))
+    for _ in range(numero_etichette):
+        send_to_zebra("192.168.1.172", generate_sugar_label(
+            ragione_sociale=dati_etichetta["ragione_sociale"],
+            via=dati_etichetta["indirizzo"],
+            cap_citta_provincia=f"{dati_etichetta['cap']} {dati_etichetta['localita']} {dati_etichetta['provincia']}",
+            stato=dati_etichetta["cod_paese"],
+            telefono=dati_etichetta["telefono"],
+            ca=dati_etichetta["cortese_attenzione"],
+            notes=dati_etichetta["note"]
+        ))
 
     logo_path = os.path.join(current_app.root_path, 'static', 'img', 'brt_logo.png')
     try:
