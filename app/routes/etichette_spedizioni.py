@@ -88,7 +88,6 @@ def stampa_etichetta():
     }
     
     for _ in range(numero_etichette):
-        continue
         send_to_zebra("192.168.1.172", generate_sugar_label(
             ragione_sociale=dati_etichetta["ragione_sociale"],
             via=dati_etichetta["indirizzo"],
@@ -106,8 +105,8 @@ def stampa_etichetta():
             brt_logo_base_64 = f"data:image/png;base64,{image_data}"
     except FileNotFoundError:
         brt_logo_base_64 = ""
+
     # 3. Generazione PDF in memoria (senza scrivere su disco)
-    # Usiamo il motore di Flask per il template HTML
     rendered_html = render_template('bartolini-template.html', 
                                     destinatario=dati_etichetta, 
                                     spedizione=spedizione,
@@ -118,7 +117,6 @@ def stampa_etichetta():
     HTML(string=rendered_html).write_pdf(pdf_io)
     pdf_io.seek(0)
 
-    # 4. Risposta HTTP per visualizzazione PDF
     response = make_response(pdf_io.read())
     response.headers['Content-Type'] = 'application/pdf'
     # 'inline' lo apre nel browser, 'attachment' lo scaricherebbe
@@ -126,5 +124,5 @@ def stampa_etichetta():
 
     return response
     
-    flash("Richiesta di stampa inoltrata con successo.", "success")
-    return redirect(url_for('etichette_spedizioni.etichette_spedizioni'))
+    # flash("Richiesta di stampa inoltrata con successo.", "success")
+    # return redirect(url_for('etichette_spedizioni.etichette_spedizioni'))
