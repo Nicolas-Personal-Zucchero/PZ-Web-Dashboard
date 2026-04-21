@@ -90,7 +90,7 @@ def stampa_etichetta():
         send_to_zebra("192.168.1.172", generate_sugar_label(
             ragione_sociale=dati_etichetta["ragione_sociale"],
             via=dati_etichetta["indirizzo"],
-            cap_citta_provincia=f"{dati_etichetta['cap']} {dati_etichetta['localita']} {dati_etichetta['provincia']}",
+            cap_citta_provincia=f"{dati_etichetta['cap']} {dati_etichetta['localita']} ({dati_etichetta['provincia']})",
             stato=dati_etichetta["cod_paese"],
             telefono=dati_etichetta["telefono"],
             ca=dati_etichetta["cortese_attenzione"],
