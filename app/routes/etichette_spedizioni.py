@@ -144,6 +144,6 @@ def invia_tracking():
     else:
         flash("Errore: Configurazione mailer mancante.", "danger")
     
-    flash("Richiesta di recensione inviata con successo!", "success")
+    flash("Codice BRT inviato con successo!", "success")
 
     return redirect("/etichette_spedizioni")

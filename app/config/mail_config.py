@@ -227,10 +227,10 @@ TRACKING_BRT_BODY_ITA = """
 <p>Gentile cliente,</p>
 
 <p>abbiamo affidato i tuoi prodotti <strong>Personal Zucchero</strong> al corriere <strong>BRT</strong>. La consegna è in corso!</p>
-
+<br>
 <p>Codice di Tracking:<br>
 <span style="color: #e4191f; font-size: 1.5em; font-weight: bold;">{tracking}</span></p>
-
+<br>
 <p><strong>Istruzioni per il monitoraggio:</strong></p>
 <ul>
     <li>Collegati al sito ufficiale, nella sezione "Ricerca Avanzata": <a href="https://vas.brt.it/vas/sped_numspe_par.htm">https://vas.brt.it/vas/sped_numspe_par.htm</a></li>
@@ -238,12 +238,12 @@ TRACKING_BRT_BODY_ITA = """
     <li>Ottieni le informazioni premendo il pulsante "Ricerca" in fondo alla pagina.</li>
 </ul>
 
-<p>Grazie per aver scelto la nostra dolcezza.</p>
-
+<p>Grazie per aver scelto la nostra dolcezza, rimaniamo a disposizione per dubbi o informazioni.</p>
+<br>
 <p>A presto,<br>
 <strong>Il team di Personal Zucchero</strong></p>
-
-<p><small>Questa è una notifica automatica, non è necessario rispondere a questo indirizzo email.</small></p>
+<br>
+<p><small>Questa è una email automatica, non è necessario rispondere.</small></p>
 """
 
 EMAIL_TEMPLATES = {
