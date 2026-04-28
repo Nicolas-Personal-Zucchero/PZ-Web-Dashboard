@@ -238,12 +238,12 @@ TRACKING_BRT_BODY_ITA = """
     <li>Ottieni le informazioni premendo il pulsante "Ricerca" in fondo alla pagina.</li>
 </ul>
 
-<p>Grazie per aver scelto la nostra dolcezza.</p>
+<p>Grazie per aver scelto la nostra dolcezza, rimaniamo a disposizione per dubbi o informazioni.</p>
 <br>
 <p>A presto,<br>
 <strong>Il team di Personal Zucchero</strong></p>
-
-<p><small>Questa è una notifica automatica, non è necessario rispondere a questo indirizzo email.</small></p>
+<br>
+<p><small>Questa è una email automatica, non è necessario rispondere.</small></p>
 """
 
 EMAIL_TEMPLATES = {
