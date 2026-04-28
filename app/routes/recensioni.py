@@ -45,10 +45,9 @@ def recensioni():
                         EMAIL_TEMPLATES["review_" + language.lower()]["body"].format(customer=customer, sender=sender),
                         hubspot_ccn=True
                     )
+                    flash("Richiesta di recensione inviata con successo!", "success")
                 else:
                     flash("Errore: Configurazione mailer mancante.", "danger")
-
-                flash("Richiesta di recensione inviata con successo!", "success")
 
             return redirect("/recensioni")
 

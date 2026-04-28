@@ -9,6 +9,7 @@ from weasyprint import HTML
 from datetime import datetime
 import base64
 from flask import current_app
+from config.mail_config import EMAIL_TEMPLATES
 
 etichette_spedizioni_bp = Blueprint("etichette_spedizioni", __name__, url_prefix="/etichette_spedizioni")
 
@@ -29,7 +30,7 @@ def etichette_spedizioni():
         
         customer = mexal.get_customer_by_mexal_code(
             mexal_code,
-            ["codice", "ragione_sociale", "indirizzo", "cap", "localita", "provincia", "cod_paese", "telefono"]
+            ["codice", "ragione_sociale", "email", "indirizzo", "cap", "localita", "provincia", "cod_paese", "telefono"]
         )
 
         if customer:
@@ -125,3 +126,24 @@ def stampa_etichetta():
     
     # flash("Richiesta di stampa inoltrata con successo.", "success")
     # return redirect(url_for('etichette_spedizioni.etichette_spedizioni'))
+
+@etichette_spedizioni_bp.route("/invia_tracking", methods=["POST"])
+def invia_tracking():
+    mailer = secrets_manager.get_mailer()
+
+    email = request.form.get("email_cliente", "").strip().lower()
+    tracking = request.form.get("codice_brt", "").strip().upper()
+
+    if mailer:
+        mailer.invia_email_singola(
+            email,
+            EMAIL_TEMPLATES["tracking_brt_ita"]["object"],
+            EMAIL_TEMPLATES["tracking_brt_ita"]["body"].format(tracking=tracking),
+            hubspot_ccn=True
+        )
+    else:
+        flash("Errore: Configurazione mailer mancante.", "danger")
+    
+    flash("Richiesta di recensione inviata con successo!", "success")
+
+    return redirect("/etichette_spedizioni")

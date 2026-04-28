@@ -221,6 +221,31 @@ Should you have any questions, please do not hesitate to contact us.<br>
 Best regards,<br>
 <b>Personal Zucchero</b>"""
 
+TRACKING_BRT_OBJECT_ITA = """Il tuo ordine da Personal Zucchero è in arrivo!"""
+
+TRACKING_BRT_BODY_ITA = """
+<p>Gentile cliente,</p>
+
+<p>abbiamo affidato i tuoi prodotti <strong>Personal Zucchero</strong> al corriere <strong>BRT</strong>. La consegna è in corso!</p>
+
+<p>Codice di Tracking:<br>
+<span style="color: #e4191f; font-size: 1.5em; font-weight: bold;">{tracking}</span></p>
+
+<p><strong>Istruzioni per il monitoraggio:</strong></p>
+<ul>
+    <li>Collegati al sito ufficiale, nella sezione "Ricerca Avanzata": <a href="https://vas.brt.it/vas/sped_numspe_par.htm">https://vas.brt.it/vas/sped_numspe_par.htm</a></li>
+    <li>Inserisci il codice <strong>{tracking}</strong> nella casella <strong>"ID Collo Cliente"</strong>.</li>
+    <li>Ottieni le informazioni premendo il pulsante "Ricerca" in fondo alla pagina.</li>
+</ul>
+
+<p>Grazie per aver scelto la nostra dolcezza.</p>
+
+<p>A presto,<br>
+<strong>Il team di Personal Zucchero</strong></p>
+
+<p><small>Questa è una notifica automatica, non è necessario rispondere a questo indirizzo email.</small></p>
+"""
+
 EMAIL_TEMPLATES = {
     "review_ita": {"object": REVIEW_EMAIL_OBJECT_ITA, "body": REVIEW_EMAIL_BODY_ITA},
     "review_eng": {"object": REVIEW_EMAIL_OBJECT_ENG, "body": REVIEW_EMAIL_BODY_ENG},
@@ -228,5 +253,6 @@ EMAIL_TEMPLATES = {
     "contact_ita": {"object": CONTACT_EMAIL_OBJECT_ITA, "body": CONTACT_EMAIL_BODY_ITA},
     "contact_eng": {"object": CONTACT_EMAIL_OBJECT_ENG, "body": CONTACT_EMAIL_BODY_ENG},
     "sigep_ita": {"object": SIGEP_EMAIL_OBJECT_ITA, "body": SIGEP_EMAIL_BODY_ITA},
-    "sigep_eng": {"object": SIGEP_EMAIL_OBJECT_ENG, "body": SIGEP_EMAIL_BODY_ENG}
+    "sigep_eng": {"object": SIGEP_EMAIL_OBJECT_ENG, "body": SIGEP_EMAIL_BODY_ENG},
+    "tracking_brt_ita": {"object": TRACKING_BRT_OBJECT_ITA, "body": TRACKING_BRT_BODY_ITA},
 }

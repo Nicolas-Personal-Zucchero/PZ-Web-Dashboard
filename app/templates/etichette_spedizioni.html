@@ -44,22 +44,31 @@
 
             <div class="mt-4 pt-4 border-top">
                 <h4 class="h5 mb-3">Notifica Spedizione BRT</h4>
-                <form method="POST" action="{{ url_for('etichette_spedizioni.stampa_etichetta') }}">
+                <div class="alert alert-info shadow-sm mb-4" role="alert">
+                    <strong>Cosa significa:</strong>
+                    <ol class="mb-0 mt-1 small">
+                        <li>Se si inserisce il Codice Mexal la email viene inserita automaticamente.</li>
+                        <li>Inserisci se mancante o modifica la mail del cliente se necessario.</li>
+                        <li>Inserisci il codice di tracciamento BRT dell'etichetta attaccata sul documento di ritiro.</li>
+                        <li>Premendo "Invia Codice Tracciamento" il cliente riceverà le istruzioni per monitorare la spedizione.</li>
+                    </ol>
+                </div>
+                <form method="POST" action="{{ url_for('etichette_spedizioni.invia_tracking') }}">
                     <div class="row g-3 align-items-end">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <label for="email_cliente" class="form-label fw-bold mb-1">Email Cliente</label>
                             <div class="input-group shadow-sm">
                                 <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
                                 <input type="email" class="form-control" id="email_cliente" name="email_cliente" value="{{ customer.email | default('') }}" required>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <label for="codice_brt" class="form-label fw-bold mb-1">Codice BRT</label>
-                            <input type="text" class="form-control shadow-sm" id="codice_brt" name="codice_brt" placeholder="AA00123456789 1" required>
+                        <div class="col-md-12">
+                            <label for="codice_brt" class="form-label fw-bold mb-1">Codice BRT (Senza Spazi)</label>
+                            <input type="text" class="form-control shadow-sm" id="codice_brt" name="codice_brt" placeholder="AA001234567891" required minlength="14" maxlength="14">
                         </div>
                         <div class="col-md-12">
                             <button type="submit" class="btn btn-primary w-100 shadow-sm">
-                                <i class="bi bi-send"></i> Invia Email
+                                <i class="bi bi-send"></i> Invia Codice Tracciamento
                             </button>
                         </div>
                     </div>
@@ -144,7 +153,7 @@
                                                 id="peso"
                                                 name="peso"
                                                 min="0"
-                                                max="50"
+                                                max="500"
                                                 step="0.1"
                                                 placeholder="0.0"
                                                 value="1.0">
@@ -170,7 +179,7 @@
                                         </div>
                                     </div>
                                     <button type="submit" class="btn btn-success btn-lg px-5 shadow-sm">
-                                        <i class="bi bi-printer"></i> Stampa
+                                        <i class="bi bi-printer"></i> Stampa Etichette e Documento di Ritiro
                                     </button>
                                 </div>
                             </div>
