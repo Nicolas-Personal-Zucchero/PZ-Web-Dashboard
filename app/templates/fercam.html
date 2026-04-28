@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Fercam{% endblock %}
+
+{% block content %}
+<style>
+    /* Utility class per l'evidenziazione delle righe selezionate */
+    .row-selected {
+        background-color: #cff4fc !important;
+        transition: background-color 0.2s ease-in-out;
+    }
+    
+    /* UX: Feedback visivo della cliccabilità della riga */
+    .fattura-row {
+        cursor: pointer;
+    }
+</style>
+
+<div class="p-4">
+    <a href="{{ home_link }}" class="btn btn-light mb-3">
+        <i class="bi bi-arrow-left"></i> Torna indietro
+    </a>
+    
+    <h1 class="h3 mb-3">Fercam</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+    {% endfor %}
+    {% endwith %}
+
+    <form method="POST" id="fercamForm">
+        <div style="max-height: 640px; overflow-y: auto;" class="mt-4 mb-3 border rounded">
+            <ul class="list-group list-group-flush styled-table" id="fercamList">
+                <li class="list-group-item static-header sticky-top bg-light">
+                    <div class="row align-items-center fw-bold">
+                        <div class="col-md-1">
+                            <input class="form-check-input" type="checkbox" id="selectAll" title="Seleziona tutte">
+                        </div>
+                        <div class="col-md-1">Data Creazione</div>
+                        <div class="col-md-1">Sigla Doc Orig</div>
+                        <div class="col-md-1">Sigla</div>
+                        <div class="col-md-1">Numero Ordine</div>
+                        <div class="col-md-1">Data Doc Orig</div>
+                        <div class="col-md-1">Data Ordine</div>
+                        <div class="col-md-1">Cod Vettore</div>
+                        <div class="col-md-1">Nr Tracking</div>
+                        <div class="col-md-1">Data Documento</div>
+                        <div class="col-md-2 text-end">Azioni</div>
+                    </div>
+                </li>
+
+                {% for fattura in fatture %}
+                <li class="list-group-item fattura-row">
+                    <div class="row align-items-center">
+                        <div class="col-md-1">
+                            <input class="form-check-input fattura-checkbox" type="checkbox" name="fatture_selezionate" value="{{ fattura.id }}">
+                        </div>
+                        <div class="col-md-1">
+                            <strong>{{ fattura.data_creazione }}</strong>
+                        </div>
+                        <div class="col-md-1">
+                            {{ fattura.sigla_doc_orig }}
+                        </div>
+                        <div class="col-md-1">
+                            {{ fattura.sigla }}
+                        </div>
+                        <div class="col-md-1">
+                            {{ fattura.numero_ordine }}
+                        </div>
+                        <div class="col-md-1">
+                            {{ fattura.data_doc_orig }}
+                        </div>
+                        <div class="col-md-1">
+                            {{ fattura.data_ordine }}
+                        </div>
+                        <div class="col-md-1">
+                            {{ fattura.cod_vettore }}
+                        </div>
+                        <div class="col-md-1">
+                            {{ fattura.nr_tracking }}
+                        </div>
+                        <div class="col-md-1">
+                            {{ fattura.data_documento }}
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <button type="submit" 
+                                    name="fattura_id_singola" 
+                                    value="{{ fattura.id }}" 
+                                    formaction="{{ url_for('fercam.fercam') }}" 
+                                    class="btn btn-outline-primary btn-sm">
+                                Invia singolo
+                            </button>
+                        </div>
+                    </div>
+                </li>
+                {% else %}
+                <li class="list-group-item text-center text-muted">
+                    Nessun documento disponibile.
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="text-end">
+            <button type="submit" formaction="{{ url_for('fercam.fercam') }}" class="btn btn-primary btn-lg" id="btnInvia" disabled>
+                Invia selezionate a Fercam
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const selectAll = document.getElementById("selectAll");
+        const checkboxes = document.querySelectorAll(".fattura-checkbox");
+        const btnInvia = document.getElementById("btnInvia");
+        const fercamList = document.getElementById("fercamList");
+
+        let selectedCount = 0;
+
+        function updateRowStyle(checkbox) {
+            const row = checkbox.closest('.fattura-row');
+            if (row) {
+                checkbox.checked ? row.classList.add('row-selected') : row.classList.remove('row-selected');
+            }
+        }
+
+        function toggleSubmitButton() {
+            btnInvia.disabled = !Array.from(checkboxes).some(cb => cb.checked);
+            btnInvia.textContent = selectedCount > 0 ? `Invia ${selectedCount} selezionate a Fercam` : 'Invia selezionate a Fercam';
+        }
+
+        if (selectAll) {
+            selectAll.addEventListener("change", function () {
+                checkboxes.forEach(cb => {
+                    cb.checked = selectAll.checked;
+                    updateRowStyle(cb);
+                });
+                selectedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+                toggleSubmitButton();
+            });
+        }
+
+        // Mantenuto per accessibilità (navigazione tramite tastiera: Tab + Spazio sul checkbox diretto)
+        checkboxes.forEach(cb => {
+            cb.addEventListener("change", function () {
+                updateRowStyle(this);
+                selectedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+                
+                if (!this.checked && selectAll.checked) {
+                    selectAll.checked = false;
+                } else if (this.checked) {
+                    selectAll.checked = Array.from(checkboxes).every(c => c.checked);
+                }
+                toggleSubmitButton();
+            });
+        });
+
+        // Event Delegation per il click sull'intera riga
+        if (fercamList) {
+            fercamList.addEventListener("click", function (event) {
+                const row = event.target.closest('.fattura-row');
+                if (!row) return;
+
+                // Esclude il trigger manuale se il click avviene su elementi già interattivi
+                // (evita side-effect come doppi toggle o blocco del submit form)
+                if (event.target.closest('button') || event.target.tagName === 'INPUT' || event.target.tagName === 'A') {
+                    return;
+                }
+
+                const checkbox = row.querySelector('.fattura-checkbox');
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    // Scatena l'evento per innescare aggiornamento UI e contatori
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
