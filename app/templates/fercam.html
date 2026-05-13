@@ -77,13 +77,13 @@
                             {{ fattura.asp_est_beni }}
                         </div>
                         <div class="col-md-2">
-                            {{ fattura.indirizzo_spedizione }}
+                            
                         </div>
                         <div class="col-md-1 text-end">
                             <button type="submit" 
                                     name="fattura_id_singola" 
-                                    value="{{ fattura.id }}" 
-                                    formaction="{{ url_for('fercam.fercam') }}" 
+                                    value="{{ fattura.id }}"
+                                    formaction="{{ url_for('fercam.invia') }}"
                                     class="btn btn-outline-primary btn-sm">
                                 Invia singolo
                             </button>
@@ -99,7 +99,9 @@
         </div>
 
         <div class="text-end">
-            <button type="submit" formaction="{{ url_for('fercam.fercam') }}" class="btn btn-primary btn-lg" id="btnInvia" disabled>
+            <button type="submit" 
+                    formaction="{{ url_for('fercam.invia') }}" 
+                    class="btn btn-primary btn-lg" id="btnInvia" disabled>
                 Invia selezionate a Fercam
             </button>
         </div>

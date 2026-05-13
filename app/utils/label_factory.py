@@ -48,3 +48,60 @@ def generate_sugar_label(ragione_sociale, via, cap_citta_provincia, stato, telef
 
 ^XZ"""
     return zpl
+
+def generate_dachser_label(sscc, date, counter, total, ragione_sociale, via, cap_citta_provincia, stato, show_personal_zucchero):
+    zpl_rows = ["^XA"]
+    
+    """
+    Genera l'etichetta per Dachser con o senza logo Personal Zucchero.
+    Se show_personal_zucchero è True, include il logo e la sezione mittente, altrimenti li esclude.
+    """
+    if show_personal_zucchero:
+        zpl_rows.extend([
+            f"^FO0,50^GF{LOGO_DATA}^FS",
+            f"^FO0,1025^GF{LOGO_DATA}^FS"
+        ])
+
+    zpl_rows.extend([
+        "^FX Inversione assi per formato verticale",
+        "^PW800",
+        "^LL1198",
+        "^LS0",
+        "^FX Imposta l'orientamento globale dei campi a 90 gradi (orario)",
+        "^FWR",
+        "^FX Sezione Superiore: Barcode SSCC",
+        "^CF0,50",
+        "^FO760,50^FDDACHSER^FS",
+        "^FO700,80^FDSSCC^FS",
+        f"^FO706,363^BY3^BCR,120,Y,N,Y,U^FD(00){sscc}^FS",
+        "^CF0,40",
+        f"^FO770,820^FB330,1,0,R^FD{date}^FS",
+        "^CF0,50",
+        f"^FO680,820^FB330,1,0,R^FD{counter}/{total}^FS",
+        "^FX La riga orizzontale ^GB1100,3,3 diventa verticale ^GB3,1100,3",
+        "^FO670,50^GB3,1100,3^FS",
+        "^FX Sezione Centrale: Destinatario con flow dinamico",
+        "^CF0,25",
+        "^FO630,50^FDDestinatario / Recipient^FS",
+        "^CF0,40",
+        "^FO610,820^FB330,1,0,R^FDBS 2/103^FS",
+        "^FX Unico blocco per i dati variabili",
+        "^CF0,60",
+        "^FO120,60^FB1098,7,10,L,0^FD",
+        f"{ragione_sociale}\\&",
+        f"{via}\\&",
+        f"{cap_citta_provincia}\\&",
+        f"{stato}^FS"
+    ])
+        
+    if show_personal_zucchero:
+        zpl_rows.extend([
+            "^FX Sezione Mittente",
+            "^CF0,65",
+            "^FO40,50^FB1098,1,0,C^FDPersonal Zucchero SRL^FS",
+            "^CF0,25",
+            "^FO10,50^FB1098,1,0,C^FDPiazza Allende 1 - 47824 Poggio Torriana RN - Italy^FS"
+        ])
+
+    zpl_rows.append("^XZ")
+    return "\n".join(zpl_rows)
