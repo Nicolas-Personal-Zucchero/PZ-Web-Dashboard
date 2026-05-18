@@ -1,3 +1,7 @@
+import logging
+import os
+import sys
+
 from flask import Flask, render_template
 
 from config.links import register_links, get_links
@@ -72,6 +76,24 @@ def inject_links():
         'linkGroups': get_links(*args),
         'home_link': home_link
     }
+
+def setup_logging():
+    # Rimuove eventuali handler predefiniti per evitare duplicati
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+
+    # Configura il formato e il livello (es. INFO o DEBUG da variabili d'ambiente)
+    log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
+    
+    logging.basicConfig(
+        level=log_level,
+        format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+        handlers=[
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
+
+setup_logging()
 
 # Ignorato da gunicorn
 if __name__ == "__main__":

@@ -53,7 +53,11 @@
                 <li class="list-group-item fattura-row">
                     <div class="row align-items-center">
                         <div class="col-md-1">
-                            <input class="form-check-input fattura-checkbox" type="checkbox" name="fatture_selezionate" value="{{ fattura.id }}">
+                            {% if fattura.completo %}
+                                <input class="form-check-input fattura-checkbox" type="checkbox" name="fatture_selezionate" value="{{ fattura.id }}">
+                            {% else %}
+                                <i class="bi bi-exclamation-triangle text-warning" title="Dati incompleti: aspetto non definito"></i>
+                            {% endif %}
                         </div>
                         <div class="col-md-1">
                             {{ fattura.data_documento }}
@@ -74,19 +78,21 @@
                             {{ fattura.peso_spedizione }} Kg
                         </div>
                         <div class="col-md-1">
-                            {{ fattura.asp_est_beni }}
+                            {{ fattura.aspetto }}
                         </div>
                         <div class="col-md-2">
                             
                         </div>
                         <div class="col-md-1 text-end">
-                            <button type="submit" 
-                                    name="fattura_id_singola" 
-                                    value="{{ fattura.id }}"
-                                    formaction="{{ url_for('fercam.invia') }}"
-                                    class="btn btn-outline-primary btn-sm">
-                                Invia singolo
-                            </button>
+                            {% if fattura.completo %}
+                                <button type="submit" 
+                                        name="fattura_id_singola" 
+                                        value="{{ fattura.id }}"
+                                        formaction="{{ url_for('fercam.invia') }}"
+                                        class="btn btn-outline-primary btn-sm">
+                                    Invia singolo
+                                </button>
+                            {% endif %}
                         </div>
                     </div>
                 </li>

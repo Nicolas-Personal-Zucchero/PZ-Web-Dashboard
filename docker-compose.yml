@@ -7,6 +7,8 @@ services:
       - /home/pz/agents_map:/app/app/static/agents_map
     ports:
       - "80:5000"
+    environment:
+      - LOG_LEVEL=DEBUG
     restart: unless-stopped
     networks:
       - backend

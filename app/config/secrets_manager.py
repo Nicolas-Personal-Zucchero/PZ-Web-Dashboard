@@ -3,7 +3,7 @@ import os
 from hubspot_pz import HubspotPZ
 from mailer_pz import MailerPZ
 from mexal_pz import MexalPZ
-from dachser_edi import SSCCGenerator
+from dachser_edi import SSCCGenerator, FercamSFTP
 
 # Path to the secrets file inside the container
 SECRETS_FILE = "/secrets/secrets.json"
@@ -92,6 +92,13 @@ class SecretsManager:
             if sscc_token:
                 self._sscc_generator = SSCCGenerator(sscc_token)
         return self._sscc_generator
+
+    def get_fercam_sftp(self):
+        sftp_username = self.get_secret("SFTP_USERNAME")
+        sftp_password = self.get_secret("SFTP_PASSWORD")
+        if sftp_username and sftp_password:
+            return FercamSFTP(sftp_username, sftp_password, use_test_server=True, auto_add_keys=True)
+        return None
 
 # Global instance
 secrets_manager = SecretsManager()

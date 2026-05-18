@@ -1,15 +1,16 @@
 import os
 import io
 from flask import Blueprint, render_template, request, redirect, flash, url_for, make_response
+from config.config import ZEBRA_IP
 from utils.label_factory import generate_sugar_label
 from config.secrets_manager import secrets_manager
-import socket
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 from datetime import datetime
 import base64
 from flask import current_app
 from config.mail_config import EMAIL_TEMPLATES
+from utils.utils import send_to_zebra
 
 etichette_spedizioni_bp = Blueprint("etichette_spedizioni", __name__, url_prefix="/etichette_spedizioni")
 
@@ -40,14 +41,7 @@ def etichette_spedizioni():
 
     return render_template("etichette_spedizioni.html", customer=customer)
 
-def send_to_zebra(printer_ip, zpl_string, port=9100):
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.settimeout(3.0)
-            s.connect((printer_ip, port))
-            s.sendall(zpl_string.encode('utf-8'))
-    except socket.error as e:
-        print(f"Errore connessione: {e}")
+
 
 def genera_pdf_ritiro(data_destinatario, data_spedizione):
     env = Environment(loader=FileSystemLoader('.'))
@@ -88,7 +82,7 @@ def stampa_etichetta():
     }
     
     for _ in range(numero_etichette):
-        send_to_zebra("192.168.1.172", generate_sugar_label(
+        send_to_zebra(ZEBRA_IP, generate_sugar_label(
             ragione_sociale=dati_etichetta["ragione_sociale"],
             via=dati_etichetta["indirizzo"],
             cap_citta_provincia=f"{dati_etichetta['cap']} {dati_etichetta['localita']} ({dati_etichetta['provincia']})",

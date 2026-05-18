@@ -1,6 +1,46 @@
 from datetime import datetime
 from typing import Optional
 from dachser_edi import *
+from flask import current_app
+
+def encode_base36(num: int, length: int = 5) -> str:
+    """Codifica un intero in Base36 con padding fisso."""
+    alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    if num == 0:
+        return alphabet[0] * length
+    
+    res = ""
+    while num > 0:
+        num, i = divmod(num, 36)
+        res = alphabet[i] + res
+        
+    return res.zfill(length)
+
+def generate_doc_id(numero: int, sigla: str, anno_documento: int) -> str:
+    """
+    Genera un doc_id univoco di 5 caratteri basato sui dati fattura.
+    Garantisce assenza di collisioni tramite bit-packing.
+    """
+    # 1. Mappatura Sigla (3 bit max -> 0-7)
+    sigle_map = {'FT': 0, 'BS': 1, 'BC': 2} 
+    sigla_val = sigle_map.get(sigla, 7) # 7 come fallback per sigle non censite
+    
+    # 2. Calcolo Epoch (5 bit max -> 0-31)
+    epoch_base = 2024
+    year_val = anno_documento - epoch_base
+    
+    # Validazione vincoli hardware-like
+    if not (0 <= year_val <= 31):
+        raise ValueError(f"Anno {anno_documento} fuori range per l'epoch a 5 bit.")
+    if not (0 <= numero <= 2 ** 17 - 1):
+        raise ValueError(f"Numero {numero} supera la capacità di 17 bit.")
+        
+    # 3. Bit Packing
+    # Struttura: [5 bit Anno] [3 bit Sigla] [17 bit Numero]
+    packed_id = (year_val << 20) | (sigla_val << 17) | numero
+    
+    # 4. Encoding
+    return encode_base36(packed_id, 5)
 
 def create_personal_zucchero_consignor():
     #Address facoltativo in consignor
@@ -34,6 +74,8 @@ def create_transport_order(
         product: Product,
         shipment_lines: Optional[list[ShipmentLine]],
         sscc: str,
+        notes: Optional[str] = None,
+        tail_lift_required: bool = False
     ) -> str:
     edi = TransportOrder(
         sender_id="72859708", # Fisso
@@ -44,7 +86,7 @@ def create_transport_order(
         test=True, # Da rimuovere quando si andrà in produzione
         
         # transport_number="44332211",
-        customer_shipment_reference= customer_shipment_reference,
+        customer_shipment_reference=customer_shipment_reference,
 
         consignor=consignor,
         consignee=consignee,
@@ -67,7 +109,7 @@ def create_transport_order(
         # ),
 
         # is_dangerous=True,
-        tail_lift_required=True,
+        tail_lift_required=tail_lift_required,
         # picked_up_by_consignee_at_delivery_branch=False,
         # dispatch_relation="8765",
         # sub_relation="432",
@@ -85,7 +127,8 @@ def create_transport_order(
         #     amount=90,
         #     currency=Currency.EUR
         # ),
-        
+        notes=notes,
+
         lines=shipment_lines,
         SSCC=sscc
     )
@@ -97,7 +140,7 @@ def create_xml(nuova_spedizione):
         consignor = create_personal_zucchero_consignor()
 
         consignee_contact = Contact(
-            name=nuova_spedizione["consignee"]["contact"]["name"],
+            email=nuova_spedizione["consignee"]["contact"]["email"],
             phone=nuova_spedizione["consignee"]["contact"]["phone"]
         )
         consignee_address = Address(
@@ -105,7 +148,7 @@ def create_xml(nuova_spedizione):
             city=nuova_spedizione["consignee"]["city"],
             postal_code=nuova_spedizione["consignee"]["postal_code"],
             country_code=nuova_spedizione["consignee"]["country_code"],
-            supplement_information=""
+            # supplement_information=""
         )
         consignee = Consignee(
             name=nuova_spedizione["consignee"]["name"],
@@ -142,7 +185,10 @@ def create_xml(nuova_spedizione):
             product=nuova_spedizione["product"],
             shipment_lines=shipment_lines,
             sscc=nuova_spedizione["sscc"],
+            notes=nuova_spedizione.get("notes"),
+            tail_lift_required=nuova_spedizione.get("tail_lift_required", False)
         )
         return xml_output
     except Exception as e:
+        current_app.logger.error(f"Error creating XML: {e}")
         return None
