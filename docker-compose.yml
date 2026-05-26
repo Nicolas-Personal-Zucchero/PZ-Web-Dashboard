@@ -5,10 +5,36 @@ services:
       - /home/pz/firestore_backups:/backups  # monta la cartella dei backup
       - /home/pz/.secrets:/secrets
       - /home/pz/agents_map:/app/app/static/agents_map
-    ports:
-      - "80:5000"
     environment:
-      - LOG_LEVEL=DEBUG
+      - LOG_LEVEL=INFO
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - backend
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    expose:
+      - "6379"
+    restart: unless-stopped
+    networks:
+      - backend
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      # Monta la configurazione di Nginx in sola lettura
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # Opzionale: monta il volume dei file statici se vuoi che Nginx li serva direttamente
+      - ./app/static:/usr/share/nginx/html/static:ro
+    depends_on:
+      - pz-dashboard
     restart: unless-stopped
     networks:
       - backend
@@ -16,3 +42,6 @@ services:
 networks:
   backend:
     name: shared_backend
+
+volumes:
+  redis_data:

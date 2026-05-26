@@ -35,17 +35,16 @@
                 <li class="list-group-item static-header sticky-top bg-light">
                     <div class="row align-items-center fw-bold">
                         <div class="col-md-1">
-                            <input class="form-check-input" type="checkbox" id="selectAll" title="Seleziona tutte">
+                            <!-- <input class="form-check-input" type="checkbox" id="selectAll" title="Seleziona tutte"> -->
                         </div>
                         <div class="col-md-1">Data Documento</div>
-                        <div class="col-md-1">Sigla Doc Orig</div>
-                        <div class="col-md-1">Numero Doc Orig</div>
-                        <div class="col-md-2">Ragione Sociale Cliente</div>
+                        <div class="col-md-1">Sigla</div>
+                        <div class="col-md-1">Numero</div>
+                        <div class="col-md-3">Ragione Sociale Cliente</div>
                         <div class="col-md-1">Numero Colli</div>
                         <div class="col-md-1">Peso Totale</div>
-                        <div class="col-md-1">Aspetto</div>
-                        <div class="col-md-2">Indirizzo</div>
-                        <div class="col-md-1 text-end">Azioni</div>
+                        <div class="col-md-2">Aspetto</div>
+                        <div class="col-md-1">Azioni</div>
                     </div>
                 </li>
 
@@ -63,12 +62,12 @@
                             {{ fattura.data_documento }}
                         </div>
                         <div class="col-md-1">
-                            {{ fattura.sigla_doc_orig }}
+                            {{ fattura.sigla }}
                         </div>
                         <div class="col-md-1">
-                            {{ fattura.numero_doc_orig }}
+                            {{ fattura.numero }}
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <strong>{{ fattura.ragione_sociale_cliente }}</strong>
                         </div>
                         <div class="col-md-1">
@@ -77,11 +76,8 @@
                         <div class="col-md-1">
                             {{ fattura.peso_spedizione }} Kg
                         </div>
-                        <div class="col-md-1">
-                            {{ fattura.aspetto }}
-                        </div>
                         <div class="col-md-2">
-                            
+                            {{ fattura.aspetto }}
                         </div>
                         <div class="col-md-1 text-end">
                             {% if fattura.completo %}
@@ -116,12 +112,15 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const selectAll = document.getElementById("selectAll");
         const checkboxes = document.querySelectorAll(".fattura-checkbox");
         const btnInvia = document.getElementById("btnInvia");
         const fercamList = document.getElementById("fercamList");
+        
+        const MAX_SELECTIONS = 10;
 
-        let selectedCount = 0;
+        function getSelectedCount() {
+            return document.querySelectorAll(".fattura-checkbox:checked").length;
+        }
 
         function updateRowStyle(checkbox) {
             const row = checkbox.closest('.fattura-row');
@@ -131,32 +130,21 @@
         }
 
         function toggleSubmitButton() {
-            btnInvia.disabled = !Array.from(checkboxes).some(cb => cb.checked);
-            btnInvia.textContent = selectedCount > 0 ? `Invia ${selectedCount} selezionate a Fercam` : 'Invia selezionate a Fercam';
+            const count = getSelectedCount();
+            btnInvia.disabled = count === 0;
+            btnInvia.textContent = count > 0 ? `Invia ${count} selezionate a Fercam` : 'Invia selezionate a Fercam';
         }
 
-        if (selectAll) {
-            selectAll.addEventListener("change", function () {
-                checkboxes.forEach(cb => {
-                    cb.checked = selectAll.checked;
-                    updateRowStyle(cb);
-                });
-                selectedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
-                toggleSubmitButton();
-            });
-        }
-
-        // Mantenuto per accessibilità (navigazione tramite tastiera: Tab + Spazio sul checkbox diretto)
         checkboxes.forEach(cb => {
             cb.addEventListener("change", function () {
-                updateRowStyle(this);
-                selectedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
-                
-                if (!this.checked && selectAll.checked) {
-                    selectAll.checked = false;
-                } else if (this.checked) {
-                    selectAll.checked = Array.from(checkboxes).every(c => c.checked);
+                // Intercettazione e revert del check se si supera il limite
+                if (this.checked && getSelectedCount() > MAX_SELECTIONS) {
+                    this.checked = false;
+                    alert(`Puoi selezionare un massimo di ${MAX_SELECTIONS} documenti contemporaneamente.`);
+                    return; 
                 }
+
+                updateRowStyle(this);
                 toggleSubmitButton();
             });
         });
@@ -167,16 +155,19 @@
                 const row = event.target.closest('.fattura-row');
                 if (!row) return;
 
-                // Esclude il trigger manuale se il click avviene su elementi già interattivi
-                // (evita side-effect come doppi toggle o blocco del submit form)
+                // Esclusione trigger sui nodi già interattivi
                 if (event.target.closest('button') || event.target.tagName === 'INPUT' || event.target.tagName === 'A') {
                     return;
                 }
 
                 const checkbox = row.querySelector('.fattura-checkbox');
                 if (checkbox) {
+                    // Controllo preventivo del limite prima di alterare lo stato e forzare il dispatch
+                    if (!checkbox.checked && getSelectedCount() >= MAX_SELECTIONS) {
+                        alert(`Puoi selezionare un massimo di ${MAX_SELECTIONS} documenti contemporaneamente.`);
+                        return;
+                    }
                     checkbox.checked = !checkbox.checked;
-                    // Scatena l'evento per innescare aggiornamento UI e contatori
                     checkbox.dispatchEvent(new Event('change'));
                 }
             });

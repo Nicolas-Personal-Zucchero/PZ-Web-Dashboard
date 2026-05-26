@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, send_file, flash, redirect, url_for
 from utils.firebase_client import db
 from firebase_admin import firestore
-from config.config import ITALY_TZ
+from config.constants import ITALY_TZ
 import pytz
 from utils.pdf import generate_pdf
 from datetime import datetime

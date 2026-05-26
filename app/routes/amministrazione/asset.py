@@ -2,7 +2,7 @@ import os
 from flask import Blueprint, render_template, request, redirect, flash
 from datetime import datetime
 import pytz
-from config.config import ITALY_TZ
+from config.constants import ITALY_TZ
 from utils.firebase_client import db
 from firebase_admin import firestore
 import re

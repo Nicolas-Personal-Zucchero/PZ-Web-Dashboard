@@ -1,7 +1,7 @@
 import os
 import io
 from flask import Blueprint, render_template, request, redirect, flash, url_for, make_response
-from config.config import ZEBRA_IP
+from config.constants import ZEBRA_IP
 from utils.label_factory import generate_sugar_label
 from config.secrets_manager import secrets_manager
 from jinja2 import Environment, FileSystemLoader

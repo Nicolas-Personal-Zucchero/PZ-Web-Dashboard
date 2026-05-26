@@ -5,51 +5,44 @@ def generate_sugar_label(ragione_sociale, via, cap_citta_provincia, stato, telef
     Genera il codice ZPL per l'etichetta Personal Zucchero.
     I campi del mittente sono allineati a destra con margine 50.
     """
-    zpl = f"""^XA
+    zpl_rows = ["^XA"]
+    zpl_rows.extend([
+        f"^FO690,50^GF{LOGO_DATA}^FS",
+        f"^FO690,1025^GF{LOGO_DATA}^FS",
+        "^FX Inversione assi per formato verticale",
+        "^PW800",
+        "^LL1198",
+        # "^LS0",
+        "^FX Imposta l'orientamento globale dei campi a 90 gradi (orario)",
+        "^FWR",
+        "^FX Sezione Superiore: Mittente",
+        "^CF0,65",
+        "^FO740,50^FB1098,1,0,C^FDPersonal Zucchero SRL^FS",
+        "^CF0,25",
+        "^FO700,50^FB1098,1,0,C^FDPiazza Allende 1 - 47824 Poggio Torriana RN - Italy^FS",
+        "^FX La riga orizzontale ^GB1100,3,3 diventa verticale ^GB3,1100,3",
+        "^FO670,50^GB3,1100,3^FS",
+        "^FX Sezione Centrale: Destinatario con flow dinamico",
+        "^CF0,25",
+        "^FO630,50^FDDestinatario / Recipient^FS",
+        "^FX Unico blocco per i dati variabili",
+        "^CF0,60",
+        "^FO120,60^FB1098,7,10,L,0^FD",
+        f"{ragione_sociale}\\&",
+        f"{via}\\&",
+        f"{cap_citta_provincia}\\&",
+        f"{stato}\\&",
+        f"{telefono}\\&",
+        f"{ca}^FS"
+        "^FX Sezione Note",
+        "^FO110,50^GB3,1100,3^FS",
+        "^CF0,60",
+        f"^FO30,60^FD{notes}^FS",
+        "^XZ"
+    ])
+    return "\n".join(zpl_rows)
 
-^FO690,50^GF{LOGO_DATA}^FS
-
-^FO690,1025^GF{LOGO_DATA}^FS
-
-^FX Inversione assi per formato verticale
-^PW800
-^LL1198
-^LS0
-
-^FX Imposta l'orientamento globale dei campi a 90 gradi (orario)
-^FWR
-
-^FX Sezione Superiore: Mittente
-^CF0,65
-^FO740,50^FB1098,1,0,C^FDPersonal Zucchero SRL^FS
-^CF0,25
-^FO700,50^FB1098,1,0,C^FDPiazza Allende 1 - 47824 Poggio Torriana RN - Italy^FS
-^FX La riga orizzontale ^GB1100,3,3 diventa verticale ^GB3,1100,3
-^FO670,50^GB3,1100,3^FS
-
-^FX Sezione Centrale: Destinatario con flow dinamico
-^CF0,25
-^FO630,50^FDDestinatario / Recipient^FS
-
-^FX Unico blocco per i dati variabili
-^CF0,60
-^FO120,60^FB1098,7,10,L,0^FD
-{ragione_sociale}\&
-{via}\&
-{cap_citta_provincia}\&
-{stato}\&
-{telefono}\&
-{ca}^FS
-
-^FX Sezione Note
-^FO110,50^GB3,1100,3^FS
-^CF0,60
-^FO30,60^FD{notes}^FS
-
-^XZ"""
-    return zpl
-
-def generate_dachser_label(sscc, date, counter, total, ragione_sociale, via, cap_citta_provincia, stato, show_personal_zucchero):
+def generate_dachser_label(sscc, id, date, counter, total, ragione_sociale, via, cap_citta_provincia, stato, show_personal_zucchero):
     zpl_rows = ["^XA"]
     
     """
@@ -58,15 +51,15 @@ def generate_dachser_label(sscc, date, counter, total, ragione_sociale, via, cap
     """
     if show_personal_zucchero:
         zpl_rows.extend([
-            f"^FO30,50^GF{LOGO_DATA}^FS",
-            f"^FO30,1025^GF{LOGO_DATA}^FS"
+            f"^FO30,30^GF{LOGO_DATA}^FS",
+            f"^FO30,1045^GF{LOGO_DATA}^FS"
         ])
 
     zpl_rows.extend([
         "^FX Inversione assi per formato verticale",
         "^PW800",
         "^LL1198",
-        "^LS0",
+        # "^LS0",
         "^FX Imposta l'orientamento globale dei campi a 90 gradi (orario)",
         "^FWR",
         "^FX Sezione Superiore: Barcode SSCC",
@@ -84,7 +77,7 @@ def generate_dachser_label(sscc, date, counter, total, ragione_sociale, via, cap
         "^CFB,18,13",
         "^FO630,50^FDDestinatario / Recipient^FS",
         "^CF0,40",
-        "^FO610,820^FB330,1,0,R^FDBS 2/103^FS",
+        f"^FO610,820^FB330,1,0,R^FD{id}^FS",
         "^FX Unico blocco per i dati variabili",
         "^CF0,60",
         "^FO120,60^FB1098,7,10,L,0^FD",
@@ -97,11 +90,11 @@ def generate_dachser_label(sscc, date, counter, total, ragione_sociale, via, cap
     if show_personal_zucchero:
         zpl_rows.extend([
             "^FX Sezione Mittente",
-            "^FO150,50^GB3,1100,3^FS"
+            "^FO150,50^GB3,1100,3^FS",
             "^CF0,65",
             "^FO70,50^FB1098,1,0,C^FDPersonal Zucchero SRL^FS",
             "^CFB,17",
-            "^FO40,63^FB1098,1,0,C^FDPiazza Allende 1 - 47824 Poggio Torriana RN - Italy^FS"
+            "^FO45,63^FB1098,1,0,C^FDPiazza Allende 1 - 47824 Poggio Torriana RN - Italy^FS"
         ])
 
     zpl_rows.append("^XZ")
