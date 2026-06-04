@@ -7,10 +7,57 @@ from utils.label_factory import generate_dachser_label
 from dachser_edi import CountryCode, Product, MeasurementName, UnitCode, MeasurementType
 from utils.xml_builder import create_xml, generate_doc_id
 from utils.RedisMexalCache import RedisMexalCache
-from config.constants import PACKING_TYPE_MAP, LABEL_TYPE_MAP
+from config.constants import PACKING_TYPE_MAP, PACKING_TYPE_ICONS, LABEL_TYPE_MAP, ID_PAGAMENTI_ALLA_CONSEGNA
 
 mexal_cache = RedisMexalCache()
 fercam_bp = Blueprint("fercam", __name__, url_prefix="/fercam")
+
+@fercam_bp.route("/", methods=["GET"])
+def fercam():
+    mexal = secrets_manager.get_mexal()
+    if not mexal:
+        flash("Errore nelle credenziali Mexal.", "danger")
+        return render_template("fercam.html", fatture=[])
+
+    yesterday_str = (datetime.now() - timedelta(days=1)).strftime('%Y%m%d')
+    filters = [
+       ("data_documento", ">=", yesterday_str),
+       ("nr_tracking", "<>", "SPEDITO"),
+       ("cod_vettore", "contiene", ["606.00002", "606.00501"]),
+       ("sigla_doc_orig", "contiene", ["FT", "BS", "BC"]),
+       ("id_causale", "<>", 11),
+       ("utente_ult_mod", "<>", "0") # Filtro per escludere i movimenti duplicati
+    ]
+
+    properties = [
+        "sigla", "serie", "numero", "cod_conto",
+        "data_documento", "nr_colli_sped", "peso_spedizione",
+        "asp_est_beni", "cod_anag_sped", "id_pagamento"
+    ]
+
+    #Ottengo i movimenti filtrati
+    current_app.logger.warning("MX: Recupero movimenti di magazzino.")
+    fatture = mexal.find_warehouse_movements(str(datetime.now().year), properties=properties, filters=filters)
+    codici_conto = [f["cod_conto"] for f in fatture]
+
+    #Ottengo le ragioni sociali dei clienti delle fatture ottenute
+    clienti = mexal_cache.get_customers(mexal, codici_conto)
+    ragioni_sociali = {k: v["ragione_sociale"] for k, v in clienti.items()}
+
+    for f in fatture:
+        f["id"] = f"{f['sigla']}+{f['serie']}+{f['numero']}+{f['cod_conto']}"
+        f["data_documento"] = datetime.strptime(f["data_documento"], "%Y%m%d").strftime("%d/%m/%Y")
+
+        f["ragione_sociale_cliente"] = ragioni_sociali.get(f["cod_conto"]) or "Cliente non trovato"
+
+        f["aspetto"] = mexal_cache.get_aspetto_esteriore(mexal, f["asp_est_beni"]) or "???"
+        f["aspetto_icon"] = PACKING_TYPE_ICONS.get(PACKING_TYPE_MAP.get(int(f["asp_est_beni"])), "bi bi-question-circle text-muted")
+
+        f["cod"] = f["id_pagamento"] in ID_PAGAMENTI_ALLA_CONSEGNA
+
+        f["completo"] = f["aspetto"] != "???"
+
+    return render_template("fercam.html", fatture=fatture)
 
 @fercam_bp.route("/invia", methods=["POST"])
 def invia():
@@ -46,16 +93,16 @@ def invia():
                 current_app.logger.error(f"Errore fattura {fattura_id}: {e}")
                 errori.append((f"{sigla} {serie}/{numero}", str(e)))
 
-        if xmls:
-            with secrets_manager.get_fercam_sftp(test_server=True) as sftp:
-                for id, xml in xmls:
-                    filename = f"{id}.xml"
-                    try:
-                        current_app.logger.info(f"Invio {filename} a Fercam...")
-                        sftp.send_content(xml, filename)
-                    except Exception as e:
-                        current_app.logger.error(f"Errore nell'invio del file {filename} a Fercam: {e}")
-                        errori.append((filename, f"Errore nell'invio a Fercam: {str(e)}"))
+        # if xmls:
+        #     with secrets_manager.get_fercam_sftp(test_server=True) as sftp:
+        #         for id, xml in xmls:
+        #             filename = f"{id}.xml"
+        #             try:
+        #                 current_app.logger.info(f"Invio {filename} a Fercam...")
+        #                 sftp.send_content(xml, filename)
+        #             except Exception as e:
+        #                 current_app.logger.error(f"Errore nell'invio del file {filename} a Fercam: {e}")
+        #                 errori.append((filename, f"Errore nell'invio a Fercam: {str(e)}"))
 
         for fattura_id, error_msg in errori:
             flash(f"Errore fattura {fattura_id}: {error_msg}", "danger")
@@ -68,52 +115,10 @@ def invia():
 
     return redirect(url_for("fercam.fercam"))
 
-@fercam_bp.route("/", methods=["GET"])
-def fercam():
-    mexal = secrets_manager.get_mexal()
-    if not mexal:
-        flash("Errore nelle credenziali Mexal.", "danger")
-        return render_template("fercam.html", fatture=[])
-
-    yesterday_str = (datetime.now() - timedelta(days=1)).strftime('%Y%m%d')
-    filters = [
-       ("data_documento", ">=", yesterday_str),
-       ("nr_tracking", "<>", "SPEDITO"),
-       ("cod_vettore", "contiene", ["606.00002", "606.00501"]),
-       ("sigla_doc_orig", "contiene", ["FT", "BS", "BC"]),
-       ("id_causale", "<>", 11),
-       ("utente_ult_mod", "<>", "0")
-    ]
-
-    properties = [
-        "sigla", "serie", "numero", "cod_conto",
-        "data_documento", "nr_colli_sped", "peso_spedizione",
-        "asp_est_beni", "cod_anag_sped"
-    ]
-    
-    #Ottengo i movimenti filtrati
-    current_app.logger.warning("MX: Recupero movimenti di magazzino.")
-    fatture = mexal.find_warehouse_movements(str(datetime.now().year), properties=properties, filters=filters)
-    codici_conto = [f["cod_conto"] for f in fatture]
-
-    #Ottengo le ragioni sociali dei clienti delle fatture ottenute
-    clienti = mexal_cache.get_customers(mexal, codici_conto)
-    ragioni_sociali = {k: v["ragione_sociale"] for k, v in clienti.items()}
-    
-    for f in fatture:
-        f["id"] = f"{f['sigla']}+{f['serie']}+{f['numero']}+{f['cod_conto']}"
-        f["data_documento"] = datetime.strptime(f["data_documento"], "%Y%m%d").strftime("%d/%m/%Y")
-        f["aspetto"] = mexal_cache.get_aspetto_esteriore(mexal, f["asp_est_beni"]) or "???"
-        f["ragione_sociale_cliente"] = ragioni_sociali.get(f["cod_conto"]) or "Cliente non trovato"
-        f["completo"] = f["aspetto"] != "???"
-
-    return render_template("fercam.html", fatture=fatture)
-
 def print_label(sscc, fattura):
     id = f"{fattura['sigla']} {fattura['serie']}/{fattura['numero']}"
 
     label_total = int(fattura["nr_colli_sped"][0][1]) if fattura.get("nr_colli_sped") else 1
-
     date_str = datetime.now().strftime("%d/%m/%y")
     ragione_sociale = fattura["cliente"]["ragione_sociale"]
 
@@ -122,7 +127,7 @@ def print_label(sscc, fattura):
     stato = fattura["indirizzo_spedizione"]["cod_paese"]
 
     show_personal_zucchero = LABEL_TYPE_MAP.get(fattura.get("tipologia_etichetta"))
-    for counter in range(1, label_total + 1):
+    for counter in range(label_total, 0, -1):
         label = generate_dachser_label(
             sscc, id, date_str, counter, label_total,
             ragione_sociale, via, cap_citta_prov, stato,
@@ -184,8 +189,13 @@ def get_note(mexal, fattura: dict) -> dict | None:
         "contatto_telefonico":sorgente.get("9" if is_indirizzo else "6") or "",
         "referente_scarico":  sorgente.get("10" if is_indirizzo else "7") or "",
         "dislocazione_consegna": sorgente.get("4" if is_indirizzo else "8") or "",
-        "aggiuntiva_1":       sorgente.get("5" if is_indirizzo else "9") or "",
-        "aggiuntiva_2":       sorgente.get("6" if is_indirizzo else "10") or "",
+        "aggiuntiva_1": sorgente.get("5" if is_indirizzo else "9") or "",
+        "aggiuntiva_2": sorgente.get("6" if is_indirizzo else "10") or "",
+        "preavviso": sorgente.get("11"),
+        "facchinaggio": sorgente.get("12"),
+        "sponda": sorgente.get("13"),
+        "GDO": sorgente.get("14"),
+        "sbancalamento": sorgente.get("15")
     }
 
 def get_altre_note(mexal, cliente: dict) -> str:
@@ -201,6 +211,21 @@ def get_altre_note(mexal, cliente: dict) -> str:
 
 def build_xml(fattura, sscc):
     doc_id = generate_doc_id(fattura["numero"], fattura["sigla"], int(fattura["data_documento"][:4]))
+
+    notes = [
+            f"{k}: {v}" 
+            for k, v in fattura.get("note", {}).items() 
+            if v and v not in ["S", "N"] # Escludiamo le note boolean che indicherebbero la presenza di un servizio, per evitare confusione con i servizi stessi
+        ]
+
+    if fattura.get("facchinaggio") == "S":
+        notes.append("Servizio di Facchinaggio richiesto")
+
+    if fattura.get("GDO") == "S":
+        notes.append("Consegna GDO richiesta")
+
+    if fattura.get("sbancalamento") == "S":
+        notes.append("Servizio di Sbancalamento richiesto")
 
     spedizione = {
             "doc_id": doc_id,
@@ -227,8 +252,9 @@ def build_xml(fattura, sscc):
                     ]
                 },
             ],
-            "notes": "; ".join([f"{k}: {v}" for k, v in fattura.get("note", {}).items() if v]),
-            "tail_lift_required": False,
+            "notes": notes,
+            "tail_lift_required": fattura.get("note", {}).get("sponda") == "S",
+            "cod_amount": fattura.get("cod_amount"),
             "sscc": sscc,
         }
     #SPONDA, facchinaggio, ZTL, consegna al piano, preavviso e GDO grande distribuzione
@@ -259,8 +285,11 @@ def process_and_send(mexal, sscc, sigla, serie, numero, cod_conto):
     fattura["note"] = get_note(mexal, fattura) or {} # Note può essere None se non è mai stato valorizzata nessuna delle tabelle mydb
     fattura["tipologia_etichetta"] = get_altre_note(mexal, cliente) or {}
 
+    if str(fattura["id_pagamento"]) in ID_PAGAMENTI_ALLA_CONSEGNA:
+        fattura["cod_amount"] = sum(doc[1] for doc in fattura["tot_doc_pagare"])
+
     doc_id, xml = build_xml(fattura, sscc)
-    
-    print_label(sscc, fattura)
+    current_app.logger.info(f"XML generato per {sigla} {serie}/{numero}. {fattura} \n\n\n{xml}")
+    # print_label(sscc, fattura)
     # update_nr_tracking(mexal, sigla, serie, numero, cod_conto)
     return doc_id, xml

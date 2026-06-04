@@ -72,9 +72,10 @@ def create_transport_order(
         consignee: Consignee,
         forwarder: Forwarder,
         product: Product,
+        cod: Optional[CodDetails],
         shipment_lines: Optional[list[ShipmentLine]],
         sscc: str,
-        notes: Optional[str] = None,
+        notes: Optional[list[str]] = None,
         tail_lift_required: bool = False
     ) -> str:
     edi = TransportOrder(
@@ -122,11 +123,7 @@ def create_transport_order(
         #     loading_point="GATE 3"
         # ),
 
-        # COD=CodDetails(
-        #     code="01", 
-        #     amount=90,
-        #     currency=Currency.EUR
-        # ),
+        COD=cod,
         notes=notes,
 
         lines=shipment_lines,
@@ -160,6 +157,12 @@ def create_xml(nuova_spedizione):
             id=nuova_spedizione["forwarder"]["id"]
         )
 
+        cod = CodDetails(
+            code="01", 
+            amount=nuova_spedizione["cod_amount"],
+            currency=Currency.EUR
+        ) if nuova_spedizione.get("cod_amount", {}) else None
+
         shipment_lines = [
             ShipmentLine(
                 packages_quantity=item["quantity"],
@@ -183,6 +186,7 @@ def create_xml(nuova_spedizione):
             consignee=consignee,
             forwarder=forwarder,
             product=nuova_spedizione["product"],
+            cod = cod,
             shipment_lines=shipment_lines,
             sscc=nuova_spedizione["sscc"],
             notes=nuova_spedizione.get("notes"),

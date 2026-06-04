@@ -27,6 +27,15 @@ PACKING_TYPE_MAP = {
         19: PackingType.LOSS_PALLET,
     }
 
+PACKING_TYPE_ICONS = {
+    PackingType.CARTON: "bi bi-box-seam text-warning",
+    PackingType.LOSS_PALLET: "bi bi-layers text-danger",
+    PackingType.EURO_PALLET: "bi bi-grid-3x2-gap text-info",
+    PackingType.SACK: "bi bi-bag text-success",
+    PackingType.BARREL: "bi bi-database text-primary",
+    PackingType.BIG_BAG: "bi bi-basket text-secondary",
+}
+
 LABEL_TYPE_MAP = {
     "1": True,
     "2": False,
@@ -35,3 +44,10 @@ LABEL_TYPE_MAP = {
     "5": False,
     "6": True,
 }
+
+ID_PAGAMENTI_ALLA_CONSEGNA = [
+    "200", "201", "202", "203", "204",
+    "205", "206", "207", "208", "209",
+    "210", "211", "212",
+    "320", "370"
+]
