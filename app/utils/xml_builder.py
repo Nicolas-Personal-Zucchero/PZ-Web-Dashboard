@@ -150,18 +150,20 @@ def create_xml(nuova_spedizione):
         consignee = Consignee(
             name=nuova_spedizione["consignee"]["name"],
             address=consignee_address,
-            contact=consignee_contact
+            contact=consignee_contact,
+            contact_type=DachserContactType(nuova_spedizione["consignee"]["type"]) if nuova_spedizione["consignee"]["type"] is not None else None
         )
 
         forwarder = Forwarder(
             id=nuova_spedizione["forwarder"]["id"]
         )
 
+        cod_amount = nuova_spedizione.get("cod_amount")
         cod = CodDetails(
             code="01", 
-            amount=nuova_spedizione["cod_amount"],
+            amount=cod_amount,
             currency=Currency.EUR
-        ) if nuova_spedizione.get("cod_amount", {}) else None
+        ) if cod_amount is not None else None
 
         shipment_lines = [
             ShipmentLine(
