@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template
-from config.config import ITALY_TZ
+from config.constants import ITALY_TZ
 from config.secrets_manager import secrets_manager
 from datetime import datetime
 

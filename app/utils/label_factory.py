@@ -5,46 +5,106 @@ def generate_sugar_label(ragione_sociale, via, cap_citta_provincia, stato, telef
     Genera il codice ZPL per l'etichetta Personal Zucchero.
     I campi del mittente sono allineati a destra con margine 50.
     """
-    zpl = f"""^XA
+    zpl_rows = ["^XA"]
+    zpl_rows.extend([
+        f"^FO690,50^GF{LOGO_DATA}^FS",
+        f"^FO690,1025^GF{LOGO_DATA}^FS",
+        "^FX Inversione assi per formato verticale",
+        "^PW800",
+        "^LL1198",
+        # "^LS0",
+        "^FX Imposta l'orientamento globale dei campi a 90 gradi (orario)",
+        "^FWR",
+        "^FX Sezione Superiore: Mittente",
+        "^CF0,65",
+        "^FO740,50^FB1098,1,0,C^FDPersonal Zucchero SRL^FS",
+        "^CF0,25",
+        "^FO700,50^FB1098,1,0,C^FDPiazza Allende 1 - 47824 Poggio Torriana RN - Italy^FS",
+        "^FX La riga orizzontale ^GB1100,3,3 diventa verticale ^GB3,1100,3",
+        "^FO670,50^GB3,1100,3^FS",
+        "^FX Sezione Centrale: Destinatario con flow dinamico",
+        "^CF0,25",
+        "^FO630,50^FDDestinatario / Recipient^FS",
+        "^FX Unico blocco per i dati variabili",
+        "^CF0,60",
+        "^FO120,60^FB1098,7,10,L,0^FD",
+        f"{ragione_sociale}\\&",
+        f"{via}\\&",
+        f"{cap_citta_provincia}\\&",
+        f"{stato}\\&",
+        f"{telefono}\\&",
+        f"{ca}^FS"
+        "^FX Sezione Note",
+        "^FO110,50^GB3,1100,3^FS",
+        "^CF0,60",
+        f"^FO30,60^FD{notes}^FS",
+        "^XZ"
+    ])
+    return "\n".join(zpl_rows)
 
-^FO690,50^GF{LOGO_DATA}^FS
+def generate_dachser_label(sscc, id, date, counter, total, ragione_sociale, via, cap_citta_provincia, stato, show_personal_zucchero):
+    zpl_rows = [
+        "^XA",
+        "^PW839",
+        "^LL1200",
+        "^LH0,0",
+        "^FWR"
+        ]
+    
+    """
+    Genera l'etichetta per Dachser con o senza logo Personal Zucchero.
+    Se show_personal_zucchero è True, include il logo e la sezione mittente, altrimenti li esclude.
+    """
+    if show_personal_zucchero:
+        zpl_rows.extend([
+            f"^FO70,30^GF{LOGO_DATA}^FS",
+            f"^FO70,1045^GF{LOGO_DATA}^FS"
+        ])
 
-^FO690,1025^GF{LOGO_DATA}^FS
+    zpl_rows.extend([
+        "^CF0,50",
+        "^FO750,50^FDDACHSER^FS",
+        "^FO710,80^FDSSCC^FS",
+        # f"^FO710,290^BY4^BCR,120,Y,N,N,U^FD(00){sscc[2:-1]}^FS", # Versione con conformità visiva (00) e ultimo codice calcolato dalla zebra
+        f"^FO710,290^BY4^BCR,120,Y,N,N,N^FD>;>8{sscc}^FS", # Versione con stampa diretta senza calcoli della zebra
+        "^CF0,40",
+        f"^FO760,820^FB330,1,0,R^FD{date}^FS",
+        "^CF0,50",
+        f"^FO690,820^FB330,1,0,R^FD{counter}/{total}^FS",
+        "^FO670,50^GB3,1100,3^FS",
+        "^CFB,18,13",
+        "^FO630,50^FDDestinatario / Recipient^FS",
+        "^CF0,40",
+        f"^FO610,820^FB330,1,0,R^FD{id}^FS",
+        "^FX Unico blocco per i dati variabili",
+        # "^CF0,60",
+        # "^FO120,60^FB1098,7,10,L,0^FD",
+        # f"{ragione_sociale}\\&",
+        # f"{via}\\&",
+        # f"{cap_citta_provincia}\\&",
+        # f"{stato}^FS"
+        "^FX --- BLOCCO 1: RAGIONE SOCIALE (Max 2 righe, Grassetto simulato) ---",
+        "^CF0,60",
+        "^FO420,60^FB1098,2,10,L,0^FD",
+        f"{ragione_sociale}^FS",
+        "^FO420,62^FB1098,2,10,L,0^FD",
+        f"{ragione_sociale}^FS",
+        "^FX --- BLOCCO 2: INDIRIZZO (Font 40, Max 3 righe) ---",
+        "^CF0,50",
+        "^FO280,60^FB1098,3,5,L,0^FD",
+        f"{via}\\&",
+        f"{cap_citta_provincia}\\&",
+        f"{stato}^FS"
+    ])
+        
+    if show_personal_zucchero:
+        zpl_rows.extend([
+            "^FO200,50^GB3,1100,3^FS",
+            "^CF0,65",
+            "^FO110,50^FB1098,1,0,C^FDPersonal Zucchero SRL\\&^FS",
+            "^CFB,17",
+            "^FO85,63^FB1098,1,0,C^FDPiazza Allende 1 - 47824 Poggio Torriana RN - Italy\\&^FS"
+        ])
 
-^FX Inversione assi per formato verticale
-^PW800
-^LL1198
-^LS0
-
-^FX Imposta l'orientamento globale dei campi a 90 gradi (orario)
-^FWR
-
-^FX Sezione Superiore: Mittente
-^CF0,65
-^FO740,50^FB1098,1,0,C^FDPersonal Zucchero SRL^FS
-^CF0,25
-^FO700,50^FB1098,1,0,C^FDPiazza Allende 1 - 47824 Poggio Torriana RN - Italy^FS
-^FX La riga orizzontale ^GB1100,3,3 diventa verticale ^GB3,1100,3
-^FO670,50^GB3,1100,3^FS
-
-^FX Sezione Centrale: Destinatario con flow dinamico
-^CF0,25
-^FO630,50^FDDestinatario / Recipient^FS
-
-^FX Unico blocco per i dati variabili
-^CF0,60
-^FO120,60^FB1098,7,10,L,0^FD
-{ragione_sociale}\&
-{via}\&
-{cap_citta_provincia}\&
-{stato}\&
-{telefono}\&
-{ca}^FS
-
-^FX Sezione Note
-^FO110,50^GB3,1100,3^FS
-^CF0,60
-^FO30,60^FD{notes}^FS
-
-^XZ"""
-    return zpl
+    zpl_rows.append("^XZ")
+    return "\n".join(zpl_rows)

@@ -1,3 +1,7 @@
+import logging
+import os
+import sys
+
 from flask import Flask, render_template
 
 from config.links import register_links, get_links
@@ -11,6 +15,7 @@ from routes.agents_map import agents_map_bp
 from routes.sigep_ticket import sigep_ticket_bp
 from routes.trattative_agenti import trattative_agenti_bp
 from routes.etichette_spedizioni import etichette_spedizioni_bp
+from routes.fercam import fercam_bp
 
 from routes.amministrazione.asset import asset_bp
 from routes.amministrazione.visualizza_impianti import visualizza_impianti_bp
@@ -31,6 +36,7 @@ app.register_blueprint(agents_map_bp)
 app.register_blueprint(sigep_ticket_bp)
 app.register_blueprint(trattative_agenti_bp)
 app.register_blueprint(etichette_spedizioni_bp)
+app.register_blueprint(fercam_bp)
 
 amministrazione_bp.register_blueprint(gestione_lotti_bp)
 amministrazione_bp.register_blueprint(visualizza_impianti_bp)
@@ -70,6 +76,24 @@ def inject_links():
         'linkGroups': get_links(*args),
         'home_link': home_link
     }
+
+def setup_logging():
+    # Rimuove eventuali handler predefiniti per evitare duplicati
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+
+    # Configura il formato e il livello (es. INFO o DEBUG da variabili d'ambiente)
+    log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
+    
+    logging.basicConfig(
+        level=log_level,
+        format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+        handlers=[
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
+
+setup_logging()
 
 # Ignorato da gunicorn
 if __name__ == "__main__":

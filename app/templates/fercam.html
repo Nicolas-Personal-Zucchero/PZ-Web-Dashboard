@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+
+{% block title %}Fercam{% endblock %}
+
+{% block content %}
+<style>
+    /* Utility class per l'evidenziazione delle righe selezionate */
+    .row-selected {
+        background-color: #cff4fc !important;
+        transition: background-color 0.2s ease-in-out;
+    }
+    
+    /* UX: Feedback visivo della cliccabilità della riga */
+    .fattura-row {
+        cursor: pointer;
+    }
+</style>
+
+<div class="p-4">
+    <div class="d-flex align-items-center mb-3">
+        <a href="{{ home_link }}" class="btn btn-light">
+            <i class="bi bi-arrow-left"></i> Torna indietro
+        </a>
+        <h1 class="h3 mb-0 ms-3">Fercam</h1>
+    </div>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+        <div class="toast align-items-center text-white bg-{{ 'danger' if category == 'error' else category }} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+            <div class="d-flex">
+                <div class="toast-body">
+                    {{ message }}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        {% endfor %}
+        {% endwith %}
+    </div>
+
+    <form method="POST" id="fercamForm">
+        <div style="max-height: 610px; overflow-y: auto;" class="mt-4 mb-3 border rounded">
+            <ul class="list-group list-group-flush styled-table" id="fercamList">
+                <li class="list-group-item static-header sticky-top bg-light">
+                    <div class="row align-items-center fw-bold">
+                        <div class="col-md-1">
+                            <!-- <input class="form-check-input" type="checkbox" id="selectAll" title="Seleziona tutte"> -->
+                        </div>
+                        <div class="col-md-1">Data</div>
+                        <div class="col-md-1">Identificativo</div>
+                        <div class="col-md-3">Ragione Sociale Cliente</div>
+                        <div class="col-md-1">Numero Colli</div>
+                        <div class="col-md-1">Peso Totale</div>
+                        <div class="col-md-2">Aspetto</div>
+                        <div class="col-md-1">Pagamento</div>
+                        <div class="col-md-1">Azioni</div>
+                    </div>
+                </li>
+
+                {% for fattura in fatture %}
+                <li class="list-group-item fattura-row">
+                    <div class="row align-items-center">
+                        <div class="col-md-1">
+                            {% if fattura.completo %}
+                                <input class="form-check-input fattura-checkbox" type="checkbox" name="fatture_selezionate" value="{{ fattura.id }}">
+                            {% else %}
+                                <i class="bi bi-exclamation-triangle text-warning" title="Dati incompleti: aspetto non definito"></i>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-1">
+                            {{ fattura.data_documento }}
+                        </div>
+                        <div class="col-md-1">
+                            {{ fattura.sigla }} {{ fattura.serie }}/{{ fattura.numero }}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>{{ fattura.ragione_sociale_cliente }}</strong>
+                        </div>
+                        <div class="col-md-1">
+                            {{ fattura.nr_colli_sped }}
+                        </div>
+                        <div class="col-md-1">
+                            {{ fattura.peso_spedizione }} Kg
+                        </div>
+                        <div class="col-md-2 d-flex align-items-center gap-2">
+                            <i class="{{ fattura.aspetto_icon }} fs-5"></i>
+                            {{ fattura.aspetto }}
+                        </div>
+                        <div class="col-md-1 col-sm-4 d-flex align-items-center gap-2">
+                            {% if fattura.cod %}
+                                <i class="bi bi-cash-coin text-success fs-5"></i>
+                                <span>Consegna</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-1 text-end">
+                            {% if fattura.completo %}
+                                <button type="submit" 
+                                        name="fattura_id_singola" 
+                                        value="{{ fattura.id }}"
+                                        formaction="{{ url_for('fercam.invia') }}"
+                                        class="btn btn-outline-primary btn-sm">
+                                    Invia singolo
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </li>
+                {% else %}
+                <li class="list-group-item text-center text-muted">
+                    Nessun documento disponibile.
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="text-end">
+            <button type="button" 
+                    class="btn btn-primary btn-lg" id="btnInvia" disabled>
+                Invia selezionate a Fercam
+            </button>
+        </div>
+
+        <input type="hidden" name="cod_amount_overrides" id="codAmountOverrides" value="{}">
+    </form>
+</div>
+
+<div class="modal fade" id="codAmountModal" tabindex="-1" aria-labelledby="codAmountModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title" id="codAmountModalLabel">Conferma importi contrassegno</h5>
+                    <p class="text-muted mb-0 small">Controlla i valori recuperati dal CRM e modifica solo quelli necessari prima dell'invio.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+            </div>
+            <div class="modal-body">
+                <div id="codAmountModalAlert" class="alert d-none" role="alert"></div>
+                <div id="codAmountModalLoading" class="text-center py-4 d-none">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <div class="mt-3 text-muted">Recupero gli importi dal CRM...</div>
+                </div>
+                <div id="codAmountModalContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button>
+                <button type="button" class="btn btn-primary" id="btnConfermaInvio">Conferma e invia</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('.toast').forEach(toastEl => new bootstrap.Toast(toastEl).show());
+
+        const checkboxes = document.querySelectorAll(".fattura-checkbox");
+        const btnInvia = document.getElementById("btnInvia");
+        const fercamList = document.getElementById("fercamList");
+        const fercamForm = document.getElementById("fercamForm");
+        const codAmountOverrides = document.getElementById("codAmountOverrides");
+        const codAmountModalEl = document.getElementById("codAmountModal");
+        const codAmountModal = codAmountModalEl ? new bootstrap.Modal(codAmountModalEl) : null;
+        const codAmountModalContent = document.getElementById("codAmountModalContent");
+        const codAmountModalLoading = document.getElementById("codAmountModalLoading");
+        const codAmountModalAlert = document.getElementById("codAmountModalAlert");
+        const btnConfermaInvio = document.getElementById("btnConfermaInvio");
+        const previewUrl = "{{ url_for('fercam.preview_invio') }}";
+        
+        const MAX_SELECTIONS = 10;
+
+        function getSelectedCount() {
+            return document.querySelectorAll(".fattura-checkbox:checked").length;
+        }
+
+        function updateRowStyle(checkbox) {
+            const row = checkbox.closest('.fattura-row');
+            if (row) {
+                checkbox.checked ? row.classList.add('row-selected') : row.classList.remove('row-selected');
+            }
+        }
+
+        function toggleSubmitButton() {
+            const count = getSelectedCount();
+            btnInvia.disabled = count === 0;
+            btnInvia.textContent = count > 0 ? `Invia ${count} selezionate a Fercam` : 'Invia selezionate a Fercam';
+        }
+
+        function showModalAlert(message, type = "danger") {
+            if (!codAmountModalAlert) {
+                return;
+            }
+
+            codAmountModalAlert.className = `alert alert-${type}`;
+            codAmountModalAlert.textContent = message;
+            codAmountModalAlert.classList.remove("d-none");
+        }
+
+        function hideModalAlert() {
+            if (codAmountModalAlert) {
+                codAmountModalAlert.classList.add("d-none");
+                codAmountModalAlert.textContent = "";
+            }
+        }
+
+        function setLoadingState(isLoading) {
+            if (codAmountModalLoading) {
+                codAmountModalLoading.classList.toggle("d-none", !isLoading);
+            }
+            if (codAmountModalContent) {
+                codAmountModalContent.classList.toggle("d-none", isLoading);
+            }
+            if (btnConfermaInvio) {
+                btnConfermaInvio.disabled = isLoading;
+            }
+        }
+
+        function renderPreview(items) {
+            if (!codAmountModalContent) {
+                return;
+            }
+
+            if (!items.length) {
+                codAmountModalContent.innerHTML = '<div class="text-center text-muted py-4">Nessun documento da mostrare.</div>';
+                return;
+            }
+
+            codAmountModalContent.innerHTML = `
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Documento</th>
+                                <th>Cliente</th>
+                                <th>Sponda</th>
+                                <th>Facchinaggio</th>
+                                <th>GDO</th>
+                                <th>Sbancalamento</th>
+                                <th>Preavviso</th>
+                                <th style="width: 220px;">Contrassegno</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${items.map(item => `
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">${item.riferimento}</div>
+                                        ${item.is_cod ? '<span class="badge text-bg-warning">Contrassegno CRM</span>' : '<span class="badge text-bg-secondary">Non in contrassegno</span>'}
+                                    </td>
+                                    <td>${item.ragione_sociale_cliente || ''}</td>
+                                    <td>${item.sponda ? "<i class='bi bi-check-lg text-success fs-5'></i>" : ""}</td>
+                                    <td>${item.facchinaggio ? "<i class='bi bi-check-lg text-success fs-5'></i>" : ""}</td>
+                                    <td>${item.GDO ? "<i class='bi bi-check-lg text-success fs-5'></i>" : ""}</td>
+                                    <td>${item.sbancalamento ? "<i class='bi bi-check-lg text-success fs-5'></i>" : ""}</td>
+                                    <td>${item.preavviso ? "<i class='bi bi-check-lg text-success fs-5'></i>" : ""}</td>
+                                    <td>
+                                        ${item.is_cod ? `
+                                            <input type="number"
+                                                   class="form-control cod-amount-input"
+                                                   min="0"
+                                                   step="0.01"
+                                                   inputmode="decimal"
+                                                   data-fattura-id="${item.id}"
+                                                   value="${item.cod_amount || ''}"
+                                                   required>
+                                        ` : ''}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        async function openCodAmountModal() {
+            const selectedIds = Array.from(document.querySelectorAll(".fattura-checkbox:checked")).map(cb => cb.value);
+
+            if (selectedIds.length === 0) {
+                alert("Seleziona almeno un documento prima di inviare.");
+                return;
+            }
+
+            hideModalAlert();
+            setLoadingState(true);
+            renderPreview([]);
+
+            try {
+                const response = await fetch(previewUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Requested-With": "XMLHttpRequest",
+                    },
+                    body: JSON.stringify({ fatture_ids: selectedIds }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || data.error || "Impossibile recuperare gli importi.");
+                }
+
+                renderPreview(data.items || []);
+                codAmountModal.show();
+            } catch (error) {
+                showModalAlert(error.message || "Errore durante il recupero degli importi.");
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+        function collectOverrides() {
+            const overrides = {};
+
+            document.querySelectorAll(".cod-amount-input").forEach(input => {
+                const fatturaId = input.dataset.fatturaId;
+                const value = input.value.trim();
+
+                if (!fatturaId || !value) {
+                    return;
+                }
+
+                overrides[fatturaId] = value;
+            });
+
+            return overrides;
+        }
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener("change", function () {
+                // Intercettazione e revert del check se si supera il limite
+                if (this.checked && getSelectedCount() > MAX_SELECTIONS) {
+                    this.checked = false;
+                    alert(`Puoi selezionare un massimo di ${MAX_SELECTIONS} documenti contemporaneamente.`);
+                    return; 
+                }
+
+                updateRowStyle(this);
+                toggleSubmitButton();
+            });
+        });
+
+        if (btnInvia) {
+            btnInvia.addEventListener("click", openCodAmountModal);
+        }
+
+        if (btnConfermaInvio) {
+            btnConfermaInvio.addEventListener("click", function () {
+                const overrides = collectOverrides();
+                if (codAmountOverrides) {
+                    codAmountOverrides.value = JSON.stringify(overrides);
+                }
+
+                if (fercamForm) {
+                    fercamForm.action = "{{ url_for('fercam.invia') }}";
+                    fercamForm.submit();
+                }
+            });
+        }
+
+        // Event Delegation per il click sull'intera riga
+        if (fercamList) {
+            fercamList.addEventListener("click", function (event) {
+                const row = event.target.closest('.fattura-row');
+                if (!row) return;
+
+                // Esclusione trigger sui nodi già interattivi
+                if (event.target.closest('button') || event.target.tagName === 'INPUT' || event.target.tagName === 'A') {
+                    return;
+                }
+
+                const checkbox = row.querySelector('.fattura-checkbox');
+                if (checkbox) {
+                    // Controllo preventivo del limite prima di alterare lo stato e forzare il dispatch
+                    if (!checkbox.checked && getSelectedCount() >= MAX_SELECTIONS) {
+                        alert(`Puoi selezionare un massimo di ${MAX_SELECTIONS} documenti contemporaneamente.`);
+                        return;
+                    }
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

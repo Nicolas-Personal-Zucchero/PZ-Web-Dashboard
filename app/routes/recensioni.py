@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, render_template, request, redirect, flash
 from config.secrets_manager import secrets_manager
-from config.config import ITALY_TZ
+from config.constants import ITALY_TZ
 from config.mail_config import EMAIL_TEMPLATES
 
 from utils.firebase_client import db

@@ -1,8 +1,10 @@
 import json
 import os
+from flask import current_app
 from hubspot_pz import HubspotPZ
 from mailer_pz import MailerPZ
 from mexal_pz import MexalPZ
+from dachser_edi import SSCCGenerator, FercamSFTP
 
 # Path to the secrets file inside the container
 SECRETS_FILE = "/secrets/secrets.json"
@@ -13,6 +15,7 @@ class SecretsManager:
         self._hubspot = None
         self._mailer = None
         self._mexal = None
+        self._sscc_generator = None
         self.load_secrets()
 
     def load_secrets(self):
@@ -49,6 +52,7 @@ class SecretsManager:
         self._hubspot = None
         self._mailer = None
         self._mexal = None
+        self._sscc_generator = None
 
     def get_secret(self, key, default=None):
         return self._secrets.get(key, default)
@@ -80,8 +84,22 @@ class SecretsManager:
             company = self.get_secret("MEXAL_COMPANY")
             year = self.get_secret("MEXAL_YEAR")
             if domain and user and password and company and year:
-                self._mexal = MexalPZ(domain, user, password, company, year)
+                self._mexal = MexalPZ(domain, user, password, company, year, logger=current_app.logger)
         return self._mexal
+    
+    def get_sscc_generator(self):
+        if not self._sscc_generator:
+            sscc_token = self.get_secret("SSCC_TOKEN")
+            if sscc_token:
+                self._sscc_generator = SSCCGenerator(sscc_token)
+        return self._sscc_generator
+
+    def get_fercam_sftp(self, test_server=False):
+        sftp_username = self.get_secret("SFTP_USERNAME")
+        sftp_password = self.get_secret("SFTP_PASSWORD")
+        if sftp_username and sftp_password:
+            return FercamSFTP(sftp_username, sftp_password, use_test_server=test_server, auto_add_keys=True)
+        return None
 
 # Global instance
 secrets_manager = SecretsManager()

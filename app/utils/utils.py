@@ -3,6 +3,7 @@ import mimetypes
 import requests
 import io
 from typing import Dict, Any, Optional
+import socket
 
 def extract_logo_id(url_immagine: str) -> str | None:
     """
@@ -48,3 +49,12 @@ def download_file_stream(file_data: Dict[str, Any], file_name: str = "file") -> 
     except requests.exceptions.RequestException as e:
         print(f"Errore durante il download di {complete_name}: {e}")
         return None
+    
+def send_to_zebra(printer_ip, zpl_string, port=9100):
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(3.0)
+            s.connect((printer_ip, port))
+            s.sendall(zpl_string.encode('utf-8'))
+    except socket.error as e:
+        print(f"Errore connessione: {e}")
