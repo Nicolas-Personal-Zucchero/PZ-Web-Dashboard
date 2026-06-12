@@ -10,6 +10,7 @@ from dachser_edi import CountryCode, Product, MeasurementName, UnitCode, Measure
 from utils.xml_builder import create_xml, generate_doc_id
 from utils.RedisMexalCache import RedisMexalCache
 from config.constants import PACKING_TYPE_MAP, PACKING_TYPE_ICONS, LABEL_TYPE_MAP, ID_PAGAMENTI_ALLA_CONSEGNA
+import holidays
 
 mexal_cache = RedisMexalCache()
 fercam_bp = Blueprint("fercam", __name__, url_prefix="/fercam")
@@ -21,7 +22,7 @@ def fercam():
         flash("Errore nelle credenziali Mexal.", "danger")
         return render_template("fercam.html", fatture=[])
 
-    yesterday_str = (datetime.now() - timedelta(days=1)).strftime('%Y%m%d')
+    yesterday_str = (datetime.now() - timedelta(days=5)).strftime('%Y%m%d')
     filters = [
        ("data_documento", ">=", yesterday_str),
        ("nr_tracking", "<>", "SPEDITO"),
@@ -139,6 +140,7 @@ def preview_invio():
         if not mexal:
             raise ValueError("Errore nelle credenziali Mexal.")
 
+        next_working_day = get_next_working_day().strftime("%Y-%m-%d")
         preview = []
         for fattura_id in fatture_ids:
             sigla, serie, numero, cod_conto = fattura_id.split("+")
@@ -148,18 +150,30 @@ def preview_invio():
                 "id": fattura_id,
                 "riferimento": f"{sigla} {serie}/{numero}",
                 "ragione_sociale_cliente": fattura["cliente"]["ragione_sociale"],
-                "cod_amount": str(fattura.get("cod_amount") or "") if is_cod else "",
                 "is_cod": is_cod,
                 "sponda": fattura.get("note", {}).get("sponda") == "S",
                 "facchinaggio": fattura.get("note", {}).get("facchinaggio") == "S",
                 "GDO": fattura.get("note", {}).get("GDO") == "S",
                 "sbancalamento": fattura.get("note", {}).get("sbancalamento") == "S",
-                "preavviso": fattura.get("note", {}).get("preavviso") == "S"
+                "preavviso": fattura.get("note", {}).get("preavviso") == "S",
+                "cod_amount": str(fattura.get("cod_amount") or "") if is_cod else "",
+                "ritiro": next_working_day
             })
         return jsonify({"items": preview})
     except Exception as e:
         current_app.logger.error(f"Errore anteprima invio Fercam: {e}")
         return jsonify({"message": str(e)}), 400
+
+def get_next_working_day(country_code: str = "IT") -> datetime:
+    """Calcola il giorno lavorativo successivo escludendo weekend e festività nazionali."""
+    local_holidays = holidays.country_holidays(country_code)
+    current_date = datetime.now() + timedelta(days=1)
+    
+    # O(1) lookups per i giorni festivi grazie all'implementazione in dict della libreria
+    while current_date.weekday() >= 5 or current_date in local_holidays:
+        current_date += timedelta(days=1)
+        
+    return current_date
 
 def print_label(sscc, fattura):
     id = f"{fattura['sigla']} {fattura['serie']}/{fattura['numero']}"
@@ -362,7 +376,7 @@ def process_and_send(mexal, sscc, sigla, serie, numero, cod_conto, cod_amount_ov
         fattura["cod_amount"] = cod_amount_override
 
     doc_id, xml = build_xml(fattura, sscc)
-    current_app.logger.info(f"XML generato per {sigla} {serie}/{numero}. {fattura} \n{xml}")
-    # print_label(sscc, fattura)
+    # current_app.logger.info(f"XML generato per {sigla} {serie}/{numero}. {fattura} \n{xml}")
+    print_label(sscc, fattura)
     # update_nr_tracking(mexal, sigla, serie, numero, cod_conto)
     return doc_id, xml

@@ -52,14 +52,14 @@ def generate_dachser_label(sscc, id, date, counter, total, ragione_sociale, via,
         ]
     
     """
-    Genera l'etichetta per Dachser con o senza logo Personal Zucchero.
-    Se show_personal_zucchero è True, include il logo e la sezione mittente, altrimenti li esclude.
+    Genera l'etichetta per Dachser con o senza testo Personal Zucchero.
+    Se show_personal_zucchero è True, include la sezione mittente, altrimenti la esclude.
     """
-    if show_personal_zucchero:
-        zpl_rows.extend([
-            f"^FO70,30^GF{LOGO_DATA}^FS",
-            f"^FO70,1045^GF{LOGO_DATA}^FS"
-        ])
+    # Inizialmente i loghi non venivano inclusi se show_personal_zucchero era False, ma ora li vogliamo sempre, quindi li ho spostati fuori dalla condizione
+    zpl_rows.extend([
+        f"^FO70,30^GF{LOGO_DATA}^FS",
+        f"^FO70,1045^GF{LOGO_DATA}^FS"
+    ])
 
     zpl_rows.extend([
         "^CF0,50",
@@ -85,21 +85,21 @@ def generate_dachser_label(sscc, id, date, counter, total, ragione_sociale, via,
         # f"{stato}^FS"
         "^FX --- BLOCCO 1: RAGIONE SOCIALE (Max 2 righe, Grassetto simulato) ---",
         "^CF0,60",
-        "^FO420,60^FB1098,2,10,L,0^FD",
+        "^FO450,60^FB1098,2,10,L,0^FD",
         f"{ragione_sociale}^FS",
-        "^FO420,62^FB1098,2,10,L,0^FD",
+        "^FO450,62^FB1098,2,10,L,0^FD",
         f"{ragione_sociale}^FS",
         "^FX --- BLOCCO 2: INDIRIZZO (Font 40, Max 3 righe) ---",
         "^CF0,50",
         "^FO280,60^FB1098,3,5,L,0^FD",
         f"{via}\\&",
         f"{cap_citta_provincia}\\&",
-        f"{stato}^FS"
+        f"{stato}^FS",
+        "^FO200,50^GB3,1100,3^FS",
     ])
         
     if show_personal_zucchero:
         zpl_rows.extend([
-            "^FO200,50^GB3,1100,3^FS",
             "^CF0,65",
             "^FO110,50^FB1098,1,0,C^FDPersonal Zucchero SRL\\&^FS",
             "^CFB,17",

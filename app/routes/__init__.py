@@ -23,7 +23,8 @@ register_links("home", [
         "title": "Spedizioni",
         "links": [
             {"name": "Creazione etichette spedizioni", "url": "/etichette_spedizioni", "description": "Creazione delle etichette di spedizione tramite codice mexal.", "icon": "bi bi-tag-fill me-2"},
-            {"name": "Fercam", "url": "/fercam", "description": "Invia spedizioni a Fercam", "icon": "bi bi-truck-front-fill me-2"},
+            {"name": "Preparazione Fercam", "url": "/fercam", "description": "Preparazione delle spedizioni per Fercam", "icon": "bi bi-truck-front-fill me-2"},
+            {"name": "Spedizioni Preliminari", "url": "/preliminari", "description": "Invio a Fercam delle spedizioni preliminari", "icon": "bi bi-file-earmark-fill me-2"},
         ]
     }
 ])

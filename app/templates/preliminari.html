@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Fercam{% endblock %}
+{% block title %}Spedizioni Preliminari{% endblock %}
 
 {% block content %}
 <style>
@@ -21,7 +21,7 @@
         <a href="{{ home_link }}" class="btn btn-light">
             <i class="bi bi-arrow-left"></i> Torna indietro
         </a>
-        <h1 class="h3 mb-0 ms-3">Fercam</h1>
+        <h1 class="h3 mb-0 ms-3">Spedizioni Preliminari</h1>
     </div>
 
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
@@ -47,14 +47,11 @@
                         <div class="col-md-1">
                             <!-- <input class="form-check-input" type="checkbox" id="selectAll" title="Seleziona tutte"> -->
                         </div>
-                        <div class="col-md-1">Data</div>
                         <div class="col-md-1">Identificativo</div>
-                        <div class="col-md-4">Ragione Sociale Cliente</div>
-                        <div class="col-md-1">Numero Colli</div>
-                        <div class="col-md-1">Peso Totale</div>
-                        <div class="col-md-2">Aspetto</div>
-                        <div class="col-md-1">Pagamento</div>
-                        <!-- <div class="col-md-1">Azioni</div> -->
+                        <div class="col-md-3">Ragione Sociale Cliente</div>
+                        <div class="col-md-3">Contrassegno</div>
+                        <div class="col-md-3">Data Ritiro</div>
+                        <div class="col-md-1">Azioni</div>
                     </div>
                 </li>
 
@@ -62,39 +59,21 @@
                 <li class="list-group-item fattura-row">
                     <div class="row align-items-center">
                         <div class="col-md-1">
-                            {% if fattura.completo %}
-                                <input class="form-check-input fattura-checkbox" type="checkbox" name="fatture_selezionate" value="{{ fattura.id }}">
-                            {% else %}
-                                <i class="bi bi-exclamation-triangle text-warning" title="Dati incompleti: aspetto non definito"></i>
-                            {% endif %}
                         </div>
                         <div class="col-md-1">
-                            {{ fattura.data_documento }}
+                            {{ fattura.id }}
                         </div>
-                        <div class="col-md-1">
-                            {{ fattura.sigla }} {{ fattura.serie }}/{{ fattura.numero }}
+                        <div class="col-md-3">
+                            {{ fattura.ragione_sociale_cliente }}
                         </div>
-                        <div class="col-md-4">
-                            <strong>{{ fattura.ragione_sociale_cliente }}</strong>
+                        <div class="col-md-3">
+                            {{ fattura.cash_on_delivery }}
                         </div>
-                        <div class="col-md-1">
-                            {{ fattura.nr_colli_sped }}
+                        <div class="col-md-3">
+                            {{ fattura.data_ritiro }}
                         </div>
-                        <div class="col-md-1">
-                            {{ fattura.peso_spedizione }} Kg
-                        </div>
-                        <div class="col-md-2 d-flex align-items-center gap-2">
-                            <i class="{{ fattura.aspetto_icon }} fs-5"></i>
-                            {{ fattura.aspetto }}
-                        </div>
-                        <div class="col-md-1 col-sm-4 d-flex align-items-center gap-2">
-                            {% if fattura.cod %}
-                                <i class="bi bi-cash-coin text-success fs-5"></i>
-                                <span>Consegna</span>
-                            {% endif %}
-                        </div>
-                        <!-- <div class="col-md-1 text-end">
-                            {% if fattura.completo %}
+                        <div class="col-md-1 text-end">
+                            <!-- {% if fattura.completo %}
                                 <button type="submit" 
                                         name="fattura_id_singola" 
                                         value="{{ fattura.id }}"
@@ -102,13 +81,13 @@
                                         class="btn btn-outline-primary btn-sm">
                                     Invia singolo
                                 </button>
-                            {% endif %}
-                        </div> -->
+                            {% endif %} -->
+                        </div>
                     </div>
                 </li>
                 {% else %}
                 <li class="list-group-item text-center text-muted">
-                    Nessuna fattura disponibile.
+                    Nessuna spedizione preliminare disponibile.
                 </li>
                 {% endfor %}
             </ul>
@@ -117,7 +96,7 @@
         <div class="text-end">
             <button type="button" 
                     class="btn btn-primary btn-lg" id="btnInvia" disabled>
-                Prepara le fatture selezionate
+                Invia selezionate a Fercam
             </button>
         </div>
 
@@ -204,7 +183,7 @@
         function toggleSubmitButton() {
             const count = getSelectedCount();
             btnInvia.disabled = count === 0;
-            btnInvia.textContent = count > 0 ? `Prepara le ${count} fatture selezionate` : 'Prepara le fatture selezionate';
+            btnInvia.textContent = count > 0 ? `Invia ${count} selezionate a Fercam` : 'Invia selezionate a Fercam';
         }
 
         function showModalAlert(message, type = "danger") {
@@ -258,8 +237,7 @@
                                 <th>GDO</th>
                                 <th>Sbancalamento</th>
                                 <th>Preavviso</th>
-                                <th>Contrassegno</th>
-                                <th>Ritiro</th>
+                                <th style="width: 220px;">Contrassegno</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -267,6 +245,7 @@
                                 <tr>
                                     <td>
                                         <div class="fw-semibold">${item.riferimento}</div>
+                                        ${item.is_cod ? '<span class="badge text-bg-warning">Contrassegno</span>' : '<span class="badge text-bg-secondary">Nessun contrassegno</span>'}
                                     </td>
                                     <td>${item.ragione_sociale_cliente || ''}</td>
                                     <td>${item.sponda ? "<i class='bi bi-check-lg text-success fs-5'></i>" : ""}</td>
@@ -277,21 +256,14 @@
                                     <td>
                                         ${item.is_cod ? `
                                             <input type="number"
-                                                class="form-control cod-amount-input"
-                                                min="0"
-                                                step="1"
-                                                inputmode="decimal"
-                                                data-fattura-id="${item.id}"
-                                                value="${item.cod_amount || ''}"
-                                                required>
-                                        ` : ""}
-                                    </td>
-                                    <td>
-                                        <input type="date"
-                                               class="form-control ritiro-date-input"
-                                               data-fattura-id="${item.id}"
-                                               value="${item.ritiro || ''}"
-                                               required>
+                                                   class="form-control cod-amount-input"
+                                                   min="0"
+                                                   step="0.01"
+                                                   inputmode="decimal"
+                                                   data-fattura-id="${item.id}"
+                                                   value="${item.cod_amount || ''}"
+                                                   required>
+                                        ` : ''}
                                     </td>
                                 </tr>
                             `).join('')}

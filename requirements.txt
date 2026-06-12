@@ -7,6 +7,8 @@ reportlab
 qrcode[pil]
 pillow
 gunicorn
+holidays
+Flask-SQLAlchemy
 
 weasyprint
 Jinja2
