@@ -7,17 +7,21 @@ class SpedizionePreliminare(db.Model):
     __tablename__ = 'spedizioni_preliminari'
 
     id = db.Column(db.String(100), primary_key=True, nullable=False)
+    identificativo = db.Column(db.String(100), nullable=False)
     ragione_sociale_cliente = db.Column(db.String(255), nullable=False)
-    cash_on_delivery = db.Column(db.Numeric(10, 2), default=False, nullable=True)
-    data_ritiro = db.Column(db.Date, nullable=False)
+    nr_colli = db.Column(db.Integer, nullable=False)
+    peso = db.Column(db.Numeric(10, 2), nullable=False)
+    cash_on_delivery = db.Column(db.Numeric(10, 2), default=None, nullable=True)
     xml = db.Column(db.Text, nullable=False)
 
     def to_dict(self):
         return {
             "id": self.id,
+            "identificativo": self.identificativo,
             "ragione_sociale_cliente": self.ragione_sociale_cliente,
+            "nr_colli": self.nr_colli,
+            "peso": self.peso,
             "cash_on_delivery": self.cash_on_delivery,
-            "data_ritiro": self.data_ritiro.isoformat() if self.data_ritiro else None,
             "xml": self.xml
         }
 

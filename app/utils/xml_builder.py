@@ -74,7 +74,7 @@ def create_transport_order(
         product: Product,
         cod: Optional[CodDetails],
         shipment_lines: Optional[list[ShipmentLine]],
-        sscc: str,
+        ssccs: list[str],
         notes: Optional[list[str]] = None,
         tail_lift_required: bool = False
     ) -> str:
@@ -127,7 +127,7 @@ def create_transport_order(
         notes=notes,
 
         lines=shipment_lines,
-        SSCC=sscc
+        SSCCS=ssccs
     )
 
     return edi.generate_xml_string()
@@ -190,7 +190,7 @@ def create_xml(nuova_spedizione):
             product=nuova_spedizione["product"],
             cod = cod,
             shipment_lines=shipment_lines,
-            sscc=nuova_spedizione["sscc"],
+            ssccs=nuova_spedizione["ssccs"],
             notes=nuova_spedizione.get("notes"),
             tail_lift_required=nuova_spedizione.get("tail_lift_required", False)
         )

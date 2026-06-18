@@ -1,15 +1,5 @@
 import json
-from decimal import Decimal
-from flask import Blueprint, redirect, render_template, flash, request, url_for, current_app, jsonify
-from config.constants import ZEBRA_IP
-from utils.utils import send_to_zebra
-from config.secrets_manager import secrets_manager
-from datetime import datetime, timedelta
-from utils.label_factory import generate_dachser_label
-from dachser_edi import CountryCode, Product, MeasurementName, UnitCode, MeasurementType
-from utils.xml_builder import create_xml, generate_doc_id
-from utils.RedisMexalCache import RedisMexalCache
-from config.constants import PACKING_TYPE_MAP, PACKING_TYPE_ICONS, LABEL_TYPE_MAP, ID_PAGAMENTI_ALLA_CONSEGNA
+from flask import Blueprint, redirect, render_template, flash, request, url_for, current_app
 
 from utils.database import db, SpedizionePreliminare
 
@@ -17,24 +7,52 @@ preliminari_bp = Blueprint("preliminari", __name__, url_prefix="/preliminari")
 
 @preliminari_bp.route("/", methods=["GET"])
 def preliminari():
-    #add a randoma spedizione
-    db.session.add(SpedizionePreliminare(
-        id=generate_doc_id(1234, "FT", 2027),
-        ragione_sociale_cliente="Cliente di Test",
-        cash_on_delivery=Decimal("123.45"),
-        data_ritiro=datetime.now().date(),
-        xml="<xml>Test</xml>"
-    ))
-    db.session.commit()
-
     spedizioni = SpedizionePreliminare.query.all()
-    current_app.logger.info(f"Recuperate {len(spedizioni)} spedizioni preliminari dal database.")
-    return render_template("preliminari.html", fatture=spedizioni)
+    all_identificativi = set()
+    for s in spedizioni:
+        s.duplicato = False
+        splitted = s.identificativo.split(",") if s.identificativo else []
+        for identificativo in splitted:
+            identificativo = identificativo.strip()
+            if identificativo in all_identificativi:
+                current_app.logger.error(f"Identificativo duplicato trovato: {identificativo}")
+                flash(f"Fattura duplicata trovata: {identificativo}", "danger")
+                s.duplicato = True
+        all_identificativi.update(s.strip() for s in splitted)
+    return render_template("preliminari.html", spedizioni=spedizioni)
+
+@preliminari_bp.route("/elimina/<string:id>", methods=["POST"])
+def elimina(id):
+    try:
+        spedizione = db.session.get(SpedizionePreliminare, id)
+        
+        if not spedizione:
+            flash("Spedizione preliminare non trovata.", "warning")
+            return redirect(url_for("preliminari.preliminari"))
+
+        db.session.delete(spedizione)
+        db.session.commit()
+        
+        current_app.logger.info(f"Spedizione preliminare {id} eliminata con successo.")
+        flash("Spedizione preliminare eliminata correttamente.", "success")
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Errore durante l'eliminazione della spedizione {id}: {e}")
+        flash("Errore a database durante l'eliminazione della spedizione preliminare.", "danger")
+
+    return redirect(url_for("preliminari.preliminari"))
 
 @preliminari_bp.route("/invia", methods=["POST"])
 def invia():
-    # singolo_id = request.form.get("fattura_id_singola")
-    # fatture_ids = [singolo_id] if singolo_id else request.form.getlist("fatture_selezionate")
+    fatture_ids = request.form.getlist("fatture_selezionate")
+
+    if not fatture_ids:
+        flash("Nessuna spedizione preliminare selezionata.", "warning")
+        return redirect(url_for("preliminari.preliminari"))
+
+    current_app.logger.info(f"Ricevute {len(fatture_ids)} spedizioni preliminari selezionate.")
+    flash(f"Selezionate {len(fatture_ids)} spedizioni preliminari.", "success")
     # cod_amount_overrides_raw = request.form.get("cod_amount_overrides", "{}")
 
     # try:

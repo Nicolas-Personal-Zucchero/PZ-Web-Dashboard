@@ -75,7 +75,7 @@ def generate_dachser_label(sscc, id, date, counter, total, ragione_sociale, via,
         "^CFB,18,13",
         "^FO630,50^FDDestinatario / Recipient^FS",
         "^CF0,40",
-        f"^FO610,820^FB330,1,0,R^FD{id}^FS",
+        f"^FO450,820^FB330,5,0,R^FD{id}^FS"
         "^FX Unico blocco per i dati variabili",
         # "^CF0,60",
         # "^FO120,60^FB1098,7,10,L,0^FD",
