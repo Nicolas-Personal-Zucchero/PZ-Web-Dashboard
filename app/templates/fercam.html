@@ -65,14 +65,25 @@
                 </li>
 
                 {% for fattura in fatture %}
-                <li class="list-group-item fattura-row"
-                    data-identificativo="{{ fattura.sigla }} {{ fattura.serie }}/{{ fattura.numero }}"
+                {% if loop.changed(fattura.data_documento) %}
+                <li class="list-group-item bg-secondary bg-opacity-10 py-1 text-uppercase fw-bold small text-muted border-bottom">
+                    <div class="row">
+                        <div class="col-12 px-3">
+                            <i class="bi bi-calendar-event me-2"></i>{{ fattura.data_documento }}
+                        </div>
+                    </div>
+                </li>
+                {% endif %}
+                <li class="list-group-item fattura-row {% if fattura.presente %}bg-success-subtle{% endif %}"
+                    data-identificativo="{{ fattura.identificativo }}"
                     data-ragione-sociale="{{ fattura.ragione_sociale_cliente }}">
                     <div class="row align-items-center">
                         <div class="col-md-1">
-                            {% if fattura.completo %}
+                            {% if fattura.completo and not fattura.presente %}
                                 <input class="form-check-input fattura-checkbox" type="checkbox" name="fatture_selezionate" value="{{ fattura.id }}">
-                            {% else %}
+                            {% endif %}
+
+                            {% if not fattura.completo %}
                                 <i class="bi bi-exclamation-triangle text-warning" title="Dati incompleti: controllare colli, peso e aspetto"></i>
                             {% endif %}
                         </div>
@@ -80,7 +91,7 @@
                             {{ fattura.data_documento }}
                         </div>
                         <div class="col-md-1">
-                            {{ fattura.sigla }} {{ fattura.serie }}/{{ fattura.numero }}
+                            {{ fattura.identificativo }}
                         </div>
                         <div class="col-md-4">
                             <strong>{{ fattura.ragione_sociale_cliente }}</strong>
@@ -93,9 +104,9 @@
                         </div>
                         <div class="col-md-2 d-flex align-items-center gap-2">
                             <i class="{{ fattura.aspetto_icon }} fs-5"></i>
-                            {{ fattura.aspetto }}
+                            <span>{{ fattura.aspetto }}</span>
                         </div>
-                        <div class="col-md-1 col-sm-4 d-flex align-items-center gap-2">
+                        <div class="col-md-1 d-flex align-items-center gap-2">
                             {% if fattura.cod %}
                                 <i class="bi bi-cash-coin text-success fs-5"></i>
                                 <span>Consegna</span>

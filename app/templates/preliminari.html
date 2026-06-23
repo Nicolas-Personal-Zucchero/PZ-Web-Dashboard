@@ -61,13 +61,16 @@
                     <div class="row align-items-center">
                         <div class="col-md-1">
                             {% if not spedizione.duplicato %}
-                                <input class="form-check-input spedizione-checkbox" type="checkbox" name="fatture_selezionate" value="{{ spedizione.id }}">
+                                <input class="form-check-input spedizione-checkbox" type="checkbox" name="spedizioni_selezionate" value="{{ spedizione.id }}">
                             {% else %}
                                 <i class="bi bi-exclamation-triangle text-warning" title="Identificativo fattura già presente in un altro ordine preliminare"></i>
                             {% endif %}
                         </div>
                         <div class="col-md-3">
-                            {{ spedizione.identificativo }}
+                            {% for id_rel in spedizione.identificativi_rel %}
+                                {{ id_rel.fattura_identificativo }}
+                                {% if not loop.last %}, {% endif %}
+                            {% endfor %}
                         </div>
                         <div class="col-md-3">
                             {{ spedizione.ragione_sociale_cliente }}
