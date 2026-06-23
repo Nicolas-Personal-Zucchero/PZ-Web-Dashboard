@@ -2,9 +2,10 @@ import logging
 import os
 import sys
 
-from flask import Flask, render_template
+from flask import Flask, session, request
+from utils.database import init_database
 
-from config.links import register_links, get_links
+from config.links import get_links
 
 from routes.wip import wip_bp
 
@@ -16,6 +17,7 @@ from routes.sigep_ticket import sigep_ticket_bp
 from routes.trattative_agenti import trattative_agenti_bp
 from routes.etichette_spedizioni import etichette_spedizioni_bp
 from routes.fercam import fercam_bp
+from routes.preliminari import preliminari_bp
 
 from routes.amministrazione.asset import asset_bp
 from routes.amministrazione.visualizza_impianti import visualizza_impianti_bp
@@ -27,6 +29,8 @@ from routes.amministrazione.sigep_ticket_management import sigep_ticket_manageme
 app = Flask(__name__)
 app.secret_key = "supersecretkey"  # Serve per flash()
 
+init_database(app)
+
 app.register_blueprint(wip_bp)
 
 app.register_blueprint(home_bp)
@@ -37,6 +41,7 @@ app.register_blueprint(sigep_ticket_bp)
 app.register_blueprint(trattative_agenti_bp)
 app.register_blueprint(etichette_spedizioni_bp)
 app.register_blueprint(fercam_bp)
+app.register_blueprint(preliminari_bp)
 
 amministrazione_bp.register_blueprint(gestione_lotti_bp)
 amministrazione_bp.register_blueprint(visualizza_impianti_bp)
@@ -47,9 +52,6 @@ app.register_blueprint(amministrazione_bp)
 
 @app.context_processor
 def inject_links():
-    from flask import session, request
-    from config.links import get_links
-
     path = request.path
 
     # Mappatura path/section a tuple (args get_links..., home_link)

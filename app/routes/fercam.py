@@ -1,4 +1,5 @@
 import json
+import copy
 from decimal import Decimal
 from flask import Blueprint, redirect, render_template, flash, request, url_for, current_app, jsonify
 from config.constants import ZEBRA_IP
@@ -11,23 +12,29 @@ from utils.xml_builder import create_xml, generate_doc_id
 from utils.RedisMexalCache import RedisMexalCache
 from config.constants import PACKING_TYPE_MAP, PACKING_TYPE_ICONS, LABEL_TYPE_MAP, ID_PAGAMENTI_ALLA_CONSEGNA
 
+from utils.database import db, SpedizionePreliminare, SpedizioneIdentificativo
+
 mexal_cache = RedisMexalCache()
 fercam_bp = Blueprint("fercam", __name__, url_prefix="/fercam")
 
 @fercam_bp.route("/", methods=["GET"])
 def fercam():
+    identificativi = SpedizioneIdentificativo.query.all()
+    all_identificativi = {f"{i.sigla} {i.serie}/{i.numero}" for i in identificativi}
+
     mexal = secrets_manager.get_mexal()
     if not mexal:
         flash("Errore nelle credenziali Mexal.", "danger")
         return render_template("fercam.html", fatture=[])
 
-    yesterday_str = (datetime.now() - timedelta(days=1)).strftime('%Y%m%d')
+    yesterday_str = (datetime.now() - timedelta(days=5)).strftime('%Y%m%d')
     filters = [
        ("data_documento", ">=", yesterday_str),
        ("nr_tracking", "<>", "SPEDITO"),
        ("cod_vettore", "contiene", ["606.00002", "606.00501"]),
        ("sigla_doc_orig", "contiene", ["FT", "BS", "BC"]),
        ("id_causale", "<>", 11),
+       ("id_causale", "<>", 12),
        ("utente_ult_mod", "<>", "0") # Filtro per escludere i movimenti duplicati
     ]
 
@@ -48,6 +55,7 @@ def fercam():
 
     for f in fatture:
         f["id"] = f"{f['sigla']}+{f['serie']}+{f['numero']}+{f['cod_conto']}"
+        f["identificativo"] = f"{f['sigla']} {f['serie']}/{f['numero']}"
         f["data_documento"] = datetime.strptime(f["data_documento"], "%Y%m%d").strftime("%d/%m/%Y")
 
         f["ragione_sociale_cliente"] = ragioni_sociali.get(f["cod_conto"]) or "Cliente non trovato"
@@ -57,24 +65,51 @@ def fercam():
 
         f["cod"] = f["id_pagamento"] in ID_PAGAMENTI_ALLA_CONSEGNA
 
-        f["completo"] = f["aspetto"] != "???"
+        f["presente"] = f["identificativo"] in all_identificativi
+        f["completo"] = f["aspetto"] != "???" and f["nr_colli_sped"] != "0" and f["peso_spedizione"] != "0.0"
 
+    fatture = sorted(fatture, key=lambda x: (
+        datetime.strptime(x["data_documento"], "%d/%m/%Y"),
+        x["sigla"],
+        x["serie"],
+        int(x["numero"]) if str(x["numero"]).isdigit() else x["numero"]
+    ))
     return render_template("fercam.html", fatture=fatture)
+
+def _safe_json_load(raw_string):
+    try: return json.loads(raw_string) if raw_string else {}
+    except ValueError: return {}
+
+
+def create_spedizione_preliminare(doc_id, fattura_unica, xml, identificativi):
+    db.session.add(SpedizionePreliminare(
+        id=doc_id,
+        ragione_sociale_cliente=fattura_unica["cliente"]["ragione_sociale"],
+        nr_colli=fattura_unica["nr_colli_sped"][0][1],
+        peso=fattura_unica["peso_spedizione"][0][1],
+        cash_on_delivery=fattura_unica["cod_amount"],
+        xml=xml,
+        identificativi_rel=[
+            SpedizioneIdentificativo(
+                sigla=sigla,
+                serie=serie,
+                numero=numero,
+                cod_conto=cod_conto
+            ) for sigla, serie, numero, cod_conto in identificativi
+        ]
+    ))
 
 @fercam_bp.route("/invia", methods=["POST"])
 def invia():
-    singolo_id = request.form.get("fattura_id_singola")
-    fatture_ids = [singolo_id] if singolo_id else request.form.getlist("fatture_selezionate")
-    cod_amount_overrides_raw = request.form.get("cod_amount_overrides", "{}")
-
-    try:
-        cod_amount_overrides = json.loads(cod_amount_overrides_raw) if cod_amount_overrides_raw else {}
-    except Exception:
-        cod_amount_overrides = {}
-
+    fatture_ids = request.form.getlist("fatture_selezionate")
     if not fatture_ids:
         flash("Nessun documento selezionato per l'invio.", "danger")
         return redirect(url_for("fercam.fercam"))
+
+    nr_colli_overrides = _safe_json_load(request.form.get("nr_colli_overrides", "{}"))
+    peso_overrides = _safe_json_load(request.form.get("peso_overrides", "{}"))
+    cod_amount_overrides = _safe_json_load(request.form.get("cod_amount_overrides", "{}"))
+    raggruppamenti = _safe_json_load(request.form.get("raggruppamenti", "{}"))
 
     try:
         mexal = secrets_manager.get_mexal()
@@ -85,46 +120,40 @@ def invia():
         if not sscc_generator:
             raise ValueError("Errore nelle credenziali per la generazione degli SSCC.")
 
-        ssccs = sscc_generator.get_ssccs(len(fatture_ids))
-        if not ssccs:
-            raise RuntimeError("Errore nella generazione degli SSCC.")
+        groups = {}
+        for fattura_id in fatture_ids:
+            nr_colli_override = int(nr_colli_overrides.get(fattura_id)) if nr_colli_overrides.get(fattura_id) else None
+            peso_override = parse_float_amount(peso_overrides.get(fattura_id))
+            cod_override = parse_float_amount(cod_amount_overrides.get(fattura_id))
+            info = (fattura_id, nr_colli_override, peso_override, cod_override)
+            group = raggruppamenti.get(fattura_id)
+            groups.setdefault(group if group else fattura_id, []).append(info)
 
-        errori = []
-        xmls = []
-        for i, fattura_id in enumerate(fatture_ids):
-            sigla, serie, numero, cod_conto = fattura_id.split("+")
+        errors = []
+        elaborati = 0
+        for _, fatture_batch in groups.items():
             try:
-                override_raw = cod_amount_overrides.get(fattura_id)
-                override = parse_cod_amount(override_raw)
-                id, xml = process_and_send(mexal, ssccs[i], sigla, serie, numero, cod_conto, cod_amount_override=override)
-                if xml:
-                    xmls.append((id,xml))
+                doc_id, fattura_unica, xml, identificativi = process_fatture_group(mexal, sscc_generator, fatture_batch)
+                create_spedizione_preliminare(doc_id, fattura_unica, xml, identificativi)
+                elaborati += 1
             except Exception as e:
-                current_app.logger.error(f"Errore fattura {fattura_id}: {e}")
-                errori.append((f"{sigla} {serie}/{numero}", str(e)))
+                current_app.logger.error(f"Errore : {e}")
+                errors.append((f"", str(e)))
 
-        # if xmls:
-        #     with secrets_manager.get_fercam_sftp(test_server=True) as sftp:
-        #         for id, xml in xmls:
-        #             filename = f"{id}.xml"
-        #             try:
-        # #                 current_app.logger.info(f"Invio {filename} a Fercam...")
-        #                 sftp.send_content(xml, filename)
-        #             except Exception as e:
-        #                 current_app.logger.error(f"Errore nell'invio del file {filename} a Fercam: {e}")
-        #                 errori.append((filename, f"Errore nell'invio a Fercam: {str(e)}"))
+        if not errors:
+            db.session.commit()
 
-        for fattura_id, error_msg in errori:
+        for fattura_id, error_msg in errors:
             flash(f"Errore fattura {fattura_id}: {error_msg}", "danger")
         
-        if not errori and xmls:
+        if not errors and elaborati:
             flash(f"Documenti elaborati e inviati con successo. Etichette stampate", "success")
 
     except Exception as e:
+        current_app.logger.error(f"Errore critico durante l'integrazione con Fercam: {e}")
         flash(f"Errore critico durante l'integrazione con Fercam: {e}", "danger")
 
     return redirect(url_for("fercam.fercam"))
-
 
 @fercam_bp.route("/preview-invio", methods=["POST"])
 def preview_invio():
@@ -146,24 +175,24 @@ def preview_invio():
             is_cod = str(fattura["id_pagamento"]) in ID_PAGAMENTI_ALLA_CONSEGNA
             preview.append({
                 "id": fattura_id,
-                "riferimento": f"{sigla} {serie}/{numero}",
+                "riferimento": fattura["riferimento"],
                 "ragione_sociale_cliente": fattura["cliente"]["ragione_sociale"],
-                "cod_amount": str(fattura.get("cod_amount") or "") if is_cod else "",
                 "is_cod": is_cod,
                 "sponda": fattura.get("note", {}).get("sponda") == "S",
                 "facchinaggio": fattura.get("note", {}).get("facchinaggio") == "S",
                 "GDO": fattura.get("note", {}).get("GDO") == "S",
                 "sbancalamento": fattura.get("note", {}).get("sbancalamento") == "S",
-                "preavviso": fattura.get("note", {}).get("preavviso") == "S"
+                "preavviso": fattura.get("note", {}).get("preavviso") == "S",
+                "cod_amount": str(fattura.get("cod_amount") or "") if is_cod else "",
+                "nr_colli_sped": fattura["nr_colli_sped"][0][1],
+                "peso_spedizione": fattura["peso_spedizione"][0][1],
             })
         return jsonify({"items": preview})
     except Exception as e:
         current_app.logger.error(f"Errore anteprima invio Fercam: {e}")
         return jsonify({"message": str(e)}), 400
 
-def print_label(sscc, fattura):
-    id = f"{fattura['sigla']} {fattura['serie']}/{fattura['numero']}"
-
+def print_label(ssccs, fattura):
     label_total = int(fattura["nr_colli_sped"][0][1]) if fattura.get("nr_colli_sped") else 1
     date_str = datetime.now().strftime("%d/%m/%y")
     ragione_sociale = fattura["cliente"]["ragione_sociale"]
@@ -173,13 +202,13 @@ def print_label(sscc, fattura):
     stato = fattura["indirizzo_spedizione"]["cod_paese"]
 
     show_personal_zucchero = LABEL_TYPE_MAP.get(fattura.get("tipologia_etichetta"))
-    for counter in range(label_total, 0, -1):
+    for idx in range(label_total, 0, -1):
         label = generate_dachser_label(
-            sscc, id, date_str, counter, label_total,
+            ssccs[idx - 1], fattura["riferimento"], date_str, idx, label_total,
             ragione_sociale, via, cap_citta_prov, stato,
             show_personal_zucchero
         )
-        send_to_zebra(ZEBRA_IP, label)
+        # send_to_zebra(ZEBRA_IP, label)
 
 def get_indirizzo_spedizione(mexal, fattura, cliente):
     '''
@@ -210,7 +239,6 @@ def get_indirizzo_spedizione(mexal, fattura, cliente):
     if is_paese_it == is_prov_ee:
         raise ValueError(f"Contraddizione Paese/Provincia: {indirizzo_spedizione['cod_paese']} / {indirizzo_spedizione['provincia']}")
 
-
     return indirizzo_spedizione
 
 def get_note(mexal, fattura: dict) -> dict | None:
@@ -227,22 +255,31 @@ def get_note(mexal, fattura: dict) -> dict | None:
     if not sorgente:
         return None
 
-    return {
-        "giorno_di_chiusura": sorgente.get("7" if is_indirizzo else "2") or "",
-        "orario_di_consegna": sorgente.get("2" if is_indirizzo else "3") or "",
-        "orario_vietato":     sorgente.get("3" if is_indirizzo else "4") or "",
-        "avviso_da_corriere": sorgente.get("8" if is_indirizzo else "5") or "",
-        "contatto_telefonico":sorgente.get("9" if is_indirizzo else "6") or "",
-        "referente_scarico":  sorgente.get("10" if is_indirizzo else "7") or "",
-        "dislocazione_consegna": sorgente.get("4" if is_indirizzo else "8") or "",
-        "aggiuntiva_1": sorgente.get("5" if is_indirizzo else "9") or "",
-        "aggiuntiva_2": sorgente.get("6" if is_indirizzo else "10") or "",
-        "preavviso": sorgente.get("11"),
-        "facchinaggio": sorgente.get("12"),
-        "sponda": sorgente.get("13"),
-        "GDO": sorgente.get("14"),
-        "sbancalamento": sorgente.get("15")
+    get_val = lambda key_indirizzo, key_cliente: sorgente.get(key_indirizzo if is_indirizzo else key_cliente) or ""
+    note = {
+        "giorno_di_chiusura":   get_val("7", "2"),
+        "orario_di_consegna":   get_val("2", "3"),
+        "orario_vietato":       get_val("3", "4"),
+        "avviso_da_corriere":   get_val("8", "5"),
+        "contatto_telefonico":  get_val("9", "6"),
+        "referente_scarico":    get_val("10", "7"),
+        "dislocazione_consegna": get_val("4", "8"),
+        "aggiuntiva_1":         get_val("5", "9"),
+        "aggiuntiva_2":         get_val("6", "10"),
+        "preavviso":            get_val("11", "11"),
+        "facchinaggio":         get_val("12", "12"),
+        "sponda":               get_val("13", "13"),
+        "GDO":                  get_val("14", "14"),
+        "sbancalamento":        get_val("15", "15")
     }
+    if is_indirizzo:
+        note["sosta_tecnica_ragione_sociale"] = get_val("16", "16")
+        note["sosta_tecnica_cap"] = get_val("17", "17")
+        note["sosta_tecnica_indirizzo"] = get_val("18", "18")
+        note["sosta_tecnica_localita"] = get_val("19", "19")
+        note["sosta_tecnica_provincia"] = get_val("20", "20")
+        note["sosta_tecnica_cod_paese"] = get_val("21", "21")
+    return note
 
 def get_altre_note(mexal, cliente: dict) -> str:
     if not cliente:
@@ -255,14 +292,14 @@ def get_altre_note(mexal, cliente: dict) -> str:
 
     return altre_note.get("3") or ""
 
-def build_xml(fattura, sscc):
+def build_xml(fattura, ssccs):
     doc_id = generate_doc_id(fattura["numero"], fattura["sigla"], int(fattura["data_documento"][:4]))
 
     # Note e servizi accessori
     notes = [
             f"{k}: {v}" 
             for k, v in fattura.get("note", {}).items() 
-            if v and v not in ["S", "N"] # Escludiamo le note boolean che indicherebbero la presenza di un servizio, che inserisco successivamente in modo più leggibile
+            if v and v not in ["S", "N"] and "sosta_tecnica" not in k # Escludiamo le note boolean che indicherebbero la presenza di un servizio, che inserisco successivamente in modo più leggibile e evito di inserire le note relative alla sosta tecnica, che come indirizzo
         ]
 
     if fattura.get("note", {}).get("facchinaggio") == "S":
@@ -274,15 +311,28 @@ def build_xml(fattura, sscc):
     if fattura.get("note", {}).get("sbancalamento") == "S":
         notes.append("Servizio di Sbancalamento richiesto")
 
+    if "SOSTA TECNICA" in fattura.get("indirizzo_spedizione", {}).get("descrizione").upper():
+        name = fattura.get("note", {}).get("sosta_tecnica_ragione_sociale")
+        street = fattura.get("note", {}).get("sosta_tecnica_indirizzo")
+        city = fattura.get("note", {}).get("sosta_tecnica_localita")
+        postal_code = fattura.get("note", {}).get("sosta_tecnica_cap")
+        country_code = fattura.get("note", {}).get("sosta_tecnica_cod_paese")
+    else:
+        name = fattura["cliente"]["ragione_sociale"]
+        street = fattura["indirizzo_spedizione"]["indirizzo"]
+        city = fattura["indirizzo_spedizione"]["localita"]
+        postal_code = fattura["indirizzo_spedizione"]["cap"]
+        country_code = fattura["indirizzo_spedizione"]["cod_paese"]
+
     spedizione = {
             "doc_id": doc_id,
             "reference": f"{fattura['sigla']} {fattura['serie']}/{fattura['numero']}",
             "consignee": {
-                "name": fattura["cliente"]["ragione_sociale"][:90], #90 char is the limitation for PartnerName in Dachser's system, splitted in 3 lines of 30 char each, so we take the first 90 char to avoid errors
-                "street": fattura["indirizzo_spedizione"]["indirizzo"],
-                "city": fattura["indirizzo_spedizione"]["localita"],
-                "postal_code": fattura["indirizzo_spedizione"]["cap"],
-                "country_code": CountryCode(fattura["indirizzo_spedizione"]["cod_paese"]),
+                "name": name[:90], #90 char is the limitation for PartnerName in Dachser's system, splitted in 3 lines of 30 char each, so we take the first 90 char to avoid errors
+                "street": street,
+                "city": city,
+                "postal_code": postal_code,
+                "country_code": CountryCode(country_code),
                 "contact": {"email": fattura["cliente"].get("email"), "phone": fattura["cliente"].get("telefono")}, #1: note, 2: anagrafica spedizione o cliente
                 "type": "AT" if fattura.get("note", {}).get("preavviso") == "S" else None #Impostato AT perchè gli altri non ancora attivi (11/06/26)
             },
@@ -303,13 +353,13 @@ def build_xml(fattura, sscc):
             "notes": notes,
             "tail_lift_required": fattura.get("note", {}).get("sponda") == "S",
             "cod_amount": fattura.get("cod_amount"),
-            "sscc": sscc,
+            "ssccs": ssccs,
         }
     xml = create_xml(spedizione)
     return doc_id, xml
 
 
-def parse_cod_amount(value):
+def parse_float_amount(value):
     if value in (None, ""):
         return None
 
@@ -320,7 +370,8 @@ def parse_cod_amount(value):
     try:
         return Decimal(normalized)
     except Exception:
-        raise ValueError("Importo contrassegno non valido.")
+        current_app.logger.error(f"Importo float non valido: {value}")
+        raise ValueError("Importo float non valido.")
 
 
 def load_fattura_for_send(mexal, sigla, serie, numero, cod_conto, parziale=False):
@@ -328,6 +379,7 @@ def load_fattura_for_send(mexal, sigla, serie, numero, cod_conto, parziale=False
     fattura = mexal.get_single_warehouse_movement(str(datetime.now().year), sigla, serie, numero, cod_conto)
     if not fattura:
         raise Exception("Errore nel recupero dei dati della fattura.")
+    fattura["riferimento"] = f"{fattura['sigla']} {fattura['serie']}/{fattura['numero']}"
 
     cliente = mexal_cache.get_customers(mexal, [fattura["cod_conto"]]).get(fattura["cod_conto"])
     if not cliente:
@@ -350,19 +402,36 @@ def load_fattura_for_send(mexal, sigla, serie, numero, cod_conto, parziale=False
 
     return fattura
 
-def update_nr_tracking(mexal, sigla, serie, numero, cod_conto):
-    payload = {"nr_tracking": [[1, "SPEDITO"]]}
-    current_app.logger.warning("MX: Aggiornamento numero di tracking.")
-    mexal.update_warehouse_movement(str(datetime.now().year), sigla, serie, numero, cod_conto, payload)
+def process_fatture_group(mexal, sscc_generator, fatture_info):
+    fatture = []
+    identificativi = []
+    
+    for fid, nr_colli_override, peso_override, cod_amount_override in fatture_info:
+        sigla, serie, numero, cod_conto = fid.split("+")
+        f = load_fattura_for_send(mexal, sigla, serie, numero, cod_conto)
+        
+        # Override individuali
+        if nr_colli_override is not None: f["nr_colli_sped"][0][1] = nr_colli_override
+        if peso_override is not None: f["peso_spedizione"][0][1] = peso_override
+        if cod_amount_override is not None and str(f.get("id_pagamento")) in ID_PAGAMENTI_ALLA_CONSEGNA: f["cod_amount"] = cod_amount_override
+        
+        fatture.append(f)
+        identificativi.append((sigla, serie, numero, cod_conto))
 
-def process_and_send(mexal, sscc, sigla, serie, numero, cod_conto, cod_amount_override=None):
-    fattura = load_fattura_for_send(mexal, sigla, serie, numero, cod_conto)
+    merged = copy.deepcopy(fatture[0])
+    
+    for f in fatture[1:]:
+        merged["nr_colli_sped"][0][1] += f["nr_colli_sped"][0][1]
+        merged["peso_spedizione"][0][1] += f["peso_spedizione"][0][1]
+        if f.get("cod_amount") is not None:
+            merged["cod_amount"] = (merged.get("cod_amount") or Decimal(0)) + f["cod_amount"]
+        merged["riferimento"] += f" \&{f['riferimento']}"
 
-    if cod_amount_override is not None and str(fattura["id_pagamento"]) in ID_PAGAMENTI_ALLA_CONSEGNA:
-        fattura["cod_amount"] = cod_amount_override
-
-    doc_id, xml = build_xml(fattura, sscc)
-    current_app.logger.info(f"XML generato per {sigla} {serie}/{numero}. {fattura} \n{xml}")
-    # print_label(sscc, fattura)
-    # update_nr_tracking(mexal, sigla, serie, numero, cod_conto)
-    return doc_id, xml
+    ssccs = sscc_generator.get_ssccs(merged["nr_colli_sped"][0][1])
+    if not ssccs:
+        raise RuntimeError("Errore nella generazione degli SSCC.")
+        
+    doc_id, xml = build_xml(merged, ssccs)
+    print_label(ssccs, merged)
+    
+    return doc_id, merged, xml, identificativi

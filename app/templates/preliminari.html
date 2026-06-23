@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Spedizioni Preliminari{% endblock %}
+
+{% block content %}
+<style>
+    /* Utility class per l'evidenziazione delle righe selezionate */
+    .row-selected {
+        background-color: #cff4fc !important;
+        transition: background-color 0.2s ease-in-out;
+    }
+    
+    /* UX: Feedback visivo della cliccabilità della riga */
+    .spedizione-row {
+        cursor: pointer;
+    }
+</style>
+
+<div class="p-4">
+    <div class="d-flex align-items-center mb-3">
+        <a href="{{ home_link }}" class="btn btn-light">
+            <i class="bi bi-arrow-left"></i> Torna indietro
+        </a>
+        <h1 class="h3 mb-0 ms-3">Spedizioni Preliminari</h1>
+    </div>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+        <div class="toast align-items-center text-white bg-{{ 'danger' if category == 'error' else category }} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+            <div class="d-flex">
+                <div class="toast-body">
+                    {{ message }}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        {% endfor %}
+        {% endwith %}
+    </div>
+
+    <form method="POST" id="fercamForm" action="{{ url_for('preliminari.invia') }}">
+        <div style="max-height: 610px; overflow-y: auto;" class="mt-4 mb-3 border rounded">
+            <ul class="list-group list-group-flush styled-table" id="fercamList">
+                <li class="list-group-item static-header sticky-top bg-light">
+                    <div class="row align-items-center fw-bold">
+                        <div class="col-md-1">
+                            <input class="form-check-input" type="checkbox" id="selectAll" title="Seleziona tutte">
+                        </div>
+                        <div class="col-md-3">Identificativo</div>
+                        <div class="col-md-3">Ragione Sociale Cliente</div>
+                        <div class="col-md-1">Numero Colli</div>
+                        <div class="col-md-1">Peso Totale</div>
+                        <div class="col-md-2">Contrassegno</div>
+                        <div class="col-md-1">Azioni</div>
+                    </div>
+                </li>
+
+                {% for spedizione in spedizioni %}
+                <li class="list-group-item spedizione-row">
+                    <div class="row align-items-center">
+                        <div class="col-md-1">
+                            <input class="form-check-input spedizione-checkbox" type="checkbox" name="spedizioni_selezionate" value="{{ spedizione.id }}">
+                        </div>
+                        <div class="col-md-3">
+                            {% for id_rel in spedizione.identificativi_rel %}
+                                {{ id_rel.sigla }} {{ id_rel.serie }}/{{ id_rel.numero }}
+                                {% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-3">
+                            {{ spedizione.ragione_sociale_cliente }}
+                        </div>
+                        <div class="col-md-1">
+                            {{ spedizione.nr_colli }}
+                        </div>
+                        <div class="col-md-1">
+                            {{ spedizione.peso }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ spedizione.cash_on_delivery if spedizione.cash_on_delivery is not none else '' }}
+                        </div>
+                        <div class="col-md-1 text-end">
+                            <button type="button" 
+                                    class="btn btn-outline-danger btn-sm" 
+                                    title="Elimina riga"
+                                    onclick="event.stopPropagation(); deleteRow('{{ url_for('preliminari.elimina', id=spedizione.id) }}');">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </li>
+                {% else %}
+                <li class="list-group-item text-center text-muted">
+                    Nessuna spedizione preliminare disponibile.
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {{spedizioni|length}} spedizioni preliminari presenti.
+
+        <div class="text-end">
+            <button type="button" 
+                    class="btn btn-primary btn-lg" id="btnInvia" disabled>
+                Invia selezionate a Fercam
+            </button>
+        </div>
+    </form>
+</div>
+<form id="deleteForm" method="POST" style="display: none;"></form>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('.toast').forEach(toastEl => new bootstrap.Toast(toastEl).show());
+
+        const MAX_SELECTIONS = 10;
+
+        const selectAllCheckbox = document.getElementById("selectAll");
+        const checkboxes = document.querySelectorAll(".spedizione-checkbox");
+        const btnInvia = document.getElementById("btnInvia");
+        const fercamList = document.getElementById("fercamList");
+        const fercamForm = document.getElementById("fercamForm");
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key !== "Enter") return;
+
+            event.preventDefault();
+            btnInvia.click();
+        });
+
+        selectAllCheckbox.addEventListener("change", function () {
+            const isChecked = this.checked;
+            let selectedCount = getSelectedCount();
+
+            checkboxes.forEach(cb => {
+                if (cb.checked !== isChecked) {
+                    cb.checked = isChecked;
+                    updateRowStyle(cb);
+                    selectedCount = getSelectedCount();
+                }
+            });
+            toggleSubmitButton();
+        });
+
+        function getSelectedCount() {
+            return document.querySelectorAll(".spedizione-checkbox:checked").length;
+        }
+
+        function updateRowStyle(checkbox) {
+            const row = checkbox.closest('.spedizione-row');
+            if (row) {
+                checkbox.checked ? row.classList.add('row-selected') : row.classList.remove('row-selected');
+            }
+        }
+
+        function toggleSubmitButton() {
+            const count = getSelectedCount();
+            btnInvia.disabled = count === 0;
+            btnInvia.textContent = count > 0 ? `Invia ${count} selezionate a Fercam` : 'Invia selezionate a Fercam';
+        }
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener("change", function () {
+                // Intercettazione e revert del check se si supera il limite
+                if (this.checked && getSelectedCount() > MAX_SELECTIONS) {
+                    this.checked = false;
+                    alert(`Puoi selezionare un massimo di ${MAX_SELECTIONS} documenti contemporaneamente.`);
+                    return; 
+                }
+
+                updateRowStyle(this);
+                toggleSubmitButton();
+            });
+        });
+
+        if (btnInvia) {
+            btnInvia.addEventListener("click", function () {
+                if (!btnInvia.disabled && fercamForm) {
+                    fercamForm.submit();
+                }
+            });
+        }
+
+        // Event Delegation per il click sull'intera riga
+        if (fercamList) {
+            fercamList.addEventListener("click", function (event) {
+                const row = event.target.closest('.spedizione-row');
+                if (!row) return;
+
+                // Esclusione trigger sui nodi già interattivi
+                if (event.target.closest('button') || event.target.tagName === 'INPUT' || event.target.tagName === 'A') {
+                    return;
+                }
+
+                const checkbox = row.querySelector('.spedizione-checkbox');
+                if (checkbox) {
+                    // Controllo preventivo del limite prima di alterare lo stato e forzare il dispatch
+                    if (!checkbox.checked && getSelectedCount() >= MAX_SELECTIONS) {
+                        alert(`Puoi selezionare un massimo di ${MAX_SELECTIONS} documenti contemporaneamente.`);
+                        return;
+                    }
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            });
+        }
+
+        toggleSubmitButton();
+    });
+
+    function deleteRow(actionUrl) {
+        if (confirm('Confermi l\'eliminazione della spedizione preliminare?')) {
+            const form = document.getElementById('deleteForm');
+            form.action = actionUrl;
+            form.submit();
+        }
+    }
+</script>
+{% endblock %}
