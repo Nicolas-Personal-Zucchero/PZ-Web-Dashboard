@@ -2,7 +2,7 @@ services:
   pz-dashboard:
     build: .
     volumes:
-      - ~/firestore_backups:/backups
+      - ~/backups/firestore:/backups
       - ~/.secrets:/secrets
       - ~/agents_map:/app/app/static/agents_map
       - ./data:/app/app/instance
