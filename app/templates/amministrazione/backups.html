@@ -9,26 +9,43 @@
     </a>
     <h1>Download Backup</h1>
 
-    <div class="mb-3">
+    <div class="mb-4">
         <a href="{{ url_for('amministrazione.backup.download_all_backups') }}" class="btn btn-success">
             <i class="bi bi-download me-2"></i>Scarica TUTTI i backup (.zip)
         </a>
     </div>
 
-    {% if folders %}
-    <ul class="list-group">
-        {% for folder in folders %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            <strong>{{ folder }}</strong>
-            <a href="{{ url_for('amministrazione.backup.download_single_backup', folder=folder) }}"
-                class="btn btn-sm btn-primary">
-                <i class="bi bi-folder-symlink me-1"></i>Scarica questa cartella
-            </a>
-        </li>
+    {% if backup_tree %}
+        {% for main_folder, subfolders in backup_tree.items() %}
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                <h4 class="mb-0 text-capitalize text-primary">
+                    <i class="bi bi-archive me-2"></i>{{ main_folder }}
+                </h4>
+                <a href="{{ url_for('amministrazione.backup.download_single_backup', folder_path=main_folder) }}" class="btn btn-primary">
+                    <i class="bi bi-download me-1"></i>Scarica intero {{ main_folder }}
+                </a>
+            </div>
+            
+            <ul class="list-group list-group-flush">
+                {% for subfolder in subfolders %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="ms-3"><i class="bi bi-folder2 me-2"></i>{{ subfolder }}</span>
+                    <a href="{{ url_for('amministrazione.backup.download_single_backup', folder_path=main_folder ~ '/' ~ subfolder) }}"
+                        class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-download me-1"></i>Scarica cartella
+                    </a>
+                </li>
+                {% endfor %}
+
+                {% if not subfolders %}
+                <li class="list-group-item text-muted">Nessuna sottocartella trovata in {{ main_folder }}.</li>
+                {% endif %}
+            </ul>
+        </div>
         {% endfor %}
-    </ul>
     {% else %}
-    <div class="alert alert-info mt-3">Nessuna cartella di backup trovata.</div>
+        <div class="alert alert-info mt-3">Nessuna struttura di backup trovata nel server.</div>
     {% endif %}
 
 </div>
