@@ -2,9 +2,9 @@ services:
   pz-dashboard:
     build: .
     volumes:
-      - /home/pz/firestore_backups:/backups  # monta la cartella dei backup
-      - /home/pz/.secrets:/secrets
-      - /home/pz/agents_map:/app/app/static/agents_map
+      - ~/firestore_backups:/backups  # monta la cartella dei backup
+      - ~/.secrets:/secrets
+      - ~/agents_map:/app/app/static/agents_map
       - ./data:/app/app/instance
     environment:
       - LOG_LEVEL=INFO
