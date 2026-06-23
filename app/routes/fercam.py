@@ -1,4 +1,5 @@
 import json
+import copy
 from decimal import Decimal
 from flask import Blueprint, redirect, render_template, flash, request, url_for, current_app, jsonify
 from config.constants import ZEBRA_IP
@@ -18,9 +19,8 @@ fercam_bp = Blueprint("fercam", __name__, url_prefix="/fercam")
 
 @fercam_bp.route("/", methods=["GET"])
 def fercam():
-    #Ottengo tutte le spedizioni preliminari per verificare le fatture già preparate e segnalarle
-    identificativi_tuples = db.session.query(SpedizioneIdentificativo.fattura_identificativo).all()
-    all_identificativi = {i[0].strip() for i in identificativi_tuples if i[0]}
+    identificativi = SpedizioneIdentificativo.query.all()
+    all_identificativi = {f"{i.sigla} {i.serie}/{i.numero}" for i in identificativi}
 
     mexal = secrets_manager.get_mexal()
     if not mexal:
@@ -80,18 +80,36 @@ def _safe_json_load(raw_string):
     try: return json.loads(raw_string) if raw_string else {}
     except ValueError: return {}
 
+
+def create_spedizione_preliminare(doc_id, fattura_unica, xml, identificativi):
+    db.session.add(SpedizionePreliminare(
+        id=doc_id,
+        ragione_sociale_cliente=fattura_unica["cliente"]["ragione_sociale"],
+        nr_colli=fattura_unica["nr_colli_sped"][0][1],
+        peso=fattura_unica["peso_spedizione"][0][1],
+        cash_on_delivery=fattura_unica["cod_amount"],
+        xml=xml,
+        identificativi_rel=[
+            SpedizioneIdentificativo(
+                sigla=sigla,
+                serie=serie,
+                numero=numero,
+                cod_conto=cod_conto
+            ) for sigla, serie, numero, cod_conto in identificativi
+        ]
+    ))
+
 @fercam_bp.route("/invia", methods=["POST"])
 def invia():
-    singolo_id = request.form.get("fattura_id_singola")
-    fatture_ids = [singolo_id] if singolo_id else request.form.getlist("fatture_selezionate")
+    fatture_ids = request.form.getlist("fatture_selezionate")
+    if not fatture_ids:
+        flash("Nessun documento selezionato per l'invio.", "danger")
+        return redirect(url_for("fercam.fercam"))
+
     nr_colli_overrides = _safe_json_load(request.form.get("nr_colli_overrides", "{}"))
     peso_overrides = _safe_json_load(request.form.get("peso_overrides", "{}"))
     cod_amount_overrides = _safe_json_load(request.form.get("cod_amount_overrides", "{}"))
     raggruppamenti = _safe_json_load(request.form.get("raggruppamenti", "{}"))
-
-    if not fatture_ids:
-        flash("Nessun documento selezionato per l'invio.", "danger")
-        return redirect(url_for("fercam.fercam"))
 
     try:
         mexal = secrets_manager.get_mexal()
@@ -102,69 +120,33 @@ def invia():
         if not sscc_generator:
             raise ValueError("Errore nelle credenziali per la generazione degli SSCC.")
 
-        # ssccs = sscc_generator.get_ssccs(len(fatture_ids))
-        # if not ssccs:
-        #     raise RuntimeError("Errore nella generazione degli SSCC.")
-
-        errori = []
-        xmls = []
         groups = {}
-        for i, fattura_id in enumerate(fatture_ids):
+        for fattura_id in fatture_ids:
+            nr_colli_override = int(nr_colli_overrides.get(fattura_id)) if nr_colli_overrides.get(fattura_id) else None
+            peso_override = parse_float_amount(peso_overrides.get(fattura_id))
+            cod_override = parse_float_amount(cod_amount_overrides.get(fattura_id))
+            info = (fattura_id, nr_colli_override, peso_override, cod_override)
+            group = raggruppamenti.get(fattura_id)
+            groups.setdefault(group if group else fattura_id, []).append(info)
+
+        errors = []
+        elaborati = 0
+        for _, fatture_batch in groups.items():
             try:
-                nr_colli_override = int(nr_colli_overrides.get(fattura_id)) if nr_colli_overrides.get(fattura_id) else None
-                peso_override = parse_float_amount(peso_overrides.get(fattura_id))
-                cod_override = parse_float_amount(cod_amount_overrides.get(fattura_id))
-                group = raggruppamenti.get(fattura_id)
-                if group:
-                    groups.setdefault(group, []).append((fattura_id, nr_colli_override, peso_override, cod_override))
-                    continue
-
-                sigla, serie, numero, cod_conto = fattura_id.split("+")
-                id, ragione_sociale, nr_colli, peso, cod_amount, xml = process_and_send(mexal, sscc_generator, sigla, serie, numero, cod_conto, nr_colli_override=nr_colli_override, peso_override=peso_override, cod_amount_override=cod_override)
-                current_app.logger.warning(f"Valore di cod_amount: {cod_amount}")
-                #Upsert: Se la spedizione preliminare esiste già, aggiorno i campi, altrimenti creo un nuovo record
-                db.session.add(SpedizionePreliminare(
-                    id=id,
-                    ragione_sociale_cliente=ragione_sociale,
-                    nr_colli=nr_colli,
-                    peso=peso,
-                    cash_on_delivery=cod_amount,
-                    xml=xml,
-                    identificativi_rel=[
-                        SpedizioneIdentificativo(fattura_identificativo=f"{sigla} {serie}/{numero}")
-                    ]
-                ))
+                doc_id, fattura_unica, xml, identificativi = process_fatture_group(mexal, sscc_generator, fatture_batch)
+                create_spedizione_preliminare(doc_id, fattura_unica, xml, identificativi)
+                elaborati += 1
             except Exception as e:
-                current_app.logger.error(f"Errore fattura {fattura_id}: {e}")
-                errori.append((f"{sigla} {serie}/{numero}", str(e)))
+                current_app.logger.error(f"Errore : {e}")
+                errors.append((f"", str(e)))
 
-        if groups:
-            for _, fatture in groups.items():
-                id, ragione_sociale, nr_colli, peso, cod_amount, xml = merge_fatture(mexal, sscc_generator, fatture)
-                identificativi = []
-                for fattura_id, _, _, _ in fatture:
-                    sigla, serie, numero, cod_conto = fattura_id.split("+")
-                    identificativi.append(f"{sigla} {serie}/{numero}")
-                #Upsert: Se la spedizione preliminare esiste già, aggiorno i campi, altrimenti creo un nuovo record
-                db.session.add(SpedizionePreliminare(
-                    id=id,
-                    ragione_sociale_cliente=ragione_sociale,
-                    nr_colli=nr_colli,
-                    peso=peso,
-                    cash_on_delivery=cod_amount,
-                    xml=xml,
-                    identificativi_rel=[
-                        SpedizioneIdentificativo(fattura_identificativo=identificativo) for identificativo in identificativi
-                    ]
-                ))
-
-        if not errori:
+        if not errors:
             db.session.commit()
 
-        for fattura_id, error_msg in errori:
+        for fattura_id, error_msg in errors:
             flash(f"Errore fattura {fattura_id}: {error_msg}", "danger")
         
-        if not errori and xmls:
+        if not errors and elaborati:
             flash(f"Documenti elaborati e inviati con successo. Etichette stampate", "success")
 
     except Exception as e:
@@ -420,52 +402,36 @@ def load_fattura_for_send(mexal, sigla, serie, numero, cod_conto, parziale=False
 
     return fattura
 
-def process_and_send(mexal, sscc_generator, sigla, serie, numero, cod_conto, nr_colli_override=None, peso_override=None, cod_amount_override=None):
-    fattura = load_fattura_for_send(mexal, sigla, serie, numero, cod_conto)
-    if nr_colli_override is not None:
-        fattura["nr_colli_sped"][0][1] = nr_colli_override
-
-    if peso_override is not None:
-        fattura["peso_spedizione"][0][1] = peso_override
-
-    if cod_amount_override is not None and str(fattura["id_pagamento"]) in ID_PAGAMENTI_ALLA_CONSEGNA:
-        fattura["cod_amount"] = cod_amount_override
-
-    ssccs = sscc_generator.get_ssccs(fattura["nr_colli_sped"][0][1])
-    if not ssccs:
-        raise RuntimeError("Errore nella generazione degli SSCC.")
-
-    doc_id, xml = build_xml(fattura, ssccs)
-    # current_app.logger.info(f"XML generato per {sigla} {serie}/{numero}. {fattura} \n{xml}")
-    print_label(ssccs, fattura)
-    return doc_id, fattura["cliente"]["ragione_sociale"], fattura["nr_colli_sped"][0][1], fattura["peso_spedizione"][0][1], fattura["cod_amount"], xml
-
-def merge_fatture(mexal, sscc_generator, fatture_info):
+def process_fatture_group(mexal, sscc_generator, fatture_info):
     fatture = []
-    for id, nr_colli_override, peso_override, cod_amount_override in fatture_info:
-        sigla, serie, numero, cod_conto = id.split("+")
+    identificativi = []
+    
+    for fid, nr_colli_override, peso_override, cod_amount_override in fatture_info:
+        sigla, serie, numero, cod_conto = fid.split("+")
         f = load_fattura_for_send(mexal, sigla, serie, numero, cod_conto)
-        f["nr_colli_sped"][0][1] = nr_colli_override if nr_colli_override is not None else f["nr_colli_sped"][0][1]
-        f["peso_spedizione"][0][1] = peso_override if peso_override is not None else f["peso_spedizione"][0][1]
-        f["cod_amount"] = cod_amount_override if cod_amount_override is not None else f.get("cod_amount")
+        
+        # Override individuali
+        if nr_colli_override is not None: f["nr_colli_sped"][0][1] = nr_colli_override
+        if peso_override is not None: f["peso_spedizione"][0][1] = peso_override
+        if cod_amount_override is not None and str(f.get("id_pagamento")) in ID_PAGAMENTI_ALLA_CONSEGNA: f["cod_amount"] = cod_amount_override
+        
         fatture.append(f)
+        identificativi.append((sigla, serie, numero, cod_conto))
 
-    #Unisco le 2 o più fatture in una sola, sommando i colli, i pesi e i contrassegni (se presenti)
-    merged_fattura = fatture[0]
+    merged = copy.deepcopy(fatture[0])
+    
     for f in fatture[1:]:
-        merged_fattura["nr_colli_sped"][0][1] += f["nr_colli_sped"][0][1] #Sommo i colli
-        merged_fattura["peso_spedizione"][0][1] += f["peso_spedizione"][0][1] #Sommo i pesi
+        merged["nr_colli_sped"][0][1] += f["nr_colli_sped"][0][1]
+        merged["peso_spedizione"][0][1] += f["peso_spedizione"][0][1]
         if f.get("cod_amount") is not None:
-            merged_fattura["cod_amount"] = (merged_fattura.get("cod_amount") or Decimal(0)) + (f.get("cod_amount") or Decimal(0)) #Sommo i contrassegni, se presenti
+            merged["cod_amount"] = (merged.get("cod_amount") or Decimal(0)) + f["cod_amount"]
+        merged["riferimento"] += f" \&{f['riferimento']}"
 
-    ssccs = sscc_generator.get_ssccs(merged_fattura["nr_colli_sped"][0][1])
+    ssccs = sscc_generator.get_ssccs(merged["nr_colli_sped"][0][1])
     if not ssccs:
         raise RuntimeError("Errore nella generazione degli SSCC.")
-    doc_id, xml = build_xml(merged_fattura, ssccs)
-    # current_app.logger.info(f"XML generato per {sigla} {serie}/{numero}. {merged_fattura} \n{xml}")
-
-    for f in fatture[1:]:
-        merged_fattura["riferimento"] += " \&" + f["riferimento"] #Andata a capo delle etichette zebra
-    print_label(ssccs, merged_fattura)
-
-    return doc_id, merged_fattura["cliente"]["ragione_sociale"], merged_fattura["nr_colli_sped"][0][1], merged_fattura["peso_spedizione"][0][1], merged_fattura["cod_amount"], xml
+        
+    doc_id, xml = build_xml(merged, ssccs)
+    print_label(ssccs, merged)
+    
+    return doc_id, merged, xml, identificativi

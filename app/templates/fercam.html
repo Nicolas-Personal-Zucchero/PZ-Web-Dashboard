@@ -60,7 +60,6 @@
                         <div class="col-md-1">Peso Totale</div>
                         <div class="col-md-2">Aspetto</div>
                         <div class="col-md-1">Pagamento</div>
-                        <!-- <div class="col-md-1">Azioni</div> -->
                     </div>
                 </li>
 
@@ -112,17 +111,6 @@
                                 <span>Consegna</span>
                             {% endif %}
                         </div>
-                        <!-- <div class="col-md-1 text-end">
-                            {% if fattura.completo %}
-                                <button type="submit" 
-                                        name="fattura_id_singola" 
-                                        value="{{ fattura.id }}"
-                                        formaction="{{ url_for('fercam.invia') }}"
-                                        class="btn btn-outline-primary btn-sm">
-                                    Invia singolo
-                                </button>
-                            {% endif %}
-                        </div> -->
                     </div>
                 </li>
                 {% else %}
@@ -153,8 +141,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div>
-                    <h5 class="modal-title" id="codAmountModalLabel">Conferma importi contrassegno</h5>
-                    <p class="text-muted mb-0 small">Controlla i contrassegni recuperati da Mexal e modifica solo quelli necessari prima dell'invio.</p>
+                    <h5 class="modal-title" id="codAmountModalLabel">Controllo fatture</h5>
+                    <p class="text-muted mb-0 small">Controlla i valori delle fatture e correggili se necessario prima della creazione delle spedizioni preliminari.</p>
+                    <p class="text-muted mb-0 small">Se vuoi unire più fatture in un'unica spedizione, assegnagli lo stesso gruppo.</p>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
             </div>
@@ -214,7 +203,7 @@
 
             toggleSubmitButton();
         });
-        // Gestione globale del tasto Invio (Enter)
+
         document.addEventListener("keydown", function (event) {
             if (event.key !== "Enter") return;
 

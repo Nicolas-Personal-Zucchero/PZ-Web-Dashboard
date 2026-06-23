@@ -41,7 +41,10 @@ class SpedizioneIdentificativo(db.Model):
         db.ForeignKey('spedizioni_preliminari.id', ondelete='CASCADE'), 
         nullable=False
     )
-    fattura_identificativo = db.Column(db.String(100), nullable=False, index=True)
+    sigla = db.Column(db.String(10), nullable=False)
+    serie = db.Column(db.String(10), nullable=False)
+    numero = db.Column(db.String(20), nullable=False)
+    cod_conto = db.Column(db.String(20), nullable=False)
 
 def init_database(flask_app):
     db_dir = os.path.join(flask_app.instance_path)

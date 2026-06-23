@@ -60,15 +60,11 @@
                 <li class="list-group-item spedizione-row">
                     <div class="row align-items-center">
                         <div class="col-md-1">
-                            {% if not spedizione.duplicato %}
-                                <input class="form-check-input spedizione-checkbox" type="checkbox" name="spedizioni_selezionate" value="{{ spedizione.id }}">
-                            {% else %}
-                                <i class="bi bi-exclamation-triangle text-warning" title="Identificativo fattura già presente in un altro ordine preliminare"></i>
-                            {% endif %}
+                            <input class="form-check-input spedizione-checkbox" type="checkbox" name="spedizioni_selezionate" value="{{ spedizione.id }}">
                         </div>
                         <div class="col-md-3">
                             {% for id_rel in spedizione.identificativi_rel %}
-                                {{ id_rel.fattura_identificativo }}
+                                {{ id_rel.sigla }} {{ id_rel.serie }}/{{ id_rel.numero }}
                                 {% if not loop.last %}, {% endif %}
                             {% endfor %}
                         </div>
@@ -123,6 +119,13 @@
         const btnInvia = document.getElementById("btnInvia");
         const fercamList = document.getElementById("fercamList");
         const fercamForm = document.getElementById("fercamForm");
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key !== "Enter") return;
+
+            event.preventDefault();
+            btnInvia.click();
+        });
 
         selectAllCheckbox.addEventListener("change", function () {
             const isChecked = this.checked;
