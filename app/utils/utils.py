@@ -4,8 +4,6 @@ import requests
 import io
 from typing import Dict, Any, Optional
 import socket
-from datetime import datetime, timedelta
-import holidays
 
 def extract_logo_id(url_immagine: str) -> str | None:
     """
@@ -60,14 +58,3 @@ def send_to_zebra(printer_ip, zpl_string, port=9100):
             s.sendall(zpl_string.encode('utf-8'))
     except socket.error as e:
         print(f"Errore connessione: {e}")
-
-def get_next_working_day(country_code: str = "IT") -> datetime:
-    """Calcola il giorno lavorativo successivo escludendo weekend e festività nazionali."""
-    local_holidays = holidays.country_holidays(country_code)
-    current_date = datetime.now() + timedelta(days=1)
-    
-    # O(1) lookups per i giorni festivi grazie all'implementazione in dict della libreria
-    while current_date.weekday() >= 5 or current_date in local_holidays:
-        current_date += timedelta(days=1)
-        
-    return current_date
