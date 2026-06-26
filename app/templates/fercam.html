@@ -187,6 +187,19 @@
         const btnConfermaInvio = document.getElementById("btnConfermaInvio");
         const previewUrl = "{{ url_for('fercam.preview_invio') }}";
 
+        if (searchInput) {
+            searchInput.focus();
+        }
+
+        function isEditableElement(element) {
+            if (!element) {
+                return false;
+            }
+
+            const tagName = element.tagName;
+            return element.isContentEditable || tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT";
+        }
+
         deselectAllCheckbox.addEventListener("change", function () {
             const isChecked = this.checked;
             
@@ -205,22 +218,68 @@
         });
 
         document.addEventListener("keydown", function (event) {
-            if (event.key !== "Enter") return;
-
-            if (codAmountModalEl && codAmountModalEl.classList.contains("show")) {
-                // Se la modale è visibile, l'Invio attiva il pulsante di conferma della modale
-                if (btnConfermaInvio && !btnConfermaInvio.disabled) {
-                    event.preventDefault();
-                    btnConfermaInvio.click();
+            if (event.key === "Enter") {
+                if (codAmountModalEl && codAmountModalEl.classList.contains("show")) {
+                    // Se la modale è visibile, l'Invio attiva il pulsante di conferma della modale
+                    if (btnConfermaInvio && !btnConfermaInvio.disabled) {
+                        event.preventDefault();
+                        btnConfermaInvio.click();
+                    }
+                } 
+                else {
+                    // Se la modale è chiusa, l'Invio attiva il pulsante principale della pagina
+                    if (btnInvia && !btnInvia.disabled) {
+                        event.preventDefault();
+                        btnInvia.click();
+                    }
                 }
-            } 
-            else {
-                // Se la modale è chiusa, l'Invio attiva il pulsante principale della pagina
-                if (btnInvia && !btnInvia.disabled) {
-                    event.preventDefault();
-                    btnInvia.click();
+                return;
+            }
+
+            if (!searchInput || event.defaultPrevented || event.ctrlKey || event.altKey || event.metaKey || event.isComposing) {
+                return;
+            }
+
+            const activeElement = document.activeElement;
+            if (activeElement === searchInput) {
+                return;
+            }
+
+            if (isEditableElement(activeElement)) {
+                return;
+            }
+
+            const isPrintableKey = event.key.length === 1;
+            const isBackspaceKey = event.key === "Backspace";
+            const isDeleteKey = event.key === "Delete";
+
+            if (!isPrintableKey && !isBackspaceKey && !isDeleteKey) {
+                return;
+            }
+
+            event.preventDefault();
+            searchInput.focus();
+
+            const selectionStart = searchInput.selectionStart ?? searchInput.value.length;
+            const selectionEnd = searchInput.selectionEnd ?? searchInput.value.length;
+
+            if (isPrintableKey) {
+                searchInput.setRangeText(event.key, selectionStart, selectionEnd, "end");
+            } else if (isBackspaceKey) {
+                if (selectionStart !== selectionEnd) {
+                    searchInput.setRangeText("", selectionStart, selectionEnd, "end");
+                } else if (selectionStart > 0) {
+                    searchInput.setRangeText("", selectionStart - 1, selectionStart, "end");
+                }
+            } else if (isDeleteKey) {
+                if (selectionStart !== selectionEnd) {
+                    searchInput.setRangeText("", selectionStart, selectionEnd, "end");
+                } else if (selectionStart < searchInput.value.length) {
+                    searchInput.setRangeText("", selectionStart, selectionStart + 1, "end");
                 }
             }
+
+            filterRows();
         });
 
         function getSelectedCount() {
