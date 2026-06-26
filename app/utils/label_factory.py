@@ -42,7 +42,7 @@ def generate_sugar_label(ragione_sociale, via, cap_citta_provincia, stato, telef
     ])
     return "\n".join(zpl_rows)
 
-def generate_dachser_label(sscc, id, date, counter, total, ragione_sociale, via, cap_citta_provincia, stato, show_personal_zucchero):
+def generate_dachser_label(sscc, id, datetime, counter, total, ragione_sociale, via, cap_citta_provincia, stato, show_personal_zucchero):
     zpl_rows = [
         "^XA",
         "^PW839",
@@ -67,8 +67,8 @@ def generate_dachser_label(sscc, id, date, counter, total, ragione_sociale, via,
         "^FO710,80^FDSSCC^FS",
         # f"^FO710,290^BY4^BCR,120,Y,N,N,U^FD(00){sscc[2:-1]}^FS", # Versione con conformità visiva (00) e ultimo codice calcolato dalla zebra
         f"^FO710,290^BY4^BCR,120,Y,N,N,N^FD>;>8{sscc}^FS", # Versione con stampa diretta senza calcoli della zebra
-        "^CF0,40",
-        f"^FO760,820^FB330,1,0,R^FD{date}^FS",
+        "^CF0,38",
+        f"^FO760,820^FB330,1,0,R^FD{datetime}^FS",
         "^CF0,50",
         f"^FO690,820^FB330,1,0,R^FD{counter}/{total}^FS",
         "^FO670,50^GB3,1100,3^FS",
