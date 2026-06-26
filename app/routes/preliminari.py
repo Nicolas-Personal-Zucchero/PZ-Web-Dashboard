@@ -108,7 +108,7 @@ def invia():
                 try:
                     sftp.send_content(spedizione.xml, filename)
                     inviati += 1
-                    current_app.logger.info(f"Inviato {filename} a Fercam.\n{spedizione.xml}")
+                    current_app.logger.info(f"Inviato {filename} a Fercam.")
                     for identificativo in spedizione.identificativi_rel:
                         current_app.logger.info(f"Aggiornamento numero di tracking per {identificativo.sigla} {identificativo.serie}/{identificativo.numero} ({identificativo.cod_conto}).")
                         update_nr_tracking(
@@ -118,8 +118,10 @@ def invia():
                             identificativo.numero,
                             identificativo.cod_conto
                         )
+                    current_app.logger.info(f"Aggiornato tracking su mexal per spedizione {spedizione.id}.")
                     spedizione.sent = True
                     db.session.commit()
+                    current_app.logger.info(f"Spedizione {spedizione.id} marcata come inviata sul database.")
                 except Exception as e:
                     error_msg = f"Errore nell'invio a Fercam: {e}"
                     current_app.logger.error(f"Errore spedizione {spedizione.id} [{filename}]: {e}")
