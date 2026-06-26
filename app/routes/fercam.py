@@ -196,8 +196,8 @@ def preview_invio():
 def print_label(ssccs, fattura):
     label_total = int(fattura["nr_colli_sped"][0][1]) if fattura.get("nr_colli_sped") else 1
     date_str = datetime.now().strftime("%d/%m/%y")
-    ragione_sociale = fattura["cliente"]["ragione_sociale"]
 
+    ragione_sociale = fattura["indirizzo_spedizione"]["descrizione"]
     via = fattura["indirizzo_spedizione"]["indirizzo"]
     cap_citta_prov = f'{fattura["indirizzo_spedizione"]["cap"]} {fattura["indirizzo_spedizione"]["localita"]} {fattura["indirizzo_spedizione"]["provincia"]}'
     stato = fattura["indirizzo_spedizione"]["cod_paese"]
@@ -240,6 +240,7 @@ def get_indirizzo_spedizione(mexal, fattura, cliente):
     if is_paese_it == is_prov_ee:
         raise ValueError(f"Contraddizione Paese/Provincia: {indirizzo_spedizione['cod_paese']} / {indirizzo_spedizione['provincia']}")
 
+    current_app.logger.warning(f"Indirizzo di spedizione determinato: {indirizzo_spedizione}")
     return indirizzo_spedizione
 
 def get_note(mexal, fattura: dict) -> dict | None:
@@ -312,14 +313,14 @@ def build_xml(fattura, ssccs):
     if fattura.get("note", {}).get("sbancalamento") == "S":
         notes.append("Servizio di Sbancalamento richiesto")
 
-    if "SOSTA TECNICA" in fattura.get("indirizzo_spedizione", {}).get("descrizione").upper():
+    if "SOSTA TECNICA" in fattura.get("indirizzo_spedizione", {}).get("descrizione", "").upper():
         name = fattura.get("note", {}).get("sosta_tecnica_ragione_sociale")
         street = fattura.get("note", {}).get("sosta_tecnica_indirizzo")
         city = fattura.get("note", {}).get("sosta_tecnica_localita")
         postal_code = fattura.get("note", {}).get("sosta_tecnica_cap")
         country_code = fattura.get("note", {}).get("sosta_tecnica_cod_paese")
     else:
-        name = fattura["cliente"]["ragione_sociale"]
+        name = fattura.get("indirizzo_spedizione", {}).get("descrizione", "")
         street = fattura["indirizzo_spedizione"]["indirizzo"]
         city = fattura["indirizzo_spedizione"]["localita"]
         postal_code = fattura["indirizzo_spedizione"]["cap"]
