@@ -10,10 +10,17 @@ preliminari_bp = Blueprint("preliminari", __name__, url_prefix="/preliminari")
 
 @preliminari_bp.route("/", methods=["GET"])
 def preliminari():
-    spedizioni = SpedizionePreliminare.query.options(
-        joinedload(SpedizionePreliminare.identificativi_rel)
-    ).all()
-    return render_template("preliminari.html", spedizioni=spedizioni)
+    stmt = db.select(SpedizionePreliminare)\
+             .options(joinedload(SpedizionePreliminare.identificativi_rel))
+    
+    tutte_le_spedizioni = db.session.execute(stmt).scalars().unique().all()
+    preliminari = [s for s in tutte_le_spedizioni if not s.sent]
+    inviate = [s for s in tutte_le_spedizioni if s.sent]
+    return render_template(
+        "preliminari.html", 
+        spedizioni_preliminari=preliminari, 
+        spedizioni_inviate=inviate
+    )
 
 @preliminari_bp.route("/elimina/<string:id>", methods=["POST"])
 def elimina(id):
@@ -89,7 +96,7 @@ def invia():
                         #     identificativo.numero,
                         #     identificativo.cod_conto
                         # )
-                    db.session.delete(spedizione)
+                    spedizione.sent = True
                     db.session.commit()
                 except Exception as e:
                     error_msg = f"Errore nell'invio a Fercam: {e}"
