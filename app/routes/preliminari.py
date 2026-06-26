@@ -1,5 +1,6 @@
 import json
-from flask import Blueprint, redirect, render_template, flash, request, url_for, current_app
+from io import BytesIO
+from flask import Blueprint, redirect, render_template, flash, request, url_for, current_app, send_file
 
 from datetime import datetime
 from config.secrets_manager import secrets_manager
@@ -44,6 +45,31 @@ def elimina(id):
 
     return redirect(url_for("preliminari.preliminari"))
 
+@preliminari_bp.route("/download-xml/<string:id>", methods=["GET"])
+def download_xml(id):
+    spedizione = db.session.get(SpedizionePreliminare, id)
+
+    if not spedizione:
+        flash("Spedizione preliminare non trovata.", "warning")
+        return redirect(url_for("preliminari.preliminari"))
+
+    if not spedizione.sent:
+        flash("È possibile scaricare solo le spedizioni già inviate.", "warning")
+        return redirect(url_for("preliminari.preliminari"))
+
+    if not spedizione.xml:
+        flash("XML non disponibile per questa spedizione.", "warning")
+        return redirect(url_for("preliminari.preliminari"))
+
+    xml_bytes = BytesIO(spedizione.xml.encode("utf-8"))
+    filename = f"{spedizione.id}.xml"
+    return send_file(
+        xml_bytes,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/xml"
+    )
+
 @preliminari_bp.route("/invia", methods=["POST"])
 def invia():
     spedizioni_ids = request.form.getlist("spedizioni_selezionate")
@@ -73,7 +99,7 @@ def invia():
     inviati = 0
 
     try:
-        with secrets_manager.get_fercam_sftp(test_server=True) as sftp:
+        with secrets_manager.get_fercam_sftp() as sftp:
             for spedizione in spedizioni:
                 if not spedizione.xml:
                     error_msg = f"Campo XML mancante."
@@ -84,18 +110,18 @@ def invia():
                 filename = f"{spedizione.id}.xml"
                 
                 try:
-                    # sftp.send_content(spedizione.xml, filename)
+                    sftp.send_content(spedizione.xml, filename)
                     inviati += 1
-                    current_app.logger.info(f"Inviato {filename} a Fercam.")
+                    current_app.logger.info(f"Inviato {filename} a Fercam.\n{spedizione.xml}")
                     for identificativo in spedizione.identificativi_rel:
                         current_app.logger.info(f"Aggiornamento numero di tracking per {identificativo.sigla} {identificativo.serie}/{identificativo.numero} ({identificativo.cod_conto}).")
-                        # update_nr_tracking(
-                        #     mexal,
-                        #     identificativo.sigla,
-                        #     identificativo.serie,
-                        #     identificativo.numero,
-                        #     identificativo.cod_conto
-                        # )
+                        update_nr_tracking(
+                            mexal,
+                            identificativo.sigla,
+                            identificativo.serie,
+                            identificativo.numero,
+                            identificativo.cod_conto
+                        )
                     spedizione.sent = True
                     db.session.commit()
                 except Exception as e:

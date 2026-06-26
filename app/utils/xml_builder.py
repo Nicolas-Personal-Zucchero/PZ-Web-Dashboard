@@ -84,7 +84,7 @@ def create_transport_order(
         document_id=document_id,
         document_date=datetime.now(),
 
-        test=True, # Da rimuovere quando si andrà in produzione
+        #test=True, # Da rimuovere quando si andrà in produzione
         
         # transport_number="44332211",
         customer_shipment_reference=customer_shipment_reference,

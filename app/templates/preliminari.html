@@ -84,7 +84,7 @@
                             <button type="button" 
                                     class="btn btn-outline-danger btn-sm" 
                                     title="Elimina riga"
-                                    onclick="event.stopPropagation(); deleteRow('{{ url_for('preliminari.elimina', id=spedizione.id) }}');">
+                                    data-delete-url="{{ url_for('preliminari.elimina', id=spedizione.id) }}">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
@@ -92,7 +92,7 @@
                 </li>
                 {% else %}
                 <li class="list-group-item text-center text-muted">
-                    Nessuna spedizione preliminare disponibile.
+                    Nessuna spedizione preliminare preparata.
                 </li>
                 {% endfor %}
             </ul>
@@ -126,8 +126,7 @@
             <ul class="list-group list-group-flush styled-table">
                 <li class="list-group-item static-header sticky-top bg-light">
                     <div class="row align-items-center fw-bold">
-                        <div class="col-md-1">
-                        </div>
+                        <div class="col-md-1">ID</div>
                         <div class="col-md-3">Identificativo</div>
                         <div class="col-md-3">Ragione Sociale Cliente</div>
                         <div class="col-md-1">Numero Colli</div>
@@ -141,6 +140,7 @@
                 <li class="list-group-item spedizione-row">
                     <div class="row align-items-center">
                         <div class="col-md-1">
+                            {{ spedizione.id }}
                         </div>
                         <div class="col-md-3">
                             {% for id_rel in spedizione.identificativi_rel %}
@@ -161,6 +161,11 @@
                             {{ spedizione.cash_on_delivery if spedizione.cash_on_delivery is not none else '' }}
                         </div>
                         <div class="col-md-1 text-end">
+                            <a class="btn btn-outline-primary btn-sm me-1"
+                               title="Scarica XML"
+                               href="{{ url_for('preliminari.download_xml', id=spedizione.id) }}">
+                                <i class="bi bi-download"></i>
+                            </a>
                         </div>
                     </div>
                 </li>
@@ -299,6 +304,13 @@
                 }
             });
         }
+
+        document.querySelectorAll('[data-delete-url]').forEach(button => {
+            button.addEventListener('click', function (event) {
+                event.stopPropagation();
+                deleteRow(this.dataset.deleteUrl);
+            });
+        });
 
         toggleSubmitButton();
     });
