@@ -148,7 +148,7 @@ def invia():
             flash(f"Errore fattura {fattura_id}: {error_msg}", "danger")
         
         if not errors and elaborati:
-            flash(f"Documenti elaborati e inviati con successo. Etichette stampate", "success")
+            flash(f"Fatture elaborate, etichette stampate e spedizioni preliminari create.", "success")
 
     except Exception as e:
         current_app.logger.error(f"Errore critico durante l'integrazione con Fercam: {e}")
@@ -202,7 +202,7 @@ def print_label(ssccs, fattura):
     cap_citta_prov = f'{fattura["indirizzo_spedizione"]["cap"]} {fattura["indirizzo_spedizione"]["localita"]} {fattura["indirizzo_spedizione"]["provincia"]}'
     stato = fattura["indirizzo_spedizione"]["cod_paese"]
 
-    show_personal_zucchero = LABEL_TYPE_MAP.get(fattura.get("tipologia_etichetta"))
+    show_personal_zucchero = LABEL_TYPE_MAP.get(fattura.get("tipologia_etichetta"), False)
     for idx in range(label_total, 0, -1):
         label = generate_dachser_label(
             ssccs[idx - 1], fattura["riferimento"], date_str, idx, label_total,
@@ -298,7 +298,7 @@ def build_xml(fattura, ssccs):
 
     # Note e servizi accessori
     notes = [
-            f"{k}: {v}" 
+            f"{k.capitalize()}: {v}" 
             for k, v in fattura.get("note", {}).items() 
             if v and v not in ["S", "N"] and "sosta_tecnica" not in k # Escludiamo le note boolean che indicherebbero la presenza di un servizio, che inserisco successivamente in modo più leggibile e evito di inserire le note relative alla sosta tecnica, che come indirizzo
         ]
@@ -399,18 +399,23 @@ def load_fattura_for_send(mexal, sigla, serie, numero, cod_conto, parziale=False
         if not indirizzo_spedizione:
             raise Exception("Errore nel recupero dell'indirizzo di spedizione.")
         fattura["indirizzo_spedizione"] = indirizzo_spedizione
-        fattura["tipologia_etichetta"] = get_altre_note(mexal, cliente) or {}
+        fattura["tipologia_etichetta"] = get_altre_note(mexal, cliente) or ""
 
     return fattura
 
 def process_fatture_group(mexal, sscc_generator, fatture_info):
     fatture = []
     identificativi = []
-    
+    last_id_pagamento = None
+
     for fid, nr_colli_override, peso_override, cod_amount_override in fatture_info:
         sigla, serie, numero, cod_conto = fid.split("+")
         f = load_fattura_for_send(mexal, sigla, serie, numero, cod_conto)
         
+        if last_id_pagamento is not None and str(f["id_pagamento"]) != last_id_pagamento:
+            raise ValueError("Non è possibile raggruppare fatture con modalità di pagamento diverse.")
+        last_id_pagamento = str(f["id_pagamento"])
+
         # Override individuali
         if nr_colli_override is not None: f["nr_colli_sped"][0][1] = nr_colli_override
         if peso_override is not None: f["peso_spedizione"][0][1] = peso_override
@@ -421,6 +426,13 @@ def process_fatture_group(mexal, sscc_generator, fatture_info):
 
     merged = copy.deepcopy(fatture[0])
     
+    #Aggiunta della modalità di incasso del contrassegno nelle note, se presente
+    if last_id_pagamento in ID_PAGAMENTI_ALLA_CONSEGNA:
+        if last_id_pagamento == "202":
+            merged["note"]["incasso"] = "C - Contanti"
+        else:
+            merged["note"]["incasso"] = "R - Titolo come rilasciato"
+
     for f in fatture[1:]:
         merged["nr_colli_sped"][0][1] += f["nr_colli_sped"][0][1]
         merged["peso_spedizione"][0][1] += f["peso_spedizione"][0][1]
@@ -431,7 +443,7 @@ def process_fatture_group(mexal, sscc_generator, fatture_info):
     ssccs = sscc_generator.get_ssccs(merged["nr_colli_sped"][0][1])
     if not ssccs:
         raise RuntimeError("Errore nella generazione degli SSCC.")
-        
+    
     doc_id, xml = build_xml(merged, ssccs)
     print_label(ssccs, merged)
     
