@@ -238,7 +238,7 @@
             const count = getSelectedCount();
             deselectAllCheckbox.checked = count > 0;
             btnInvia.disabled = count === 0;
-            btnInvia.textContent = count > 0 ? `Prepara le ${count} fatture selezionate` : 'Prepara le fatture selezionate';
+            btnInvia.textContent = count > 0 ? `Prepara le ${count}/${MAX_SELECTIONS} fatture selezionate` : 'Prepara le fatture selezionate';
         }
 
         function filterRows() {
