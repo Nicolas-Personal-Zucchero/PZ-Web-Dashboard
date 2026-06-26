@@ -14,6 +14,7 @@ from config.constants import PACKING_TYPE_MAP, PACKING_TYPE_ICONS, LABEL_TYPE_MA
 
 from utils.database import db, SpedizionePreliminare, SpedizioneIdentificativo
 
+DAYS_TO_FETCH = 5
 mexal_cache = RedisMexalCache()
 fercam_bp = Blueprint("fercam", __name__, url_prefix="/fercam")
 
@@ -27,9 +28,9 @@ def fercam():
         flash("Errore nelle credenziali Mexal.", "danger")
         return render_template("fercam.html", fatture=[])
 
-    yesterday_str = (datetime.now() - timedelta(days=5)).strftime('%Y%m%d')
+    starting_date_str = (datetime.now() - timedelta(days=DAYS_TO_FETCH)).strftime('%Y%m%d')
     filters = [
-       ("data_documento", ">=", yesterday_str),
+       ("data_documento", ">=", starting_date_str),
        ("nr_tracking", "<>", "SPEDITO"),
        ("cod_vettore", "contiene", ["606.00002", "606.00501"]),
        ("sigla_doc_orig", "contiene", ["FT", "BS", "BC"]),
