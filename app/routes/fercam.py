@@ -177,7 +177,7 @@ def preview_invio():
             preview.append({
                 "id": fattura_id,
                 "riferimento": fattura["riferimento"],
-                "ragione_sociale_cliente": fattura["cliente"]["ragione_sociale"],
+                "ragione_sociale_cliente": fattura["indirizzo_spedizione"]["descrizione"],
                 "is_cod": is_cod,
                 "sponda": fattura.get("note", {}).get("sponda") == "S",
                 "facchinaggio": fattura.get("note", {}).get("facchinaggio") == "S",
@@ -395,11 +395,12 @@ def load_fattura_for_send(mexal, sigla, serie, numero, cod_conto, parziale=False
     else:
         fattura["cod_amount"] = None
 
+    indirizzo_spedizione = get_indirizzo_spedizione(mexal, fattura, cliente)
+    if not indirizzo_spedizione:
+        raise Exception("Errore nel recupero dell'indirizzo di spedizione.")
+    fattura["indirizzo_spedizione"] = indirizzo_spedizione
+
     if not parziale:
-        indirizzo_spedizione = get_indirizzo_spedizione(mexal, fattura, cliente)
-        if not indirizzo_spedizione:
-            raise Exception("Errore nel recupero dell'indirizzo di spedizione.")
-        fattura["indirizzo_spedizione"] = indirizzo_spedizione
         fattura["tipologia_etichetta"] = get_altre_note(mexal, cliente) or ""
 
     return fattura
