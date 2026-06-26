@@ -53,10 +53,6 @@ def download_xml(id):
         flash("Spedizione preliminare non trovata.", "warning")
         return redirect(url_for("preliminari.preliminari"))
 
-    if not spedizione.sent:
-        flash("È possibile scaricare solo le spedizioni già inviate.", "warning")
-        return redirect(url_for("preliminari.preliminari"))
-
     if not spedizione.xml:
         flash("XML non disponibile per questa spedizione.", "warning")
         return redirect(url_for("preliminari.preliminari"))

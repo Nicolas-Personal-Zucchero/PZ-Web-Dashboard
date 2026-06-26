@@ -81,9 +81,16 @@
                             {{ spedizione.cash_on_delivery if spedizione.cash_on_delivery is not none else '' }}
                         </div>
                         <div class="col-md-1 text-end">
+                            <a class="btn btn-outline-primary btn-sm me-1"
+                               title="Scarica XML"
+                               data-no-row-select="true"
+                               href="{{ url_for('preliminari.download_xml', id=spedizione.id) }}">
+                                <i class="bi bi-download"></i>
+                            </a>
                             <button type="button" 
                                     class="btn btn-outline-danger btn-sm" 
                                     title="Elimina riga"
+                                    data-no-row-select="true"
                                     data-delete-url="{{ url_for('preliminari.elimina', id=spedizione.id) }}">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -288,7 +295,7 @@
                 if (!row) return;
 
                 // Esclusione trigger sui nodi già interattivi
-                if (event.target.closest('button') || event.target.tagName === 'INPUT' || event.target.tagName === 'A') {
+                if (event.target.closest('[data-no-row-select]') || event.target.tagName === 'INPUT') {
                     return;
                 }
 
