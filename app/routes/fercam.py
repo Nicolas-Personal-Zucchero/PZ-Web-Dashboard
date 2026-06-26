@@ -208,7 +208,7 @@ def print_label(ssccs, fattura):
             ragione_sociale, via, cap_citta_prov, stato,
             show_personal_zucchero
         )
-        # send_to_zebra(ZEBRA_IP, label)
+        send_to_zebra(ZEBRA_IP, label)
 
 def get_indirizzo_spedizione(mexal, fattura, cliente):
     '''
@@ -344,7 +344,7 @@ def build_xml(fattura, ssccs):
                 {
                     "quantity": fattura["nr_colli_sped"][0][1], #numeri di cartoni, pallet a perdere o pallet a scambio, a seconda del packing type
                     "type": PACKING_TYPE_MAP.get(fattura["asp_est_beni"][0][1]), #variabile, info presente in fattura
-                    "description": "Prodotti monodose personalizzati.",
+                    "description": "Prodotti personalizzati per la ristorazione.",
                     "measurements": [
                         { "name": MeasurementName.WEIGHT, "value": fattura["peso_spedizione"][0][1], "unit": UnitCode.KILOGRAM, "code": MeasurementType.GROSS_WEIGHT }, #presente in fattura
                     ]
