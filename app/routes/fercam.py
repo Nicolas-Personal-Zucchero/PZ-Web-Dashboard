@@ -195,7 +195,7 @@ def preview_invio():
 
 def print_label(ssccs, fattura):
     label_total = int(fattura["nr_colli_sped"][0][1]) if fattura.get("nr_colli_sped") else 1
-    date_str = datetime.now().strftime("%d/%m/%y")
+    datetime_str = datetime.now().strftime("%d/%m/%y %H:%M")
 
     ragione_sociale = fattura["indirizzo_spedizione"]["descrizione"]
     via = fattura["indirizzo_spedizione"]["indirizzo"]
@@ -205,7 +205,7 @@ def print_label(ssccs, fattura):
     show_personal_zucchero = LABEL_TYPE_MAP.get(fattura.get("tipologia_etichetta"), False)
     for idx in range(label_total, 0, -1):
         label = generate_dachser_label(
-            ssccs[idx - 1], fattura["riferimento"], date_str, idx, label_total,
+            ssccs[idx - 1], fattura["riferimento"], datetime_str, idx, label_total,
             ragione_sociale, via, cap_citta_prov, stato,
             show_personal_zucchero
         )
