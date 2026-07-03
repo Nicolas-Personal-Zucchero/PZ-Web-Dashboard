@@ -233,7 +233,7 @@ def print_label(ssccs, fattura):
             ragione_sociale, via, cap_citta_prov, stato, contrassegno,
             show_personal_zucchero
         )
-        # send_to_zebra(ZEBRA_IP, label)
+        send_to_zebra(ZEBRA_IP, label)
 
 def get_indirizzo_spedizione(mexal, fattura, cliente):
     '''

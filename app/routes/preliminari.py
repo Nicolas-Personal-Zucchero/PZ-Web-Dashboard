@@ -146,7 +146,7 @@ def invia():
                 filename = f"{spedizione.id}.xml"
                 
                 try:
-                    # sftp.send_content(spedizione.xml, filename)
+                    sftp.send_content(spedizione.xml, filename)
                     inviati += 1
                     current_app.logger.info(f"Inviato {filename} a Fercam.")
                     spedizione.sent = True
