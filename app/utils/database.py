@@ -25,7 +25,7 @@ class SpedizionePreliminare(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            "identificativi": [i.fattura_identificativo for i in self.identificativi_rel],
+            "identificativi": [f"{i.sigla} {i.serie}/{i.numero}" for i in self.identificativi_rel],
             "ragione_sociale_cliente": self.ragione_sociale_cliente,
             "nr_colli": self.nr_colli,
             "peso": self.peso,

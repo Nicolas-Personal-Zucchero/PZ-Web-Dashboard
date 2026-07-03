@@ -4,23 +4,63 @@ from flask import Blueprint, redirect, render_template, flash, request, url_for,
 
 from datetime import datetime
 from config.secrets_manager import secrets_manager
-from utils.database import db, SpedizionePreliminare
+from utils.database import db, SpedizionePreliminare, SpedizioneIdentificativo
+from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 
 preliminari_bp = Blueprint("preliminari", __name__, url_prefix="/preliminari")
 
 @preliminari_bp.route("/", methods=["GET"])
 def preliminari():
-    stmt = db.select(SpedizionePreliminare)\
-             .options(joinedload(SpedizionePreliminare.identificativi_rel))
-    
-    tutte_le_spedizioni = db.session.execute(stmt).scalars().unique().all()
-    preliminari = [s for s in tutte_le_spedizioni if not s.sent]
-    inviate = [s for s in tutte_le_spedizioni if s.sent]
+    search_identificativo = request.args.get("sent_search_identificativo", "").strip()
+    search_ragione_sociale = request.args.get("sent_search_ragione_sociale", "").strip()
+
+    preliminari_stmt = db.select(SpedizionePreliminare)\
+        .where(SpedizionePreliminare.sent.is_(False))\
+        .options(joinedload(SpedizionePreliminare.identificativi_rel))
+
+    preliminari = db.session.execute(preliminari_stmt).scalars().unique().all()
+    inviate = []
+
+    if search_identificativo or search_ragione_sociale:
+        identificativo_expr = (
+            SpedizioneIdentificativo.sigla + " " +
+            SpedizioneIdentificativo.serie + "/" +
+            SpedizioneIdentificativo.numero
+        )
+
+        inviate_stmt = db.select(SpedizionePreliminare)\
+            .where(SpedizionePreliminare.sent.is_(True))\
+            .options(joinedload(SpedizionePreliminare.identificativi_rel))
+
+        if search_ragione_sociale:
+            ragione_sociale_pattern = f"%{search_ragione_sociale}%"
+            inviate_stmt = inviate_stmt.where(
+                SpedizionePreliminare.ragione_sociale_cliente.ilike(ragione_sociale_pattern)
+            )
+
+        if search_identificativo:
+            identificativo_pattern = f"%{search_identificativo}%"
+            inviate_stmt = inviate_stmt.where(
+                SpedizionePreliminare.identificativi_rel.any(
+                    or_(
+                        SpedizioneIdentificativo.sigla.ilike(identificativo_pattern),
+                        SpedizioneIdentificativo.serie.ilike(identificativo_pattern),
+                        SpedizioneIdentificativo.numero.ilike(identificativo_pattern),
+                        identificativo_expr.ilike(identificativo_pattern),
+                    )
+                )
+            )
+
+        inviate = db.session.execute(inviate_stmt).scalars().unique().all()
+
     return render_template(
         "preliminari.html", 
         spedizioni_preliminari=preliminari, 
-        spedizioni_inviate=inviate
+        spedizioni_inviate=inviate,
+        sent_search_identificativo=search_identificativo,
+        sent_search_ragione_sociale=search_ragione_sociale,
+        has_sent_search=bool(search_identificativo or search_ragione_sociale)
     )
 
 @preliminari_bp.route("/elimina/<string:id>", methods=["POST"])
@@ -109,16 +149,6 @@ def invia():
                     sftp.send_content(spedizione.xml, filename)
                     inviati += 1
                     current_app.logger.info(f"Inviato {filename} a Fercam.")
-                    for identificativo in spedizione.identificativi_rel:
-                        current_app.logger.info(f"Aggiornamento numero di tracking per {identificativo.sigla} {identificativo.serie}/{identificativo.numero} ({identificativo.cod_conto}).")
-                        update_nr_tracking(
-                            mexal,
-                            identificativo.sigla,
-                            identificativo.serie,
-                            identificativo.numero,
-                            identificativo.cod_conto
-                        )
-                    current_app.logger.info(f"Aggiornato tracking su mexal per spedizione {spedizione.id}.")
                     spedizione.sent = True
                     db.session.commit()
                     current_app.logger.info(f"Spedizione {spedizione.id} marcata come inviata sul database.")
@@ -138,8 +168,3 @@ def invia():
         flash("Errore critico durante l'integrazione con Fercam. Controllare i log di sistema.", "danger")
 
     return redirect(url_for("preliminari.preliminari"))
-
-def update_nr_tracking(mexal, sigla, serie, numero, cod_conto):
-    payload = {"nr_tracking": [[1, "SPEDITO"]]}
-    current_app.logger.warning("MX: Aggiornamento numero di tracking.")
-    mexal.update_warehouse_movement(str(datetime.now().year), sigla, serie, numero, cod_conto, payload)

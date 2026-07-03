@@ -20,8 +20,21 @@ fercam_bp = Blueprint("fercam", __name__, url_prefix="/fercam")
 
 @fercam_bp.route("/", methods=["GET"])
 def fercam():
-    identificativi = SpedizioneIdentificativo.query.all()
-    all_identificativi = {f"{i.sigla} {i.serie}/{i.numero}" for i in identificativi}
+    identificativi = (
+        SpedizioneIdentificativo.query
+        .join(SpedizionePreliminare, SpedizioneIdentificativo.spedizione_id == SpedizionePreliminare.id)
+        .all()
+    )
+    identificativi_sent = {
+        f"{i.sigla} {i.serie}/{i.numero}"
+        for i in identificativi
+        if i.spedizione.sent is True
+    }
+    identificativi_non_sent = {
+        f"{i.sigla} {i.serie}/{i.numero}"
+        for i in identificativi
+        if i.spedizione.sent is not True
+    }
 
     mexal = secrets_manager.get_mexal()
     if not mexal:
@@ -31,10 +44,10 @@ def fercam():
     starting_date_str = (datetime.now() - timedelta(days=DAYS_TO_FETCH)).strftime('%Y%m%d')
     filters = [
        ("data_documento", ">=", starting_date_str),
-       ("nr_tracking", "<>", "SPEDITO"),
+    #    ("nr_tracking", "<>", "SPEDITO"), #Replaced with local db check to avoid missing documents that have been sent but not yet marked as SPEDITO in Mexal
        ("cod_vettore", "contiene", ["606.00002", "606.00501"]),
        ("sigla_doc_orig", "contiene", ["FT", "BS", "BC"]),
-    #    ("cod_modulo", "=", "E"), #Prendere solo le FTE
+       ("cod_modulo", "<>", "F"), #Escludere le FTF
        ("id_causale", "<>", 11), #Rimuovi fatture anticipe
        ("id_causale", "<>", 12), #Rimuovi fatture acconto
        ("utente_ult_mod", "<>", "0") # Filtro per escludere i movimenti duplicati
@@ -55,9 +68,14 @@ def fercam():
     clienti = mexal_cache.get_customers(mexal, codici_conto)
     ragioni_sociali = {k: v["ragione_sociale"] for k, v in clienti.items()}
 
+    fatture_filtrate = []
     for f in fatture:
         f["id"] = f"{f['sigla']}+{f['serie']}+{f['numero']}+{f['cod_conto']}"
         f["identificativo"] = f"{f['sigla']} {f['serie']}/{f['numero']}"
+
+        if f["identificativo"] in identificativi_sent:
+            continue
+
         f["data_documento"] = datetime.strptime(f["data_documento"], "%Y%m%d").strftime("%d/%m/%Y")
 
         f["ragione_sociale_cliente"] = ragioni_sociali.get(f["cod_conto"]) or "Cliente non trovato"
@@ -67,10 +85,11 @@ def fercam():
 
         f["cod"] = f["id_pagamento"] in ID_PAGAMENTI_ALLA_CONSEGNA
 
-        f["presente"] = f["identificativo"] in all_identificativi
+        f["presente"] = f["identificativo"] in identificativi_non_sent
         f["completo"] = f["aspetto"] != "???" and f["nr_colli_sped"] != "0" and f["peso_spedizione"] != "0.0"
+        fatture_filtrate.append(f)
 
-    fatture = sorted(fatture, key=lambda x: (
+    fatture = sorted(fatture_filtrate, key=lambda x: (
         datetime.strptime(x["data_documento"], "%d/%m/%Y"),
         x["sigla"],
         x["serie"],
@@ -108,6 +127,7 @@ def invia():
         flash("Nessun documento selezionato per l'invio.", "danger")
         return redirect(url_for("fercam.fercam"))
 
+    telefoni_overrides = _safe_json_load(request.form.get("telefono_overrides", "{}"))
     nr_colli_overrides = _safe_json_load(request.form.get("nr_colli_overrides", "{}"))
     peso_overrides = _safe_json_load(request.form.get("peso_overrides", "{}"))
     cod_amount_overrides = _safe_json_load(request.form.get("cod_amount_overrides", "{}"))
@@ -124,10 +144,11 @@ def invia():
 
         groups = {}
         for fattura_id in fatture_ids:
+            telefono_override = telefoni_overrides.get(fattura_id)
             nr_colli_override = int(nr_colli_overrides.get(fattura_id)) if nr_colli_overrides.get(fattura_id) else None
             peso_override = parse_float_amount(peso_overrides.get(fattura_id))
             cod_override = parse_float_amount(cod_amount_overrides.get(fattura_id))
-            info = (fattura_id, nr_colli_override, peso_override, cod_override)
+            info = (fattura_id, telefono_override, nr_colli_override, peso_override, cod_override)
             group = raggruppamenti.get(fattura_id)
             groups.setdefault(group if group else fattura_id, []).append(info)
 
@@ -185,6 +206,7 @@ def preview_invio():
                 "GDO": fattura.get("note", {}).get("GDO") == "S",
                 "sbancalamento": fattura.get("note", {}).get("sbancalamento") == "S",
                 "preavviso": fattura.get("note", {}).get("preavviso") == "S",
+                "telefono": fattura["cliente"].get("telefono"),
                 "cod_amount": str(fattura.get("cod_amount") or "") if is_cod else "",
                 "nr_colli_sped": fattura["nr_colli_sped"][0][1],
                 "peso_spedizione": fattura["peso_spedizione"][0][1],
@@ -202,8 +224,7 @@ def print_label(ssccs, fattura):
     via = fattura["indirizzo_spedizione"]["indirizzo"]
     cap_citta_prov = f'{fattura["indirizzo_spedizione"]["cap"]} {fattura["indirizzo_spedizione"]["localita"]} {fattura["indirizzo_spedizione"]["provincia"]}'
     stato = fattura["indirizzo_spedizione"]["cod_paese"]
-    if "incasso" in fattura["note"]:
-        contrassegno = f"Contrassegno {fattura['note']['incasso'][0]}"
+    contrassegno = f"Contrassegno {fattura['note']['incasso'][0]}" if "incasso" in fattura["note"] else ""
 
     show_personal_zucchero = LABEL_TYPE_MAP.get(fattura.get("tipologia_etichetta"), True)
     for idx in range(label_total, 0, -1):
@@ -393,6 +414,11 @@ def load_fattura_for_send(mexal, sigla, serie, numero, cod_conto, parziale=False
 
     fattura["note"] = get_note(mexal, fattura) or {}
 
+    #Rimpiazzo il numero di telefono dell'anagrafica cliente con quello presente nelle note di spedizione, se presente e non vuoto, altrimenti lascio quello dell'anagrafica cliente
+    contatto_note = fattura.get("note", {}).get("contatto_telefonico")
+    contatto_cliente = fattura.get("cliente", {}).get("telefono")
+    fattura["cliente"]["telefono"] = contatto_note[:25] if contatto_note and str(contatto_note).strip() else contatto_cliente
+
     if str(fattura["id_pagamento"]) in ID_PAGAMENTI_ALLA_CONSEGNA:
         fattura["cod_amount"] = sum(Decimal(str(doc[1])) for doc in fattura["tot_doc_pagare"])
     else:
@@ -413,7 +439,7 @@ def process_fatture_group(mexal, sscc_generator, fatture_info):
     identificativi = []
     last_id_pagamento = None
 
-    for fid, nr_colli_override, peso_override, cod_amount_override in fatture_info:
+    for fid, telefono_override, nr_colli_override, peso_override, cod_amount_override in fatture_info:
         sigla, serie, numero, cod_conto = fid.split("+")
         f = load_fattura_for_send(mexal, sigla, serie, numero, cod_conto)
         
@@ -422,6 +448,7 @@ def process_fatture_group(mexal, sscc_generator, fatture_info):
         last_id_pagamento = str(f["id_pagamento"])
 
         # Override individuali
+        if telefono_override is not None: f["cliente"]["telefono"] = telefono_override
         if nr_colli_override is not None: f["nr_colli_sped"][0][1] = nr_colli_override
         if peso_override is not None: f["peso_spedizione"][0][1] = peso_override
         if cod_amount_override is not None and str(f.get("id_pagamento")) in ID_PAGAMENTI_ALLA_CONSEGNA: f["cod_amount"] = cod_amount_override
