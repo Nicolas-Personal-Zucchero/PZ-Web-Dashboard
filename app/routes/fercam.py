@@ -34,7 +34,7 @@ def fercam():
        ("nr_tracking", "<>", "SPEDITO"),
        ("cod_vettore", "contiene", ["606.00002", "606.00501"]),
        ("sigla_doc_orig", "contiene", ["FT", "BS", "BC"]),
-       ("cod_modulo", "=", "E"), #Prendere solo le FTE
+    #    ("cod_modulo", "=", "E"), #Prendere solo le FTE
        ("id_causale", "<>", 11), #Rimuovi fatture anticipe
        ("id_causale", "<>", 12), #Rimuovi fatture acconto
        ("utente_ult_mod", "<>", "0") # Filtro per escludere i movimenti duplicati
