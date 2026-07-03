@@ -10,7 +10,7 @@ class RedisMexalCache:
         # decode_responses=True evita di dover decodificare i byte-string a ogni fetch
         self.client = redis.Redis(host='redis', port=6379, decode_responses=True)
         self.ttl_aspetti = int(timedelta(hours=6).total_seconds())
-        self.ttl_customers = int(timedelta(minutes=10).total_seconds())
+        self.ttl_customers = int(timedelta(minutes=1).total_seconds())
         self.prefix_aspetti = "mx:aspetti:"
         self.prefix_customers = "mx:cust:"
 
@@ -46,7 +46,7 @@ class RedisMexalCache:
 
         # Zip accoppia il codice originale con il valore restituito da MGET (che può essere None)
         for cod, val in zip(codes, cached_vals):
-            if val:
+            if val and False:
                 clienti[cod] = json.loads(val)
             else:
                 codici_da_richiedere.append(cod)

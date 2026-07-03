@@ -14,6 +14,13 @@
     .fattura-row {
         cursor: pointer;
     }
+
+    /* Da aggiungere nel blocco <style> */
+    @media (min-width: 1400px) {
+        .modal-xxl {
+            max-width: 1320px;
+        }
+    }
 </style>
 
 <div class="p-4">
@@ -129,6 +136,7 @@
             </button>
         </div>
 
+        <input type="hidden" name="telefono_overrides" id="telefonoOverrides" value="{}">
         <input type="hidden" name="nr_colli_overrides" id="nrColliOverrides" value="{}">
         <input type="hidden" name="peso_overrides" id="pesoOverrides" value="{}">
         <input type="hidden" name="cod_amount_overrides" id="codAmountOverrides" value="{}">
@@ -137,7 +145,7 @@
 </div>
 
 <div class="modal fade" id="codAmountModal" tabindex="-1" aria-labelledby="codAmountModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-xxl modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <div>
@@ -175,6 +183,7 @@
         const btnInvia = document.getElementById("btnInvia");
         const fercamList = document.getElementById("fercamList");
         const fercamForm = document.getElementById("fercamForm");
+        const telefonoOverrides = document.getElementById("telefonoOverrides");
         const nrColliOverrides = document.getElementById("nrColliOverrides");
         const pesoOverrides = document.getElementById("pesoOverrides");
         const codAmountOverrides = document.getElementById("codAmountOverrides");
@@ -366,6 +375,7 @@
                                 <th class="text-center" style="width: 50px;" title="Grande Distribuzione Organizzata">GDO</th>
                                 <th class="text-center" style="width: 50px;" title="Sbancalamento">Sban.</th>
                                 <th class="text-center" style="width: 50px;" title="Preavviso">Preav.</th>
+                                <th style="min-width: 120px; width: 12%;">Telefono</th>
                                 <th style="min-width: 90px; width: 10%;">Nr. Colli</th>
                                 <th style="min-width: 100px; width: 10%;">Peso Tot.</th>
                                 <th style="min-width: 120px; width: 15%;">Contrassegno</th>
@@ -388,6 +398,15 @@
                                     <td class="text-center">${item.GDO ? "<i class='bi bi-check-lg text-success fs-5'></i>" : ""}</td>
                                     <td class="text-center">${item.sbancalamento ? "<i class='bi bi-check-lg text-success fs-5'></i>" : ""}</td>
                                     <td class="text-center">${item.preavviso ? "<i class='bi bi-check-lg text-success fs-5'></i>" : ""}</td>
+                                    <td>
+                                        <input
+                                            type="text"
+                                            class="form-control form-control-sm telefono-input"
+                                            data-fattura-id="${item.id}"
+                                            value="${item.telefono || ''}"
+                                            title="Inserire un numero di telefono valido"
+                                        >
+                                    </td>
                                     <td>
                                         <input
                                             type="number"
@@ -488,56 +507,58 @@
         }
 
         function collectModalInputs() {
+            const telefonoOverrides = {};
             const nrColliOverrides = {};
             const pesoOverrides = {};
             const codAmountOverrides = {};
             const raggruppamenti = {};
 
+            document.querySelectorAll(".telefono-input").forEach(input => {
+                const fatturaId = input.dataset.fatturaId;
+                const value = input.value.trim();
+
+                if (fatturaId && value) {
+                    telefonoOverrides[fatturaId] = value;
+                }
+            });
+            
             document.querySelectorAll(".nr-colli-input").forEach(input => {
                 const fatturaId = input.dataset.fatturaId;
                 const value = input.value.trim();
 
-                if (!fatturaId || !value) {
-                    return;
+                if (fatturaId && value) {
+                    nrColliOverrides[fatturaId] = value;
                 }
-
-                nrColliOverrides[fatturaId] = value;
             });
 
             document.querySelectorAll(".peso-input").forEach(input => {
                 const fatturaId = input.dataset.fatturaId;
                 const value = input.value.trim();
 
-                if (!fatturaId || !value) {
-                    return;
+                if (fatturaId && value) {
+                    pesoOverrides[fatturaId] = value;
                 }
-
-                pesoOverrides[fatturaId] = value;
             });
 
             document.querySelectorAll(".cod-amount-input").forEach(input => {
                 const fatturaId = input.dataset.fatturaId;
                 const value = input.value.trim();
 
-                if (!fatturaId || !value) {
-                    return;
+                if (fatturaId && value) {
+                    codAmountOverrides[fatturaId] = value;
                 }
-
-                codAmountOverrides[fatturaId] = value;
             });
 
             document.querySelectorAll(".raggruppamento-input").forEach(select => {
                 const fatturaId = select.dataset.fatturaId;
                 const value = select.value.trim();
 
-                if (!fatturaId) {
-                    return;
+                if (fatturaId) {
+                    raggruppamenti[fatturaId] = value;
                 }
-
-                raggruppamenti[fatturaId] = value;
             });
 
-            return [nrColliOverrides, pesoOverrides, codAmountOverrides, raggruppamenti];
+            return [telefonoOverrides, nrColliOverrides, pesoOverrides, codAmountOverrides, raggruppamenti];
         }
 
         function validateRaggruppamenti() {
@@ -605,7 +626,11 @@
                     return;
                 }
 
-                const [nrColliData, pesoData, codAmountData, raggruppamentiData] = collectModalInputs();
+                const [telefonoData, nrColliData, pesoData, codAmountData, raggruppamentiData] = collectModalInputs();
+
+                if (telefonoOverrides) {
+                    telefonoOverrides.value = JSON.stringify(telefonoData);
+                }
 
                 if (nrColliOverrides) {
                     nrColliOverrides.value = JSON.stringify(nrColliData);
