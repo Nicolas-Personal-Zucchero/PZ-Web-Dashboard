@@ -149,16 +149,6 @@ def invia():
                     # sftp.send_content(spedizione.xml, filename)
                     inviati += 1
                     current_app.logger.info(f"Inviato {filename} a Fercam.")
-                    for identificativo in spedizione.identificativi_rel:
-                        current_app.logger.info(f"Aggiornamento numero di tracking per {identificativo.sigla} {identificativo.serie}/{identificativo.numero} ({identificativo.cod_conto}).")
-                        # update_nr_tracking(
-                        #     mexal,
-                        #     identificativo.sigla,
-                        #     identificativo.serie,
-                        #     identificativo.numero,
-                        #     identificativo.cod_conto
-                        # )
-                    current_app.logger.info(f"Aggiornato tracking su mexal per spedizione {spedizione.id}.")
                     spedizione.sent = True
                     db.session.commit()
                     current_app.logger.info(f"Spedizione {spedizione.id} marcata come inviata sul database.")
@@ -178,8 +168,3 @@ def invia():
         flash("Errore critico durante l'integrazione con Fercam. Controllare i log di sistema.", "danger")
 
     return redirect(url_for("preliminari.preliminari"))
-
-def update_nr_tracking(mexal, sigla, serie, numero, cod_conto):
-    payload = {"nr_tracking": [[1, "SPEDITO"]]}
-    current_app.logger.warning("MX: Aggiornamento numero di tracking.")
-    mexal.update_warehouse_movement(str(datetime.now().year), sigla, serie, numero, cod_conto, payload)

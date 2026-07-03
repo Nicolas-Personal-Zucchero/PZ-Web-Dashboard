@@ -20,8 +20,21 @@ fercam_bp = Blueprint("fercam", __name__, url_prefix="/fercam")
 
 @fercam_bp.route("/", methods=["GET"])
 def fercam():
-    identificativi = SpedizioneIdentificativo.query.all()
-    all_identificativi = {f"{i.sigla} {i.serie}/{i.numero}" for i in identificativi}
+    identificativi = (
+        SpedizioneIdentificativo.query
+        .join(SpedizionePreliminare, SpedizioneIdentificativo.spedizione_id == SpedizionePreliminare.id)
+        .all()
+    )
+    identificativi_sent = {
+        f"{i.sigla} {i.serie}/{i.numero}"
+        for i in identificativi
+        if i.spedizione.sent is True
+    }
+    identificativi_non_sent = {
+        f"{i.sigla} {i.serie}/{i.numero}"
+        for i in identificativi
+        if i.spedizione.sent is not True
+    }
 
     mexal = secrets_manager.get_mexal()
     if not mexal:
@@ -31,7 +44,7 @@ def fercam():
     starting_date_str = (datetime.now() - timedelta(days=DAYS_TO_FETCH)).strftime('%Y%m%d')
     filters = [
        ("data_documento", ">=", starting_date_str),
-       ("nr_tracking", "<>", "SPEDITO"),
+    #    ("nr_tracking", "<>", "SPEDITO"), #Replaced with local db check to avoid missing documents that have been sent but not yet marked as SPEDITO in Mexal
        ("cod_vettore", "contiene", ["606.00002", "606.00501"]),
        ("sigla_doc_orig", "contiene", ["FT", "BS", "BC"]),
        ("cod_modulo", "<>", "F"), #Escludere le FTF
@@ -55,9 +68,14 @@ def fercam():
     clienti = mexal_cache.get_customers(mexal, codici_conto)
     ragioni_sociali = {k: v["ragione_sociale"] for k, v in clienti.items()}
 
+    fatture_filtrate = []
     for f in fatture:
         f["id"] = f"{f['sigla']}+{f['serie']}+{f['numero']}+{f['cod_conto']}"
         f["identificativo"] = f"{f['sigla']} {f['serie']}/{f['numero']}"
+
+        if f["identificativo"] in identificativi_sent:
+            continue
+
         f["data_documento"] = datetime.strptime(f["data_documento"], "%Y%m%d").strftime("%d/%m/%Y")
 
         f["ragione_sociale_cliente"] = ragioni_sociali.get(f["cod_conto"]) or "Cliente non trovato"
@@ -67,10 +85,11 @@ def fercam():
 
         f["cod"] = f["id_pagamento"] in ID_PAGAMENTI_ALLA_CONSEGNA
 
-        f["presente"] = f["identificativo"] in all_identificativi
+        f["presente"] = f["identificativo"] in identificativi_non_sent
         f["completo"] = f["aspetto"] != "???" and f["nr_colli_sped"] != "0" and f["peso_spedizione"] != "0.0"
+        fatture_filtrate.append(f)
 
-    fatture = sorted(fatture, key=lambda x: (
+    fatture = sorted(fatture_filtrate, key=lambda x: (
         datetime.strptime(x["data_documento"], "%d/%m/%Y"),
         x["sigla"],
         x["serie"],
