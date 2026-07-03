@@ -54,6 +54,7 @@ def fercam():
     ]
 
     properties = [
+        "data_ult_mod",
         "sigla", "serie", "numero", "cod_conto",
         "data_documento", "nr_colli_sped", "peso_spedizione",
         "asp_est_beni", "cod_anag_sped", "id_pagamento"
@@ -90,10 +91,11 @@ def fercam():
         fatture_filtrate.append(f)
 
     fatture = sorted(fatture_filtrate, key=lambda x: (
-        datetime.strptime(x["data_documento"], "%d/%m/%Y"),
-        x["sigla"],
-        x["serie"],
-        int(x["numero"]) if str(x["numero"]).isdigit() else x["numero"]
+        x["data_ult_mod"] # Parlando con Erika, ha preferito un ordinamento per come le ha create lei su mexal per attaccare le etichette più velocemente
+        # datetime.strptime(x["data_documento"], "%d/%m/%Y"),
+        # x["sigla"],
+        # x["serie"],
+        # int(x["numero"]) if str(x["numero"]).isdigit() else x["numero"]
     ))
     return render_template("fercam.html", fatture=fatture)
 
