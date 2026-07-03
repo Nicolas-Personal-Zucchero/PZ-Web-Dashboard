@@ -104,6 +104,14 @@ def _safe_json_load(raw_string):
     except ValueError: return {}
 
 
+def _parse_bool_override(value):
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "on", "s"}
+    return bool(value)
+
+
 def create_spedizione_preliminare(doc_id, fattura_unica, xml, identificativi):
     db.session.add(SpedizionePreliminare(
         id=doc_id,
@@ -129,11 +137,7 @@ def invia():
         flash("Nessun documento selezionato per l'invio.", "danger")
         return redirect(url_for("fercam.fercam"))
 
-    telefoni_overrides = _safe_json_load(request.form.get("telefono_overrides", "{}"))
-    nr_colli_overrides = _safe_json_load(request.form.get("nr_colli_overrides", "{}"))
-    peso_overrides = _safe_json_load(request.form.get("peso_overrides", "{}"))
-    cod_amount_overrides = _safe_json_load(request.form.get("cod_amount_overrides", "{}"))
-    raggruppamenti = _safe_json_load(request.form.get("raggruppamenti", "{}"))
+    overrides = _safe_json_load(request.form.get("overrides", "{}"))
 
     try:
         mexal = secrets_manager.get_mexal()
@@ -146,12 +150,27 @@ def invia():
 
         groups = {}
         for fattura_id in fatture_ids:
-            telefono_override = telefoni_overrides.get(fattura_id)
-            nr_colli_override = int(nr_colli_overrides.get(fattura_id)) if nr_colli_overrides.get(fattura_id) else None
-            peso_override = parse_float_amount(peso_overrides.get(fattura_id))
-            cod_override = parse_float_amount(cod_amount_overrides.get(fattura_id))
-            info = (fattura_id, telefono_override, nr_colli_override, peso_override, cod_override)
-            group = raggruppamenti.get(fattura_id)
+            fattura_overrides = overrides.get(fattura_id, {}) if isinstance(overrides, dict) else {}
+
+            telefono_override = fattura_overrides.get("telefono")
+            nr_colli_raw = fattura_overrides.get("nr_colli_sped")
+            peso_raw = fattura_overrides.get("peso_spedizione")
+            cod_raw = fattura_overrides.get("cod_amount")
+
+            nr_colli_override = int(nr_colli_raw) if nr_colli_raw not in (None, "") else None
+            peso_override = parse_float_amount(peso_raw)
+            cod_override = parse_float_amount(cod_raw)
+
+            bool_overrides = {
+                "sponda": _parse_bool_override(fattura_overrides.get("sponda", False)),
+                "facchinaggio": _parse_bool_override(fattura_overrides.get("facchinaggio", False)),
+                "GDO": _parse_bool_override(fattura_overrides.get("gdo", False)),
+                "sbancalamento": _parse_bool_override(fattura_overrides.get("sbancalamento", False)),
+                "preavviso": _parse_bool_override(fattura_overrides.get("preavviso", False)),
+            }
+
+            info = (fattura_id, telefono_override, nr_colli_override, peso_override, cod_override, bool_overrides)
+            group = fattura_overrides.get("gruppo")
             groups.setdefault(group if group else fattura_id, []).append(info)
 
         errors = []
@@ -205,7 +224,7 @@ def preview_invio():
                 "is_cod": is_cod,
                 "sponda": fattura.get("note", {}).get("sponda") == "S",
                 "facchinaggio": fattura.get("note", {}).get("facchinaggio") == "S",
-                "GDO": fattura.get("note", {}).get("GDO") == "S",
+                "gdo": fattura.get("note", {}).get("GDO") == "S",
                 "sbancalamento": fattura.get("note", {}).get("sbancalamento") == "S",
                 "preavviso": fattura.get("note", {}).get("preavviso") == "S",
                 "telefono": fattura["cliente"].get("telefono"),
@@ -441,7 +460,7 @@ def process_fatture_group(mexal, sscc_generator, fatture_info):
     identificativi = []
     last_id_pagamento = None
 
-    for fid, telefono_override, nr_colli_override, peso_override, cod_amount_override in fatture_info:
+    for fid, telefono_override, nr_colli_override, peso_override, cod_amount_override, bool_overrides in fatture_info:
         sigla, serie, numero, cod_conto = fid.split("+")
         f = load_fattura_for_send(mexal, sigla, serie, numero, cod_conto)
         
@@ -454,6 +473,13 @@ def process_fatture_group(mexal, sscc_generator, fatture_info):
         if nr_colli_override is not None: f["nr_colli_sped"][0][1] = nr_colli_override
         if peso_override is not None: f["peso_spedizione"][0][1] = peso_override
         if cod_amount_override is not None and str(f.get("id_pagamento")) in ID_PAGAMENTI_ALLA_CONSEGNA: f["cod_amount"] = cod_amount_override
+        if bool_overrides:
+            f.setdefault("note", {})
+            f["note"]["sponda"] = "S" if bool_overrides.get("sponda") else "N"
+            f["note"]["facchinaggio"] = "S" if bool_overrides.get("facchinaggio") else "N"
+            f["note"]["GDO"] = "S" if bool_overrides.get("GDO") else "N"
+            f["note"]["sbancalamento"] = "S" if bool_overrides.get("sbancalamento") else "N"
+            f["note"]["preavviso"] = "S" if bool_overrides.get("preavviso") else "N"
         
         fatture.append(f)
         identificativi.append((sigla, serie, numero, cod_conto))

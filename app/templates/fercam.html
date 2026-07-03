@@ -18,7 +18,7 @@
     /* Da aggiungere nel blocco <style> */
     @media (min-width: 1400px) {
         .modal-xxl {
-            max-width: 1320px;
+            max-width: 1620px;
         }
     }
 </style>
@@ -136,11 +136,7 @@
             </button>
         </div>
 
-        <input type="hidden" name="telefono_overrides" id="telefonoOverrides" value="{}">
-        <input type="hidden" name="nr_colli_overrides" id="nrColliOverrides" value="{}">
-        <input type="hidden" name="peso_overrides" id="pesoOverrides" value="{}">
-        <input type="hidden" name="cod_amount_overrides" id="codAmountOverrides" value="{}">
-        <input type="hidden" name="raggruppamenti" id="raggruppamenti" value="{}">
+        <input type="hidden" name="overrides" id="overrides" value="{}">
     </form>
 </div>
 
@@ -183,11 +179,7 @@
         const btnInvia = document.getElementById("btnInvia");
         const fercamList = document.getElementById("fercamList");
         const fercamForm = document.getElementById("fercamForm");
-        const telefonoOverrides = document.getElementById("telefonoOverrides");
-        const nrColliOverrides = document.getElementById("nrColliOverrides");
-        const pesoOverrides = document.getElementById("pesoOverrides");
-        const codAmountOverrides = document.getElementById("codAmountOverrides");
-        const raggruppamentiInput = document.getElementById("raggruppamenti");
+        const overridesInput = document.getElementById("overrides");
         const codAmountModalEl = document.getElementById("codAmountModal");
         const codAmountModal = codAmountModalEl ? new bootstrap.Modal(codAmountModalEl) : null;
         const codAmountModalContent = document.getElementById("codAmountModalContent");
@@ -370,11 +362,11 @@
                             <tr>
                                 <th style="width: 10%;">Documento</th>
                                 <th style="width: 15%;">Cliente</th>
-                                <th class="text-center" style="width: 50px;" title="Sponda">Spo.</th>
-                                <th class="text-center" style="width: 50px;" title="Facchinaggio">Facch.</th>
+                                <th class="text-center" style="width: 50px;" title="Sponda">Sponda</th>
+                                <th class="text-center" style="width: 50px;" title="Facchinaggio">Facchinaggio</th>
                                 <th class="text-center" style="width: 50px;" title="Grande Distribuzione Organizzata">GDO</th>
-                                <th class="text-center" style="width: 50px;" title="Sbancalamento">Sban.</th>
-                                <th class="text-center" style="width: 50px;" title="Preavviso">Preav.</th>
+                                <th class="text-center" style="width: 50px;" title="Sbancalamento">Sbancalamento</th>
+                                <th class="text-center" style="width: 50px;" title="Preavviso">Preavviso</th>
                                 <th style="min-width: 120px; width: 12%;">Telefono</th>
                                 <th style="min-width: 90px; width: 10%;">Nr. Colli</th>
                                 <th style="min-width: 100px; width: 10%;">Peso Tot.</th>
@@ -384,25 +376,59 @@
                         </thead>
                         <tbody>
                             ${items.map(item => `
-                                <tr>
+                                <tr data-fattura-id="${item.id}">
                                     <td>
                                         <div class="fw-semibold text-nowrap">${item.riferimento}</div>
                                     </td>
                                     <td>
-                                        <div class="text-truncate" style="max-width: 200px;" title="${item.ragione_sociale_cliente || ''}">
+                                        <div class="text-truncate" style="max-width: 300px;" title="${item.ragione_sociale_cliente || ''}">
                                             ${item.ragione_sociale_cliente || ''}
                                         </div>
                                     </td>
-                                    <td class="text-center">${item.sponda ? "<i class='bi bi-check-lg text-success fs-5'></i>" : ""}</td>
-                                    <td class="text-center">${item.facchinaggio ? "<i class='bi bi-check-lg text-success fs-5'></i>" : ""}</td>
-                                    <td class="text-center">${item.GDO ? "<i class='bi bi-check-lg text-success fs-5'></i>" : ""}</td>
-                                    <td class="text-center">${item.sbancalamento ? "<i class='bi bi-check-lg text-success fs-5'></i>" : ""}</td>
-                                    <td class="text-center">${item.preavviso ? "<i class='bi bi-check-lg text-success fs-5'></i>" : ""}</td>
+                                    <td class="text-center">
+                                        <input
+                                            type="checkbox"
+                                            class="form-check-input override-bool-input"
+                                            data-field="sponda"
+                                            ${item.sponda ? "checked" : ""}
+                                        >
+                                    </td>
+                                    <td class="text-center">
+                                        <input
+                                            type="checkbox"
+                                            class="form-check-input override-bool-input"
+                                            data-field="facchinaggio"
+                                            ${item.facchinaggio ? "checked" : ""}
+                                        >
+                                    </td>
+                                    <td class="text-center">
+                                        <input
+                                            type="checkbox"
+                                            class="form-check-input override-bool-input"
+                                            data-field="gdo"
+                                            ${item.gdo ? "checked" : ""}
+                                        >
+                                    </td>
+                                    <td class="text-center">
+                                        <input
+                                            type="checkbox"
+                                            class="form-check-input override-bool-input"
+                                            data-field="sbancalamento"
+                                            ${item.sbancalamento ? "checked" : ""}
+                                        >
+                                    </td>
+                                    <td class="text-center">
+                                        <input
+                                            type="checkbox"
+                                            class="form-check-input override-bool-input"
+                                            data-field="preavviso"
+                                            ${item.preavviso ? "checked" : ""}
+                                        >
+                                    </td>
                                     <td>
                                         <input
                                             type="text"
                                             class="form-control form-control-sm telefono-input"
-                                            data-fattura-id="${item.id}"
                                             value="${item.telefono || ''}"
                                             title="Inserire un numero di telefono valido"
                                         >
@@ -414,7 +440,6 @@
                                             min="0"
                                             step="1"
                                             inputmode="numeric"
-                                            data-fattura-id="${item.id}"
                                             value="${item.nr_colli_sped || ''}"
                                             required
                                         >
@@ -426,7 +451,6 @@
                                             min="0"
                                             step="0.01"
                                             inputmode="decimal"
-                                            data-fattura-id="${item.id}"
                                             value="${item.peso_spedizione || ''}"
                                             required
                                         >
@@ -439,7 +463,6 @@
                                                 min="0"
                                                 step="0.01"
                                                 inputmode="decimal"
-                                                data-fattura-id="${item.id}"
                                                 value="${item.cod_amount || ''}"
                                                 required
                                             >
@@ -448,7 +471,6 @@
                                     <td>
                                         <select
                                             class="form-select form-select-sm raggruppamento-input"
-                                            data-fattura-id="${item.id}"
                                             title="Seleziona un raggruppamento per unire più fatture in una spedizione">
                                                 <option value=""></option>
                                                 <option value="A">A</option>
@@ -507,58 +529,35 @@
         }
 
         function collectModalInputs() {
-            const telefonoOverrides = {};
-            const nrColliOverrides = {};
-            const pesoOverrides = {};
-            const codAmountOverrides = {};
-            const raggruppamenti = {};
+            const overrides = {};
 
-            document.querySelectorAll(".telefono-input").forEach(input => {
-                const fatturaId = input.dataset.fatturaId;
-                const value = input.value.trim();
-
-                if (fatturaId && value) {
-                    telefonoOverrides[fatturaId] = value;
+            document.querySelectorAll("#codAmountModalContent tbody tr[data-fattura-id]").forEach(row => {
+                const fatturaId = row.dataset.fatturaId;
+                if (!fatturaId) {
+                    return;
                 }
-            });
-            
-            document.querySelectorAll(".nr-colli-input").forEach(input => {
-                const fatturaId = input.dataset.fatturaId;
-                const value = input.value.trim();
 
-                if (fatturaId && value) {
-                    nrColliOverrides[fatturaId] = value;
-                }
-            });
+                const telefonoValue = row.querySelector(".telefono-input")?.value.trim() || "";
+                const nrColliValue = row.querySelector(".nr-colli-input")?.value.trim() || "";
+                const pesoValue = row.querySelector(".peso-input")?.value.trim() || "";
+                const codAmountValue = row.querySelector(".cod-amount-input")?.value.trim() || "";
+                const gruppoValue = row.querySelector(".raggruppamento-input")?.value.trim() || "";
 
-            document.querySelectorAll(".peso-input").forEach(input => {
-                const fatturaId = input.dataset.fatturaId;
-                const value = input.value.trim();
-
-                if (fatturaId && value) {
-                    pesoOverrides[fatturaId] = value;
-                }
+                overrides[fatturaId] = {
+                    sponda: !!row.querySelector(".override-bool-input[data-field='sponda']")?.checked,
+                    facchinaggio: !!row.querySelector(".override-bool-input[data-field='facchinaggio']")?.checked,
+                    gdo: !!row.querySelector(".override-bool-input[data-field='gdo']")?.checked,
+                    sbancalamento: !!row.querySelector(".override-bool-input[data-field='sbancalamento']")?.checked,
+                    preavviso: !!row.querySelector(".override-bool-input[data-field='preavviso']")?.checked,
+                    telefono: telefonoValue,
+                    nr_colli_sped: nrColliValue,
+                    peso_spedizione: pesoValue,
+                    cod_amount: codAmountValue,
+                    gruppo: gruppoValue,
+                };
             });
 
-            document.querySelectorAll(".cod-amount-input").forEach(input => {
-                const fatturaId = input.dataset.fatturaId;
-                const value = input.value.trim();
-
-                if (fatturaId && value) {
-                    codAmountOverrides[fatturaId] = value;
-                }
-            });
-
-            document.querySelectorAll(".raggruppamento-input").forEach(select => {
-                const fatturaId = select.dataset.fatturaId;
-                const value = select.value.trim();
-
-                if (fatturaId) {
-                    raggruppamenti[fatturaId] = value;
-                }
-            });
-
-            return [telefonoOverrides, nrColliOverrides, pesoOverrides, codAmountOverrides, raggruppamenti];
+            return overrides;
         }
 
         function validateRaggruppamenti() {
@@ -626,26 +625,10 @@
                     return;
                 }
 
-                const [telefonoData, nrColliData, pesoData, codAmountData, raggruppamentiData] = collectModalInputs();
+                const overridesData = collectModalInputs();
 
-                if (telefonoOverrides) {
-                    telefonoOverrides.value = JSON.stringify(telefonoData);
-                }
-
-                if (nrColliOverrides) {
-                    nrColliOverrides.value = JSON.stringify(nrColliData);
-                }
-
-                if (pesoOverrides) {
-                    pesoOverrides.value = JSON.stringify(pesoData);
-                }
-
-                if (codAmountOverrides) {
-                    codAmountOverrides.value = JSON.stringify(codAmountData);
-                }
-
-                if (raggruppamentiInput) {
-                    raggruppamentiInput.value = JSON.stringify(raggruppamentiData);
+                if (overridesInput) {
+                    overridesInput.value = JSON.stringify(overridesData);
                 }
 
                 if (fercamForm) {
