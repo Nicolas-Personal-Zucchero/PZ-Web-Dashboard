@@ -42,7 +42,7 @@ def generate_sugar_label(ragione_sociale, via, cap_citta_provincia, stato, telef
     ])
     return "\n".join(zpl_rows)
 
-def generate_dachser_label(sscc, id, datetime, counter, total, ragione_sociale, via, cap_citta_provincia, stato, contrassegno, show_personal_zucchero):
+def generate_dachser_label(sscc, id, datetime, counter, total, ragione_sociale, via, cap_citta_provincia, stato, show_personal_zucchero):
     zpl_rows = [
         "^XA",
         "^PW839",
@@ -95,8 +95,6 @@ def generate_dachser_label(sscc, id, datetime, counter, total, ragione_sociale, 
         f"{via}\\&",
         f"{cap_citta_provincia}\\&",
         f"{stato}^FS",
-        "^CF0,45",
-        f"^FO210,820^FB330,1,0,R^FD{contrassegno}^FS",
         "^FO200,50^GB3,1100,3^FS",
     ])
         

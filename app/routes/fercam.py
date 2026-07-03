@@ -34,9 +34,8 @@ def fercam():
        ("nr_tracking", "<>", "SPEDITO"),
        ("cod_vettore", "contiene", ["606.00002", "606.00501"]),
        ("sigla_doc_orig", "contiene", ["FT", "BS", "BC"]),
-       ("cod_modulo", "=", "E"), #Prendere solo le FTE
-       ("id_causale", "<>", 11), #Rimuovi fatture anticipe
-       ("id_causale", "<>", 12), #Rimuovi fatture acconto
+       ("id_causale", "<>", 11),
+       ("id_causale", "<>", 12),
        ("utente_ult_mod", "<>", "0") # Filtro per escludere i movimenti duplicati
     ]
 
@@ -202,14 +201,12 @@ def print_label(ssccs, fattura):
     via = fattura["indirizzo_spedizione"]["indirizzo"]
     cap_citta_prov = f'{fattura["indirizzo_spedizione"]["cap"]} {fattura["indirizzo_spedizione"]["localita"]} {fattura["indirizzo_spedizione"]["provincia"]}'
     stato = fattura["indirizzo_spedizione"]["cod_paese"]
-    if "incasso" in fattura["note"]:
-        contrassegno = f"Contrassegno {fattura['note']['incasso'][0]}"
 
-    show_personal_zucchero = LABEL_TYPE_MAP.get(fattura.get("tipologia_etichetta"), True)
+    show_personal_zucchero = LABEL_TYPE_MAP.get(fattura.get("tipologia_etichetta"), False)
     for idx in range(label_total, 0, -1):
         label = generate_dachser_label(
             ssccs[idx - 1], fattura["riferimento"], datetime_str, idx, label_total,
-            ragione_sociale, via, cap_citta_prov, stato, contrassegno,
+            ragione_sociale, via, cap_citta_prov, stato,
             show_personal_zucchero
         )
         send_to_zebra(ZEBRA_IP, label)

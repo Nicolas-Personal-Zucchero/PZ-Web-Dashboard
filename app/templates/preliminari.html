@@ -190,6 +190,8 @@
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll('.toast').forEach(toastEl => new bootstrap.Toast(toastEl).show());
 
+        const MAX_SELECTIONS = 10;
+
         const selectAllCheckbox = document.getElementById("selectAll");
         const checkboxes = document.querySelectorAll(".spedizione-checkbox");
         const btnInvia = document.getElementById("btnInvia");
@@ -266,6 +268,13 @@
 
         checkboxes.forEach(cb => {
             cb.addEventListener("change", function () {
+                // Intercettazione e revert del check se si supera il limite
+                if (this.checked && getSelectedCount() > MAX_SELECTIONS) {
+                    this.checked = false;
+                    alert(`Puoi selezionare un massimo di ${MAX_SELECTIONS} documenti contemporaneamente.`);
+                    return; 
+                }
+
                 updateRowStyle(this);
                 toggleSubmitButton();
             });
@@ -292,6 +301,11 @@
 
                 const checkbox = row.querySelector('.spedizione-checkbox');
                 if (checkbox) {
+                    // Controllo preventivo del limite prima di alterare lo stato e forzare il dispatch
+                    if (!checkbox.checked && getSelectedCount() >= MAX_SELECTIONS) {
+                        alert(`Puoi selezionare un massimo di ${MAX_SELECTIONS} documenti contemporaneamente.`);
+                        return;
+                    }
                     checkbox.checked = !checkbox.checked;
                     checkbox.dispatchEvent(new Event('change'));
                 }
