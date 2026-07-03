@@ -14,6 +14,22 @@
     .spedizione-row {
         cursor: pointer;
     }
+
+    /* Ricerca spedizioni inviate: una sola riga con larghezze coerenti */
+    .sent-search-form {
+        display: inline-flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .sent-search-identificativo {
+        width: 220px;
+    }
+
+    .sent-search-ragione {
+        width: 360px;
+    }
 </style>
 
 <div class="p-4">
@@ -115,74 +131,98 @@
     </form>
 
     <hr>
-    <div class="d-flex align-items-center justify-content-between ms-3">
+    <div>
         <h1 class="h3 mb-0">Spedizioni Inviate</h1>
-        <button class="btn btn-outline-secondary btn-sm"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#spedizioniInviateCollapse"
-                aria-expanded="false"
-                aria-controls="spedizioniInviateCollapse"
-                id="toggleSpedizioniInviateBtn">
-            <i class="bi bi-chevron-down me-1" id="toggleSpedizioniInviateIcon"></i>
-            <span id="toggleSpedizioniInviateLabel">Mostra elenco</span>
-        </button>
-    </div>
-    <div class="collapse" id="spedizioniInviateCollapse">
-        <div style="max-height: 610px; overflow-y: auto;" class="mt-4 mb-3 border rounded">
-            <ul class="list-group list-group-flush styled-table">
-                <li class="list-group-item static-header sticky-top bg-light">
-                    <div class="row align-items-center fw-bold">
-                        <div class="col-md-1">ID</div>
-                        <div class="col-md-3">Identificativo</div>
-                        <div class="col-md-3">Ragione Sociale Cliente</div>
-                        <div class="col-md-1">Numero Colli</div>
-                        <div class="col-md-1">Peso Totale</div>
-                        <div class="col-md-2">Contrassegno</div>
-                        <div class="col-md-1">Azioni</div>
-                    </div>
-                </li>
+        <form method="GET" action="{{ url_for('preliminari.preliminari') }}" class="sent-search-form mt-2" role="search">
+            
+            <!-- Wrapper per layout a blocchi e raggruppamento semantico -->
+            <div class="mb-2">
+                <label for="sentSearchIdentificativo" class="form-label">Identificativo</label>
+                <input type="text"
+                    id="sentSearchIdentificativo"
+                    class="form-control form-control-sm sent-search-identificativo"
+                    name="sent_search_identificativo"
+                    value="{{ sent_search_identificativo or '' }}"
+                    aria-label="Cerca per identificativo">
+            </div>
 
-                {% for spedizione in spedizioni_inviate %}
-                <li class="list-group-item spedizione-row">
-                    <div class="row align-items-center">
-                        <div class="col-md-1">
-                            {{ spedizione.id }}
-                        </div>
-                        <div class="col-md-3">
-                            {% for id_rel in spedizione.identificativi_rel %}
-                                {{ id_rel.sigla }} {{ id_rel.serie }}/{{ id_rel.numero }}
-                                {% if not loop.last %}, {% endif %}
-                            {% endfor %}
-                        </div>
-                        <div class="col-md-3">
-                            {{ spedizione.ragione_sociale_cliente }}
-                        </div>
-                        <div class="col-md-1">
-                            {{ spedizione.nr_colli }}
-                        </div>
-                        <div class="col-md-1">
-                            {{ spedizione.peso }}
-                        </div>
-                        <div class="col-md-2">
-                            {{ spedizione.cash_on_delivery if spedizione.cash_on_delivery is not none else '' }}
-                        </div>
-                        <div class="col-md-1 text-end">
-                            <a class="btn btn-outline-primary btn-sm me-1"
-                               title="Scarica XML"
-                               href="{{ url_for('preliminari.download_xml', id=spedizione.id) }}">
-                                <i class="bi bi-download"></i>
-                            </a>
-                        </div>
+            <div class="mb-2">
+                <label for="sentSearchRagioneSociale" class="form-label">Ragione sociale</label>
+                <input type="text"
+                    id="sentSearchRagioneSociale"
+                    class="form-control form-control-sm sent-search-ragione"
+                    name="sent_search_ragione_sociale"
+                    value="{{ sent_search_ragione_sociale or '' }}"
+                    aria-label="Cerca per ragione sociale">
+            </div>
+
+            <div class="mt-3">
+                <button type="submit" class="btn btn-outline-primary btn-sm">Cerca</button>
+                {% if has_sent_search %}
+                <a href="{{ url_for('preliminari.preliminari') }}" class="btn btn-outline-secondary btn-sm">Reset</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+    <div style="max-height: 610px; overflow-y: auto;" class="mt-4 mb-3 border rounded">
+        {% if has_sent_search %}
+        <ul class="list-group list-group-flush styled-table">
+            <li class="list-group-item static-header sticky-top bg-light">
+                <div class="row align-items-center fw-bold">
+                    <div class="col-md-1">ID</div>
+                    <div class="col-md-3">Identificativo</div>
+                    <div class="col-md-3">Ragione Sociale Cliente</div>
+                    <div class="col-md-1">Numero Colli</div>
+                    <div class="col-md-1">Peso Totale</div>
+                    <div class="col-md-2">Contrassegno</div>
+                    <div class="col-md-1">Azioni</div>
+                </div>
+            </li>
+
+            {% for spedizione in spedizioni_inviate %}
+            <li class="list-group-item spedizione-row">
+                <div class="row align-items-center">
+                    <div class="col-md-1">
+                        {{ spedizione.id }}
                     </div>
-                </li>
-                {% else %}
-                <li class="list-group-item text-center text-muted">
-                    Nessuna spedizione inviata.
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
+                    <div class="col-md-3">
+                        {% for id_rel in spedizione.identificativi_rel %}
+                            {{ id_rel.sigla }} {{ id_rel.serie }}/{{ id_rel.numero }}
+                            {% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-3">
+                        {{ spedizione.ragione_sociale_cliente }}
+                    </div>
+                    <div class="col-md-1">
+                        {{ spedizione.nr_colli }}
+                    </div>
+                    <div class="col-md-1">
+                        {{ spedizione.peso }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ spedizione.cash_on_delivery if spedizione.cash_on_delivery is not none else '' }}
+                    </div>
+                    <div class="col-md-1 text-end">
+                        <a class="btn btn-outline-primary btn-sm me-1"
+                           title="Scarica XML"
+                           href="{{ url_for('preliminari.download_xml', id=spedizione.id) }}">
+                            <i class="bi bi-download"></i>
+                        </a>
+                    </div>
+                </div>
+            </li>
+            {% else %}
+            <li class="list-group-item text-center text-muted">
+                Nessuna spedizione trovata con i filtri impostati.
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <!-- <div class="p-4 text-center text-muted">
+            Inserisci una ricerca per visualizzare solo le spedizioni inviate corrispondenti.
+        </div> -->
+        {% endif %}
     </div>
 </div>
 <form id="deleteForm" method="POST" style="display: none;"></form>
@@ -195,36 +235,6 @@
         const btnInvia = document.getElementById("btnInvia");
         const fercamList = document.getElementById("fercamList");
         const fercamForm = document.getElementById("fercamForm");
-        const spedizioniInviateCollapse = document.getElementById("spedizioniInviateCollapse");
-        const toggleSpedizioniInviateBtn = document.getElementById("toggleSpedizioniInviateBtn");
-        const toggleSpedizioniInviateIcon = document.getElementById("toggleSpedizioniInviateIcon");
-
-        function updateSpedizioniInviateToggle(isVisible) {
-            if (!toggleSpedizioniInviateBtn || !toggleSpedizioniInviateIcon) {
-                return;
-            }
-
-            toggleSpedizioniInviateBtn.setAttribute('aria-expanded', String(isVisible));
-            toggleSpedizioniInviateIcon.classList.toggle('bi-chevron-up', isVisible);
-            toggleSpedizioniInviateIcon.classList.toggle('bi-chevron-down', !isVisible);
-
-            const toggleSpedizioniInviateLabel = document.getElementById("toggleSpedizioniInviateLabel");
-            if (toggleSpedizioniInviateLabel) {
-                toggleSpedizioniInviateLabel.textContent = isVisible ? 'Nascondi elenco' : 'Mostra elenco';
-            }
-        }
-
-        if (spedizioniInviateCollapse) {
-            spedizioniInviateCollapse.addEventListener('shown.bs.collapse', function () {
-                updateSpedizioniInviateToggle(true);
-            });
-
-            spedizioniInviateCollapse.addEventListener('hidden.bs.collapse', function () {
-                updateSpedizioniInviateToggle(false);
-            });
-
-            updateSpedizioniInviateToggle(false);
-        }
 
         document.addEventListener("keydown", function (event) {
             if (event.key !== "Enter") return;
