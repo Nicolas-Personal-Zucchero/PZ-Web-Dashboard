@@ -4,6 +4,7 @@ import requests
 import io
 from typing import Dict, Any, Optional
 import socket
+import re
 
 def extract_logo_id(url_immagine: str) -> str | None:
     """
@@ -58,3 +59,14 @@ def send_to_zebra(printer_ip, zpl_string, port=9100):
             s.sendall(zpl_string.encode('utf-8'))
     except socket.error as e:
         print(f"Errore connessione: {e}")
+
+_VALID_BLOCKS_PATTERN = re.compile(r'[0-9\.\-\+]+')
+
+def sanitize_phone_data(raw_input: str, separator: str = "/") -> str:
+    if not raw_input or not isinstance(raw_input, str):
+        return ""
+
+    blocks = _VALID_BLOCKS_PATTERN.findall(raw_input)
+    filtered_blocks = [block for block in blocks if block.strip() and len(block) >= 8]
+
+    return separator.join(filtered_blocks)

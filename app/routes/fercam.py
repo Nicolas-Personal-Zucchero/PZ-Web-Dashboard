@@ -3,7 +3,7 @@ import copy
 from decimal import Decimal
 from flask import Blueprint, redirect, render_template, flash, request, url_for, current_app, jsonify
 from config.constants import ZEBRA_IP
-from utils.utils import send_to_zebra
+from utils.utils import send_to_zebra, sanitize_phone_data
 from config.secrets_manager import secrets_manager
 from datetime import datetime, timedelta
 from utils.label_factory import generate_dachser_label
@@ -11,7 +11,6 @@ from dachser_edi import CountryCode, Product, MeasurementName, UnitCode, Measure
 from utils.xml_builder import create_xml, generate_doc_id
 from utils.RedisMexalCache import RedisMexalCache
 from config.constants import PACKING_TYPE_MAP, PACKING_TYPE_ICONS, LABEL_TYPE_MAP, ID_PAGAMENTI_ALLA_CONSEGNA
-
 from utils.database import db, SpedizionePreliminare, SpedizioneIdentificativo
 
 DAYS_TO_FETCH = 5
@@ -208,7 +207,7 @@ def preview_invio():
                 "GDO": fattura.get("note", {}).get("GDO") == "S",
                 "sbancalamento": fattura.get("note", {}).get("sbancalamento") == "S",
                 "preavviso": fattura.get("note", {}).get("preavviso") == "S",
-                "telefono": fattura["cliente"].get("telefono"),
+                "telefono": sanitize_phone_data(fattura["cliente"].get("telefono")),
                 "cod_amount": str(fattura.get("cod_amount") or "") if is_cod else "",
                 "nr_colli_sped": fattura["nr_colli_sped"][0][1],
                 "peso_spedizione": fattura["peso_spedizione"][0][1],
