@@ -39,10 +39,10 @@ PACKING_TYPE_ICONS = {
 LABEL_TYPE_MAP = {
     "1": True,
     "2": False,
-    "3": True,
+    "3": False,
     "4": False,
     "5": False,
-    "6": True,
+    "6": False,
 }
 
 ID_PAGAMENTI_ALLA_CONSEGNA = [
