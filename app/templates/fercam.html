@@ -18,7 +18,7 @@
     /* Da aggiungere nel blocco <style> */
     @media (min-width: 1400px) {
         .modal-xxl {
-            max-width: 1320px;
+            max-width: 1620px;
         }
     }
 </style>
@@ -370,14 +370,14 @@
                             <tr>
                                 <th style="width: 10%;">Documento</th>
                                 <th style="width: 15%;">Cliente</th>
-                                <th class="text-center" style="width: 50px;" title="Sponda">Spo.</th>
-                                <th class="text-center" style="width: 50px;" title="Facchinaggio">Facch.</th>
+                                <th class="text-center" style="width: 50px;" title="Sponda">Sponda</th>
+                                <th class="text-center" style="width: 50px;" title="Facchinaggio">Facchinaggio</th>
                                 <th class="text-center" style="width: 50px;" title="Grande Distribuzione Organizzata">GDO</th>
-                                <th class="text-center" style="width: 50px;" title="Sbancalamento">Sban.</th>
-                                <th class="text-center" style="width: 50px;" title="Preavviso">Preav.</th>
+                                <th class="text-center" style="width: 50px;" title="Sbancalamento">Sbancalamento</th>
+                                <th class="text-center" style="width: 50px;" title="Preavviso">Preavviso</th>
                                 <th style="min-width: 120px; width: 12%;">Telefono</th>
                                 <th style="min-width: 90px; width: 10%;">Nr. Colli</th>
-                                <th style="min-width: 100px; width: 10%;">Peso Tot.</th>
+                                <th style="min-width: 100px; width: 10%;">Peso Totale</th>
                                 <th style="min-width: 120px; width: 15%;">Contrassegno</th>
                                 <th style="width: 80px;" title="Seleziona un raggruppamento per unire più fatture in una spedizione">Gruppo</th>
                             </tr>
@@ -389,7 +389,7 @@
                                         <div class="fw-semibold text-nowrap">${item.riferimento}</div>
                                     </td>
                                     <td>
-                                        <div class="text-truncate" style="max-width: 200px;" title="${item.ragione_sociale_cliente || ''}">
+                                        <div class="text-truncate" style="max-width: 300px;" title="${item.ragione_sociale_cliente || ''}">
                                             ${item.ragione_sociale_cliente || ''}
                                         </div>
                                     </td>
