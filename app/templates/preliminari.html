@@ -170,7 +170,8 @@
             <li class="list-group-item static-header sticky-top bg-light">
                 <div class="row align-items-center fw-bold">
                     <div class="col-md-1">ID</div>
-                    <div class="col-md-3">Identificativo</div>
+                    <div class="col-md-1">Identificativo</div>
+                    <div class="col-md-2">Data Invio</div>
                     <div class="col-md-3">Ragione Sociale Cliente</div>
                     <div class="col-md-1">Numero Colli</div>
                     <div class="col-md-1">Peso Totale</div>
@@ -185,11 +186,14 @@
                     <div class="col-md-1">
                         {{ spedizione.id }}
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-1">
                         {% for id_rel in spedizione.identificativi_rel %}
                             {{ id_rel.sigla }} {{ id_rel.serie }}/{{ id_rel.numero }}
                             {% if not loop.last %}, {% endif %}
                         {% endfor %}
+                    </div>
+                    <div class="col-md-2">
+                        {{ spedizione.sent_at.strftime('%d/%m/%Y %H:%M') if spedizione.sent_at is not none else '' }}
                     </div>
                     <div class="col-md-3">
                         {{ spedizione.ragione_sociale_cliente }}

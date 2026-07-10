@@ -5,6 +5,8 @@ from flask import Blueprint, redirect, render_template, flash, request, url_for,
 from datetime import datetime
 from config.secrets_manager import secrets_manager
 from utils.database import db, SpedizionePreliminare, SpedizioneIdentificativo
+from config.costants import ITALY_TZ
+from utils.utils import convert_datetime_to_italy_tz
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 
@@ -53,6 +55,8 @@ def preliminari():
             )
 
         inviate = db.session.execute(inviate_stmt).scalars().unique().all()
+        for spedizione in inviate:
+            spedizione.sent_at = convert_datetime_to_italy_tz(spedizione.sent_at)
 
     return render_template(
         "preliminari.html", 
@@ -150,6 +154,7 @@ def invia():
                     inviati += 1
                     current_app.logger.info(f"Inviato {filename} a Fercam.")
                     spedizione.sent = True
+                    spedizione.sent_at = datetime.now(ITALY_TZ)
                     db.session.commit()
                     current_app.logger.info(f"Spedizione {spedizione.id} marcata come inviata sul database.")
                 except Exception as e:

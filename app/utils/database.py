@@ -13,6 +13,7 @@ class SpedizionePreliminare(db.Model):
     cash_on_delivery = db.Column(db.Numeric(10, 2), default=None, nullable=True)
     xml = db.Column(db.Text, nullable=False)
     sent = db.Column(db.Boolean, default=False, nullable=False)
+    sent_at = db.Column(db.DateTime, nullable=True)
 
     # Relazione 1:N con eliminazione a cascata automatica dei dettagli
     identificativi_rel = db.relationship(
@@ -31,7 +32,8 @@ class SpedizionePreliminare(db.Model):
             "peso": self.peso,
             "cash_on_delivery": self.cash_on_delivery,
             "xml": self.xml,
-            "sent": self.sent
+            "sent": self.sent,
+            "sent_at": self.sent_at
         }
 
 class SpedizioneIdentificativo(db.Model):
