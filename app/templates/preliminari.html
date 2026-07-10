@@ -154,6 +154,15 @@
             
             <!-- Wrapper per layout a blocchi e raggruppamento semantico -->
             <div class="mb-2">
+                <label for="sentSearchDataInvio" class="form-label">Data Invio</label>
+                <input type="date"
+                    id="sentSearchDataInvio"
+                    class="form-control form-control-sm sent-search-data-invio"
+                    name="sent_search_data_invio"
+                    value="{{ sent_search_data_invio or '' }}"
+                    aria-label="Cerca per data invio">
+            </div>
+            <div class="mb-2">
                 <label for="sentSearchIdentificativo" class="form-label">Identificativo</label>
                 <input type="text"
                     id="sentSearchIdentificativo"
@@ -187,8 +196,8 @@
             <li class="list-group-item static-header sticky-top bg-light">
                 <div class="row align-items-center fw-bold">
                     <div class="col-md-1">ID</div>
-                    <div class="col-md-1">Identificativo</div>
                     <div class="col-md-2">Data Invio</div>
+                    <div class="col-md-1">Identificativo</div>
                     <div class="col-md-3">Ragione Sociale Cliente</div>
                     <div class="col-md-1">Numero Colli</div>
                     <div class="col-md-1">Peso Totale</div>
@@ -203,14 +212,14 @@
                     <div class="col-md-1">
                         {{ spedizione.id }}
                     </div>
+                    <div class="col-md-2">
+                        {{ spedizione.sent_at.strftime('%d/%m/%Y %H:%M') if spedizione.sent_at is not none else '' }}
+                    </div>
                     <div class="col-md-1">
                         {% for id_rel in spedizione.identificativi_rel %}
                             {{ id_rel.sigla }} {{ id_rel.serie }}/{{ id_rel.numero }}
                             {% if not loop.last %}, {% endif %}
                         {% endfor %}
-                    </div>
-                    <div class="col-md-2">
-                        {{ spedizione.sent_at.strftime('%d/%m/%Y %H:%M') if spedizione.sent_at is not none else '' }}
                     </div>
                     <div class="col-md-3">
                         {{ spedizione.ragione_sociale_cliente }}

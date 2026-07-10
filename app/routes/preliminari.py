@@ -14,6 +14,8 @@ preliminari_bp = Blueprint("preliminari", __name__, url_prefix="/preliminari")
 
 @preliminari_bp.route("/", methods=["GET"])
 def preliminari():
+    search_data_invio_raw = request.args.get("sent_search_data_invio", "").strip()
+    search_data_invio = datetime.strptime(search_data_invio_raw, "%Y-%m-%d").date() if search_data_invio_raw else None
     search_identificativo = request.args.get("sent_search_identificativo", "").strip()
     search_ragione_sociale = request.args.get("sent_search_ragione_sociale", "").strip()
 
@@ -24,7 +26,7 @@ def preliminari():
     preliminari = db.session.execute(preliminari_stmt).scalars().unique().all()
     inviate = []
 
-    if search_identificativo or search_ragione_sociale:
+    if search_data_invio or search_identificativo or search_ragione_sociale:
         identificativo_expr = (
             SpedizioneIdentificativo.sigla + " " +
             SpedizioneIdentificativo.serie + "/" +
@@ -34,6 +36,11 @@ def preliminari():
         inviate_stmt = db.select(SpedizionePreliminare)\
             .where(SpedizionePreliminare.sent.is_(True))\
             .options(joinedload(SpedizionePreliminare.identificativi_rel))
+
+        if search_data_invio:
+            inviate_stmt = inviate_stmt.where(
+                db.func.date(SpedizionePreliminare.sent_at) == search_data_invio
+            )
 
         if search_ragione_sociale:
             ragione_sociale_pattern = f"%{search_ragione_sociale}%"
@@ -62,9 +69,10 @@ def preliminari():
         "preliminari.html", 
         spedizioni_preliminari=preliminari, 
         spedizioni_inviate=inviate,
+        sent_search_data_invio=search_data_invio,
         sent_search_identificativo=search_identificativo,
         sent_search_ragione_sociale=search_ragione_sociale,
-        has_sent_search=bool(search_identificativo or search_ragione_sociale)
+        has_sent_search=bool(search_data_invio or search_identificativo or search_ragione_sociale)
     )
 
 @preliminari_bp.route("/elimina/<string:id>", methods=["POST"])
