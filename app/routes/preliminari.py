@@ -136,7 +136,7 @@ def invio_numero_bancali():
 
     try:
         mailer.invia_email_singola(
-            destinatari="cesena.ritiri-nv@dachser.fercam.it;erika@personalzucchero.com",
+            destinatari="cesena.ritiri-nv@dachser.fercam.it;erika@personalzucchero.com;marilena@personalzucchero.com",
             oggetto=f"PERSONAL ZUCCHERO: RITIRO PER DATA {data_odierna}",
             corpo=f"Salve,<br>Per il ritiro di oggi {data_odierna} sono previsti <b>{numero_bancali}</b> bancali."
         )
