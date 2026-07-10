@@ -2,7 +2,7 @@ import json
 import copy
 from decimal import Decimal
 from flask import Blueprint, redirect, render_template, flash, request, url_for, current_app, jsonify
-from config.constants import ZEBRA_IP
+from config.constants import ITALY_TZ, ZEBRA_IP
 from utils.utils import send_to_zebra, sanitize_phone_data
 from config.secrets_manager import secrets_manager
 from datetime import datetime, timedelta
@@ -219,7 +219,7 @@ def preview_invio():
 
 def print_label(ssccs, fattura):
     label_total = int(fattura["nr_colli_sped"][0][1]) if fattura.get("nr_colli_sped") else 1
-    datetime_str = datetime.now().strftime("%d/%m/%y %H:%M")
+    datetime_str = datetime.now(ITALY_TZ).strftime("%d/%m/%y %H:%M")
 
     ragione_sociale = fattura["indirizzo_spedizione"]["descrizione"]
     via = fattura["indirizzo_spedizione"]["indirizzo"]
