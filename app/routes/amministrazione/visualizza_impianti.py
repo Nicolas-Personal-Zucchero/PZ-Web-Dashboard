@@ -1,12 +1,7 @@
-from flask import Blueprint, render_template, request, send_file, flash, redirect
+from flask import Blueprint, render_template, request
 from utils.firebase_client import db
-from firebase_admin import firestore
 from config.constants import ITALY_TZ
-import pytz
-from utils.pdf import generate_pdf
-from firebase_admin import firestore
 from collections import defaultdict
-from datetime import datetime
 
 visualizza_impianti_bp = Blueprint("visualizza_impianti", __name__, url_prefix="/visualizza_impianti")
 
