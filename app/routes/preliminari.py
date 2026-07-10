@@ -110,6 +110,43 @@ def download_xml(id):
         mimetype="application/xml"
     )
 
+
+@preliminari_bp.route("/invio-numero-bancali", methods=["POST"])
+def invio_numero_bancali():
+    numero_bancali_raw = (request.form.get("numero_bancali") or "").strip()
+
+    if not numero_bancali_raw:
+        flash("Inserisci il numero di bancali da inviare.", "warning")
+        return redirect(url_for("preliminari.preliminari"))
+
+    try:
+        numero_bancali = int(numero_bancali_raw)
+        if numero_bancali <= 0:
+            raise ValueError
+    except ValueError:
+        flash("Il numero di bancali deve essere un intero maggiore di zero.", "warning")
+        return redirect(url_for("preliminari.preliminari"))
+
+    mailer = secrets_manager.get_mailer()
+    if not mailer:
+        flash("Errore nella configurazione del mailer.", "danger")
+        return redirect(url_for("preliminari.preliminari"))
+
+    data_odierna = datetime.now(ITALY_TZ).strftime("%d/%m/%Y")
+
+    try:
+        mailer.invia_email_singola(
+            destinatari="cesena.ritiri-nv@dachser.fercam.it;erika@personalzucchero.com",
+            oggetto=f"PERSONAL ZUCCHERO: RITIRO PER DATA {data_odierna}",
+            corpo=f"Salve,<br>Per il ritiro di oggi {data_odierna} sono previsti <b>{numero_bancali}</b> bancali."
+        )
+        flash("Email inviata correttamente a Cesena.", "success")
+    except Exception as e:
+        current_app.logger.error(f"Errore invio numero bancali a Cesena: {e}")
+        flash("Errore durante l'invio dell'email a Cesena.", "danger")
+
+    return redirect(url_for("preliminari.preliminari"))
+
 @preliminari_bp.route("/invia", methods=["POST"])
 def invia():
     spedizioni_ids = request.form.getlist("spedizioni_selezionate")
