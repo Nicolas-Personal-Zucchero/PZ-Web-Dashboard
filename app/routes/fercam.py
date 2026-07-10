@@ -255,6 +255,11 @@ def get_indirizzo_spedizione(mexal, fattura, cliente):
             "cod_paese": cliente.get("cod_paese", "") if cliente else None
         }
 
+    #Se l'indirizzo è una sosta tecnica, le info sull'indirizzo di spedizione non sono valide/presenti, quindi non eseguo i controlli
+    # Le informazioni saranno già nelle note sosta_tecnica_*
+    if "SOSTA TECNICA" in indirizzo_spedizione.get("descrizione", "").upper():
+        return indirizzo_spedizione
+
     required_fields = ["indirizzo", "cap", "localita", "provincia", "cod_paese"]
     missing = [f for f in required_fields if not indirizzo_spedizione.get(f)]
     if missing:
@@ -265,7 +270,6 @@ def get_indirizzo_spedizione(mexal, fattura, cliente):
     if is_paese_it == is_prov_ee:
         raise ValueError(f"Contraddizione Paese/Provincia: {indirizzo_spedizione['cod_paese']} / {indirizzo_spedizione['provincia']}")
 
-    current_app.logger.warning(f"Indirizzo di spedizione determinato: {indirizzo_spedizione}")
     return indirizzo_spedizione
 
 def get_note(mexal, fattura: dict) -> dict | None:
