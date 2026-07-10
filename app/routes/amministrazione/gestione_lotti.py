@@ -1,10 +1,12 @@
 from flask import Blueprint, render_template, request, send_file, flash, redirect, url_for
 from utils.firebase_client import db
 from firebase_admin import firestore
-from config.constants import ITALY_TZ
+from config.constants import ITALY_TZ, ZEBRA_IP
 import pytz
 from utils.pdf import generate_pdf
 from datetime import datetime
+from utils.utils import send_to_zebra
+from utils.label_factory import generate_lotto_label
 
 # --- Parte di Visualizzazione (Da visualizza_lotti.py) ---
 
@@ -168,14 +170,26 @@ def etichetta():
     data = doc.to_dict()
 
     uploaded_at = data.get("uploaded_at")
+    uploaded_at_str = None
     if uploaded_at:
         uploaded_at_local = uploaded_at.replace(tzinfo=pytz.UTC).astimezone(ITALY_TZ)
-        uploaded_at_str = uploaded_at_local.strftime("%Y-%m-%d")
-    else:
-        uploaded_at_str = ""
-    filename = f"etichetta_{data.get('lotto', '')}.pdf"
-    pdf = generate_pdf(filename, data.get("lotto", ""), data.get("fornitore", ""), data.get("ddt", ""), data.get("tipologia_zucchero", ""), uploaded_at_str, data.get("note", ""), data.get("lotti_fornitore", ""))
-    return send_file(pdf, as_attachment=False, download_name=filename, mimetype="application/pdf")
+        uploaded_at_str = uploaded_at_local.strftime("%d/%m/%Y")
+        
+    # filename = f"etichetta_{data.get('lotto', '')}.pdf"
+    # pdf = generate_pdf(filename, data.get("lotto", ""), data.get("fornitore", ""), data.get("ddt", ""), data.get("tipologia_zucchero", ""), uploaded_at_str, data.get("note", ""), data.get("lotti_fornitore", ""))
+
+    label = generate_lotto_label(
+        data.get("lotto", ""), 
+        uploaded_at_str or "",
+        data.get("ddt", ""),
+        data.get("fornitore", ""),
+        data.get("tipologia_zucchero", ""),
+        data.get("lotti_fornitore", []),
+        data.get("note", "")
+    )
+    send_to_zebra(ZEBRA_IP, label)
+    # return send_file(pdf, as_attachment=False, download_name=filename, mimetype="application/pdf")
+    return redirect("/amministrazione/gestione_lotti")
 
 @gestione_lotti_bp.route("/aggiungi_scansione", methods=["POST"])
 def aggiungi_scansione():
