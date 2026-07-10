@@ -5,6 +5,7 @@ import io
 from typing import Dict, Any, Optional
 import socket
 import re
+from config.constants import ITALY_TZ
 
 def extract_logo_id(url_immagine: str) -> str | None:
     """
@@ -70,3 +71,12 @@ def sanitize_phone_data(raw_input: str, separator: str = "/") -> str:
     filtered_blocks = [block for block in blocks if block.strip() and len(block) >= 8]
 
     return separator.join(filtered_blocks)
+
+def convert_datetime_to_italy_tz(value):
+    if value is None:
+        return None
+
+    if value.tzinfo is None:
+        return ITALY_TZ.localize(value)
+
+    return value.astimezone(ITALY_TZ)

@@ -5,8 +5,9 @@ def generate_sugar_label(ragione_sociale, via, cap_citta_provincia, stato, telef
     Genera il codice ZPL per l'etichetta Personal Zucchero.
     I campi del mittente sono allineati a destra con margine 50.
     """
-    zpl_rows = ["^XA"]
-    zpl_rows.extend([
+    zpl_rows = [
+        "^XA",
+        "^CI28",
         f"^FO690,50^GF{LOGO_DATA}^FS",
         f"^FO690,1025^GF{LOGO_DATA}^FS",
         "^FX Inversione assi per formato verticale",
@@ -39,12 +40,13 @@ def generate_sugar_label(ragione_sociale, via, cap_citta_provincia, stato, telef
         "^CF0,60",
         f"^FO30,60^FD{notes}^FS",
         "^XZ"
-    ])
+    ]
     return "\n".join(zpl_rows)
 
 def generate_dachser_label(sscc, id, datetime, counter, total, ragione_sociale, via, cap_citta_provincia, stato, contrassegno, show_personal_zucchero):
     zpl_rows = [
         "^XA",
+        "^CI28",
         "^PW839",
         "^LL1200",
         "^LH0,0",
