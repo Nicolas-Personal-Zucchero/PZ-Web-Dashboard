@@ -25,6 +25,4 @@ WORKDIR /app/app
 
 EXPOSE 5000
 
-# CMD ["python", "main.py"]
-# Sintassi: gunicorn -w [numero_workers] -b [host:port] [file_python]:[variabile_flask]
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "main:app"]
+CMD ["gunicorn", "--workers", "4", "--timeout", "120", "--bind", "0.0.0.0:5000", "main:app"]

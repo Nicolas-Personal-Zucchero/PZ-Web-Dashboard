@@ -162,11 +162,6 @@ def invia():
     if not spedizioni_ids:
         flash("Nessuna spedizione preliminare selezionata.", "warning")
         return redirect(url_for("preliminari.preliminari"))
-
-    mexal = secrets_manager.get_mexal()
-    if not mexal:
-        flash("Errore nelle credenziali Mexal.", "danger")
-        return render_template("fercam.html", fatture=[])
     
     current_app.logger.info(f"Ricevute {len(spedizioni_ids)} spedizioni preliminari selezionate.")
 
@@ -196,12 +191,11 @@ def invia():
                 
                 try:
                     sftp.send_content(spedizione.xml, filename)
-                    inviati += 1
-                    current_app.logger.info(f"Inviato {filename} a Fercam.")
                     spedizione.sent = True
                     spedizione.sent_at = datetime.now(ITALY_TZ)
                     db.session.commit()
-                    current_app.logger.info(f"Spedizione {spedizione.id} marcata come inviata sul database.")
+                    inviati += 1
+                    current_app.logger.info(f"Spedizione {spedizione.id} inviata a Fercam e aggiornata sul database.")
                 except Exception as e:
                     error_msg = f"Errore nell'invio a Fercam: {e}"
                     current_app.logger.error(f"Errore spedizione {spedizione.id} [{filename}]: {e}")
