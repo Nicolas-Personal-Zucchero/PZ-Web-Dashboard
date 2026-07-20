@@ -66,7 +66,7 @@ def fercam():
 
     #Ottengo le ragioni sociali dei clienti delle fatture ottenute
     clienti = mexal_cache.get_customers(mexal, codici_conto)
-    ragioni_sociali = {k: v["ragione_sociale"] for k, v in clienti.items()}
+    ragioni_sociali = {k: v["denominazione"] if v["gest_per_fisica"] == "S" else v["ragione_sociale"] for k, v in clienti.items()}
 
     fatture_filtrate = []
     for f in fatture:
@@ -236,7 +236,7 @@ def print_label(ssccs, fattura):
         )
         send_to_zebra(ZEBRA_IP, label)
 
-def get_indirizzo_spedizione(mexal, fattura, cliente):
+def get_indirizzo_spedizione(mexal, fattura):
     '''
     Se è presente un indirizzo di spedizione nell'anagrafica specifica, uso quello, altrimenti uso le informazioni dell'anagrafica cliente.
     I campi indirizzo, cap, localita, provincia e cod_paese sono presenti in entrambi i casi.
@@ -246,8 +246,14 @@ def get_indirizzo_spedizione(mexal, fattura, cliente):
         current_app.logger.warning("MX: Recupero indirizzo di spedizione.")
         indirizzo_spedizione = mexal.get_indirizzo_di_spedizione(fattura["cod_anag_sped"][0][1])
     else:
+        cliente = fattura["cliente"]
+        descrizione = None
+        if cliente and cliente.get("gest_per_fisica") == "S":
+            descrizione = cliente.get("denominazione")
+        elif cliente:
+            descrizione = cliente.get("ragione_sociale")
         indirizzo_spedizione = {
-            "descrizione": cliente.get("ragione_sociale", "") if cliente else None,
+            "descrizione": descrizione,
             "indirizzo": cliente.get("indirizzo", "") if cliente else None,
             "cap": cliente.get("cap", "") if cliente else None,
             "localita": cliente.get("localita", "") if cliente else None,
@@ -429,7 +435,7 @@ def load_fattura_for_send(mexal, sigla, serie, numero, cod_conto, parziale=False
     else:
         fattura["cod_amount"] = None
 
-    indirizzo_spedizione = get_indirizzo_spedizione(mexal, fattura, cliente)
+    indirizzo_spedizione = get_indirizzo_spedizione(mexal, fattura)
     if not indirizzo_spedizione:
         raise Exception("Errore nel recupero dell'indirizzo di spedizione.")
     fattura["indirizzo_spedizione"] = indirizzo_spedizione
