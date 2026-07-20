@@ -56,7 +56,10 @@ class RedisMexalCache:
 
         current_app.logger.warning("MX: Cache miss per clienti. Richiesta al gestionale.")
         nuovi_clienti = mexal.find_customers(
-            properties=["codice", "ragione_sociale", "indirizzo", "cap", "localita", "provincia", "cod_paese", "email", "telefono"],
+            properties=["codice", "ragione_sociale",
+                        "indirizzo", "cap", "localita", "provincia", "cod_paese",
+                        "email", "telefono",
+                        "denominazione", "gest_per_fisica"],
             filters=[("codice", "=", codici_da_richiedere)]
         )
 
