@@ -221,7 +221,7 @@ Should you have any questions, please do not hesitate to contact us.<br>
 Best regards,<br>
 <b>Personal Zucchero</b>"""
 
-TRACKING_BRT_OBJECT_ITA = """Il tuo ordine da Personal Zucchero è in arrivo!"""
+TRACKING_BRT_OBJECT_ITA = """La tua spedizione da Personal Zucchero è in arrivo!"""
 
 TRACKING_BRT_BODY_ITA = """
 <p>Gentile cliente,</p>
