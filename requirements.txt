@@ -13,6 +13,7 @@ Jinja2
 paramiko
 cachetools
 redis
+xmltodict
 
 git+https://github.com/Nicolas-Personal-Zucchero/HubspotPZ.git@086133e0f8584bcc9a043aff20ba8e8ee0df861b
 git+https://github.com/Nicolas-Personal-Zucchero/MexalPZ.git@e11eb062ab547b9a7af41779fedd719bc95789b8
