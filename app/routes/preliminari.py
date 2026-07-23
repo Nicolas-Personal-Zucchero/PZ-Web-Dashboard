@@ -1,4 +1,5 @@
 import json
+import xmltodict
 from io import BytesIO
 from flask import Blueprint, redirect, render_template, flash, request, url_for, current_app, send_file
 
@@ -118,6 +119,16 @@ def download_xml(id):
         mimetype="application/xml"
     )
 
+@preliminari_bp.route('/spedizione/<string:id>')
+def visualizza_spedizione(id):
+    spedizione = db.session.get(SpedizionePreliminare, id)
+    if not spedizione:
+        flash("Spedizione preliminare non trovata.", "warning")
+        return redirect(url_for("preliminari.preliminari"))
+
+    parsed_xml = xmltodict.parse(spedizione.xml, dict_constructor=dict)
+    
+    return render_template('xml_viewer.html', data=parsed_xml, id_spedizione=id)
 
 @preliminari_bp.route("/invio-numero-bancali", methods=["POST"])
 def invio_numero_bancali():

@@ -98,10 +98,10 @@
                         </div>
                         <div class="col-md-1 text-end">
                             <a class="btn btn-outline-primary btn-sm me-1"
-                               title="Scarica XML"
+                               title="Visualizza XML"
                                data-no-row-select="true"
-                               href="{{ url_for('preliminari.download_xml', id=spedizione.id) }}">
-                                <i class="bi bi-download"></i>
+                               href="{{ url_for('preliminari.visualizza_spedizione', id=spedizione.id) }}">
+                                <i class="bi bi-filetype-xml"></i>
                             </a>
                             <button type="button" 
                                     class="btn btn-outline-danger btn-sm" 
@@ -235,9 +235,9 @@
                     </div>
                     <div class="col-md-1 text-end">
                         <a class="btn btn-outline-primary btn-sm me-1"
-                           title="Scarica XML"
-                           href="{{ url_for('preliminari.download_xml', id=spedizione.id) }}">
-                            <i class="bi bi-download"></i>
+                           title="Visualizza XML"
+                           href="{{ url_for('preliminari.visualizza_spedizione', id=spedizione.id) }}">
+                            <i class="bi bi-filetype-xml"></i>
                         </a>
                     </div>
                 </div>
