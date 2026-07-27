@@ -79,14 +79,16 @@ def send_tickets():
             template_key = f"sigep_{language}"
             if template_key not in EMAIL_TEMPLATES:
                 template_key = "sigep_ita" # Fallback
-            
-            subject = EMAIL_TEMPLATES[template_key]["object"]
-            body = EMAIL_TEMPLATES[template_key]["body"].format(
-                nome_cliente=name,
-                codici_biglietti=codes_str
+
+            mailer.invia_email_singola(
+                recipients=[email],
+                subject=EMAIL_TEMPLATES[template_key]["object"],
+                body=EMAIL_TEMPLATES[template_key]["body"].format(
+                    nome_cliente=name,
+                    codici_biglietti=codes_str
+                ),
+                hubspot_ccn=True
             )
-            
-            mailer.invia_email_singola(email, subject, body, hubspot_ccn=True)
             flash(f"Inviati {len(assigned_codes)} biglietti a {email}", "success")
         else:
             flash("Errore: Mailer non configurato o nessun biglietto assegnato", "danger")

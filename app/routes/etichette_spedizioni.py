@@ -130,9 +130,9 @@ def invia_tracking():
 
     if mailer:
         mailer.invia_email_singola(
-            email,
-            EMAIL_TEMPLATES["tracking_brt_ita"]["object"],
-            EMAIL_TEMPLATES["tracking_brt_ita"]["body"].format(tracking=tracking),
+            recipients=[email],
+            subject=EMAIL_TEMPLATES["tracking_brt_ita"]["object"],
+            body=EMAIL_TEMPLATES["tracking_brt_ita"]["body"].format(tracking=tracking),
             hubspot_ccn=True
         )
     else:
