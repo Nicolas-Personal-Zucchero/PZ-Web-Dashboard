@@ -37,11 +37,29 @@ def etichette_spedizioni():
         if customer:
             flash(f"Cliente trovato: {customer.get('ragione_sociale', 'N/D')}", "success")
         else:
-            flash("Nessun cliente trovato con il codice Mexal fornito.", "warning")
+            #Permetto di cercare anche i contatti, non solo i clienti
+            contact = mexal.get_contact_by_mexal_code(
+                mexal_code,
+                ["codice", "descrizione", "email", "indirizzo", "cap", "localita", "provincia", "paese_iso", "telefono"]
+            )
+            if contact:
+                #I contatti hanno i nomi di alcuni campi diversi
+                customer = {
+                    "codice": contact.get("codice"),
+                    "ragione_sociale": contact.get("descrizione"),
+                    "email": contact.get("email"),
+                    "indirizzo": contact.get("indirizzo"),
+                    "cap": contact.get("cap"),
+                    "localita": contact.get("localita"),
+                    "provincia": contact.get("provincia"),
+                    "cod_paese": contact.get("paese_iso"),
+                    "telefono": contact.get("telefono")
+                }
+                flash(f"Contatto trovato: {customer.get('ragione_sociale', 'N/D')}", "success")
+            else:
+                flash("Nessun cliente o contatto trovato con il codice Mexal fornito.", "warning")
 
     return render_template("etichette_spedizioni.html", customer=customer)
-
-
 
 def genera_pdf_ritiro(data_destinatario, data_spedizione):
     env = Environment(loader=FileSystemLoader('.'))

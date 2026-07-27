@@ -16,6 +16,6 @@ redis
 xmltodict
 
 git+https://github.com/Nicolas-Personal-Zucchero/HubspotPZ.git@086133e0f8584bcc9a043aff20ba8e8ee0df861b
-git+https://github.com/Nicolas-Personal-Zucchero/MexalPZ.git@b996caf006fe32d146d2ccc8040e9fc2e355cc0e
+git+https://github.com/Nicolas-Personal-Zucchero/MexalPZ.git@4b2985d2a2dd9dae8ee22f0dfd53c1bdc5dcfd29
 git+https://github.com/Nicolas-Personal-Zucchero/MailerPZ.git@78633aec3026c84071c5af65b2881fea2fb127cf
 git+https://github.com/Nicolas-Personal-Zucchero/dachser-edi-lib.git@da06d7c066e6bd1ded5d8c48705f503058047ada
