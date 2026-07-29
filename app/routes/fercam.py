@@ -389,6 +389,7 @@ def build_xml(fattura, ssccs):
             ],
             "notes": notes,
             "tail_lift_required": fattura.get("note", {}).get("sponda") == "S",
+            "cod_code": fattura.get("cod_code"),
             "cod_amount": fattura.get("cod_amount"),
             "ssccs": ssccs,
         }
@@ -472,8 +473,10 @@ def process_fatture_group(mexal, sscc_generator, fatture_info):
     #Aggiunta della modalità di incasso del contrassegno nelle note, se presente
     if last_id_pagamento in ID_PAGAMENTI_ALLA_CONSEGNA:
         if last_id_pagamento == "202":
+            merged["cod_code"] = "01"
             merged["note"]["incasso"] = "C - Contanti"
         else:
+            merged["cod_code"] = "02"
             merged["note"]["incasso"] = "R - Titolo come rilasciato"
 
     for f in fatture[1:]:
