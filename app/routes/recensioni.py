@@ -40,9 +40,9 @@ def recensioni():
 
                 if mailer:
                     mailer.invia_email_singola(
-                        email,
-                        EMAIL_TEMPLATES["review_" + language.lower()]["object"],
-                        EMAIL_TEMPLATES["review_" + language.lower()]["body"].format(customer=customer, sender=sender),
+                        recipients=[email],
+                        subject=EMAIL_TEMPLATES["review_" + language.lower()]["object"],
+                        body=EMAIL_TEMPLATES["review_" + language.lower()]["body"].format(customer=customer, sender=sender),
                         hubspot_ccn=True
                     )
                     flash("Richiesta di recensione inviata con successo!", "success")

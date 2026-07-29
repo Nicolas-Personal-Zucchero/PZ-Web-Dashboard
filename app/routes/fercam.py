@@ -66,7 +66,7 @@ def fercam():
 
     #Ottengo le ragioni sociali dei clienti delle fatture ottenute
     clienti = mexal_cache.get_customers(mexal, codici_conto)
-    ragioni_sociali = {k: v["denominazione"] if v["gest_per_fisica"] == "S" else v["ragione_sociale"] for k, v in clienti.items()}
+    ragioni_sociali = {k: v["denominazione"].strip() if v["gest_per_fisica"] == "S" and v["denominazione"].strip() else v["ragione_sociale"].strip() for k, v in clienti.items()}
 
     fatture_filtrate = []
     for f in fatture:
@@ -78,7 +78,7 @@ def fercam():
 
         f["data_documento"] = datetime.strptime(f["data_documento"], "%Y%m%d").strftime("%d/%m/%Y")
 
-        f["ragione_sociale_cliente"] = ragioni_sociali.get(f["cod_conto"]) or "Cliente non trovato"
+        f["ragione_sociale_cliente"] = ragioni_sociali.get(f["cod_conto"]) or ""
 
         f["aspetto"] = mexal_cache.get_aspetto_esteriore(mexal, f["asp_est_beni"]) or "???"
         f["aspetto_icon"] = PACKING_TYPE_ICONS.get(PACKING_TYPE_MAP.get(int(f["asp_est_beni"])), "bi bi-question-circle text-muted")
@@ -86,7 +86,7 @@ def fercam():
         f["cod"] = f["id_pagamento"] in ID_PAGAMENTI_ALLA_CONSEGNA
 
         f["presente"] = f["identificativo"] in identificativi_non_sent
-        f["completo"] = f["aspetto"] != "???" and f["nr_colli_sped"] != "0" and f["peso_spedizione"] != "0.0"
+        f["completo"] = f["aspetto"] != "???" and f["nr_colli_sped"] != "0" and f["peso_spedizione"] != "0.0" and f["ragione_sociale_cliente"] != ""
         fatture_filtrate.append(f)
 
     fatture = sorted(fatture_filtrate, key=lambda x: (
@@ -248,10 +248,10 @@ def get_indirizzo_spedizione(mexal, fattura):
     else:
         cliente = fattura["cliente"]
         descrizione = None
-        if cliente and cliente.get("gest_per_fisica") == "S":
-            descrizione = cliente.get("denominazione")
+        if cliente and cliente.get("gest_per_fisica") == "S" and cliente.get("denominazione").strip():
+            descrizione = cliente.get("denominazione").strip()
         elif cliente:
-            descrizione = cliente.get("ragione_sociale")
+            descrizione = cliente.get("ragione_sociale").strip()
         indirizzo_spedizione = {
             "descrizione": descrizione,
             "indirizzo": cliente.get("indirizzo", "") if cliente else None,

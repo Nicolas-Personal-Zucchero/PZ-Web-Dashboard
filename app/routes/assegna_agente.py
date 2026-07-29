@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, redirect, flash, jsonify
 
 from config.mail_config import EMAIL_TEMPLATES
 from config.constants import ITALY_TZ
-from config.secrets_manager import secrets_manager
+from config.secrets_manager import secrets_manager, MailerPZ
 
 from utils.firebase_client import db
 from utils.utils import extract_logo_id, download_file_stream
@@ -201,71 +201,52 @@ def upsert_contact_and_company(hubspot, form_contact, form_company):
 
     return get_contact_and_its_company(hubspot, form_contact["email"])
 
-def send_agent_email(mailer, sender, agent, contact, company, note, logo_streams=[]):
-    mailer.invia_email_singola(
-        destinatari=agent['email'],
-        oggetto=EMAIL_TEMPLATES["agent_ita"]["object"]
-            .format(info_cliente = f"({company.get('name') or ''} - {contact.get('lastname') or ''} {contact.get('firstname') or ''})"),
-        corpo=EMAIL_TEMPLATES["agent_ita"]["body"].format(
-            nome_agente=agent.get("firstname") or "",
+def send_agent_email(mailer: MailerPZ, sender, agent, contact, company, note, logo_streams=[]):
+    body = EMAIL_TEMPLATES["agent_ita"]["body"].format(
+        nome_agente=agent.get("firstname") or "",
 
-            nome_cliente=contact.get("firstname") or "",
-            cognome_cliente=contact.get("lastname") or "",
-            email_cliente=contact.get("email") or "",
-            telefono_cliente=contact.get("phone") or "",
+        nome_cliente=contact.get("firstname") or "",
+        cognome_cliente=contact.get("lastname") or "",
+        email_cliente=contact.get("email") or "",
+        telefono_cliente=contact.get("phone") or "",
 
-            nome_azienda=company.get("name") or "",
-            partita_iva=company.get("partita_iva") or "",
-            categoria=company.get("categoria_mexal") or "",
-            citta_azienda=company.get("city") or "",
-            provincia_azienda=company.get("provincia") or "",
-            prodotto_di_interesse_azienda=company.get("prodotto_di_interesse") or "",
-            fonte_contatto=contact.get("fonte") or "",
+        nome_azienda=company.get("name") or "",
+        partita_iva=company.get("partita_iva") or "",
+        categoria=company.get("categoria_mexal") or "",
+        citta_azienda=company.get("city") or "",
+        provincia_azienda=company.get("provincia") or "",
+        prodotto_di_interesse_azienda=company.get("prodotto_di_interesse") or "",
+        fonte_contatto=contact.get("fonte") or "",
 
-            note_interne=note or "",
+        note_interne=note or "",
 
-            informazioni_logo= "<br>" if not company.get("logo") else ("<br>Trovi allegato il logo aziendale fornito dal cliente con le seguenti informazioni:<br>" + (company.get("informazioni_logo", "") or "") + "<br><br>"),
+        informazioni_logo= "<br>" if not company.get("logo") else ("<br>Trovi allegato il logo aziendale fornito dal cliente con le seguenti informazioni:<br>" + (company.get("informazioni_logo", "") or "") + "<br><br>"),
 
-            mittente=sender
-        ),
-        hubspot_ccn=True,
-        allegati_stream=logo_streams
+        mittente=sender
     )
 
     mailer.invia_email_singola(
-        destinatari="info@personalzucchero.com",
-        oggetto=f">AC: {company.get('name') or ''} - {contact.get('lastname') or ''} {contact.get('firstname') or ''} -> {agent.get('lastname') or ''}",
-        corpo=EMAIL_TEMPLATES["agent_ita"]["body"].format(
-            nome_agente=agent.get("firstname") or "",
+        recipients=[agent['email']],
+        subject=EMAIL_TEMPLATES["agent_ita"]["object"]
+            .format(info_cliente = f"({company.get('name') or ''} - {contact.get('lastname') or ''} {contact.get('firstname') or ''})"),
+        body=body,
+        hubspot_ccn=True,
+        attachments_stream=logo_streams
+    )
 
-            nome_cliente=contact.get("firstname") or "",
-            cognome_cliente=contact.get("lastname") or "",
-            email_cliente=contact.get("email") or "",
-            telefono_cliente=contact.get("phone") or "",
-
-            nome_azienda=company.get("name") or "",
-            partita_iva=company.get("partita_iva") or "",
-            categoria=company.get("categoria_mexal") or "",
-            citta_azienda=company.get("city") or "",
-            provincia_azienda=company.get("provincia") or "",
-            prodotto_di_interesse_azienda=company.get("prodotto_di_interesse") or "",
-            fonte_contatto=contact.get("fonte") or "",
-
-            note_interne=note or "",
-
-            informazioni_logo= "<br>" if not company.get("logo") else ("<br>Trovi allegato il logo aziendale fornito dal cliente con le seguenti informazioni:<br>" + (company.get("informazioni_logo", "") or "") + "<br><br>"),
-
-            mittente=sender
-        ),
+    mailer.invia_email_singola(
+        recipients=["info@personalzucchero.com"],
+        subject=f">AC: {company.get('name') or ''} - {contact.get('lastname') or ''} {contact.get('firstname') or ''} -> {agent.get('lastname') or ''}",
+        body=body,
         hubspot_ccn=False,
-        allegati_stream=logo_streams
+        attachments_stream=logo_streams
     )
 
 def send_contact_email(mailer, sender, language, contact, agent):
     mailer.invia_email_singola(
-        destinatari=contact["email"],
-        oggetto=EMAIL_TEMPLATES["contact_" + language.lower()]["object"],
-        corpo=EMAIL_TEMPLATES["contact_" + language.lower()]["body"].format(
+        recipients=[contact["email"]],
+        subject=EMAIL_TEMPLATES["contact_" + language.lower()]["object"],
+        body=EMAIL_TEMPLATES["contact_" + language.lower()]["body"].format(
             nome_cliente=contact.get("firstname") or "",
             nome_agente=f"{agent.get('lastname') or ''} {agent.get('firstname') or ''}",
             email_agente=agent.get("email") or "",
