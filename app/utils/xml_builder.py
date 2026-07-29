@@ -158,12 +158,13 @@ def create_xml(nuova_spedizione):
             id=nuova_spedizione["forwarder"]["id"]
         )
 
+        cod_code = nuova_spedizione.get("cod_code")
         cod_amount = nuova_spedizione.get("cod_amount")
         cod = CodDetails(
-            code="01", 
+            code=cod_code,
             amount=cod_amount,
             currency=Currency.EUR
-        ) if cod_amount is not None else None
+        ) if cod_amount is not None and cod_code is not None else None
 
         shipment_lines = [
             ShipmentLine(
