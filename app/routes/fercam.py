@@ -330,8 +330,6 @@ def get_altre_note(mexal, cliente: dict) -> str:
     return altre_note.get("3") or ""
 
 def build_xml(fattura, ssccs):
-    doc_id = generate_doc_id(fattura["numero"], fattura["sigla"], int(fattura["data_documento"][:4]))
-
     # Note e servizi accessori
     notes = [
             f"{k.capitalize()}: {v}" 
@@ -348,28 +346,16 @@ def build_xml(fattura, ssccs):
     if fattura.get("note", {}).get("sbancalamento") == "S":
         notes.append("Servizio di Sbancalamento richiesto")
 
-    if "SOSTA TECNICA" in fattura.get("indirizzo_spedizione", {}).get("descrizione", "").upper():
-        name = fattura.get("note", {}).get("sosta_tecnica_ragione_sociale")
-        street = fattura.get("note", {}).get("sosta_tecnica_indirizzo")
-        city = fattura.get("note", {}).get("sosta_tecnica_localita")
-        postal_code = fattura.get("note", {}).get("sosta_tecnica_cap")
-        country_code = fattura.get("note", {}).get("sosta_tecnica_cod_paese")
-    else:
-        name = fattura.get("indirizzo_spedizione", {}).get("descrizione", "")
-        street = fattura["indirizzo_spedizione"]["indirizzo"]
-        city = fattura["indirizzo_spedizione"]["localita"]
-        postal_code = fattura["indirizzo_spedizione"]["cap"]
-        country_code = fattura["indirizzo_spedizione"]["cod_paese"]
-
+    doc_id = generate_doc_id(fattura["numero"], fattura["sigla"], int(fattura["data_documento"][:4]))
     spedizione = {
             "doc_id": doc_id,
             "reference": f"{fattura['sigla']} {fattura['serie']}/{fattura['numero']}",
             "consignee": {
-                "name": name[:90], #90 char is the limitation for PartnerName in Dachser's system, splitted in 3 lines of 30 char each, so we take the first 90 char to avoid errors
-                "street": street,
-                "city": city,
-                "postal_code": postal_code,
-                "country_code": CountryCode(country_code),
+                "name": fattura.get("indirizzo_spedizione", {}).get("descrizione", "")[:90], #90 char is the limitation for PartnerName in Dachser's system, splitted in 3 lines of 30 char each, so we take the first 90 char to avoid errors
+                "street": fattura["indirizzo_spedizione"]["indirizzo"],
+                "city": fattura["indirizzo_spedizione"]["localita"],
+                "postal_code": fattura["indirizzo_spedizione"]["cap"],
+                "country_code": CountryCode(fattura["indirizzo_spedizione"]["cod_paese"]),
                 "contact": {"email": fattura["cliente"].get("email"), "phone": fattura["cliente"].get("telefono")}, #1: note, 2: anagrafica spedizione o cliente
                 "type": "AT" if fattura.get("note", {}).get("preavviso") == "S" else None #Impostato AT perchè gli altri non ancora attivi (11/06/26)
             },
@@ -489,7 +475,14 @@ def process_fatture_group(mexal, sscc_generator, fatture_info):
     ssccs = sscc_generator.get_ssccs(merged["nr_colli_sped"][0][1])
     if not ssccs:
         raise RuntimeError("Errore nella generazione degli SSCC.")
-    
+
+    if "SOSTA TECNICA" in merged.get("indirizzo_spedizione", {}).get("descrizione", "").upper():
+        merged["indirizzo_spedizione"]["descrizione"] = merged.get("note", {}).get("sosta_tecnica_ragione_sociale")
+        merged["indirizzo_spedizione"]["indirizzo"] = merged.get("note", {}).get("sosta_tecnica_indirizzo")
+        merged["indirizzo_spedizione"]["localita"] = merged.get("note", {}).get("sosta_tecnica_localita")
+        merged["indirizzo_spedizione"]["cap"] = merged.get("note", {}).get("sosta_tecnica_cap")
+        merged["indirizzo_spedizione"]["cod_paese"] = merged.get("note", {}).get("sosta_tecnica_cod_paese")
+
     doc_id, xml = build_xml(merged, ssccs)
     print_label(ssccs, merged)
     
