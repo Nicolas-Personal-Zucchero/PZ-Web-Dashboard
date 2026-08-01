@@ -382,18 +382,15 @@
 
                 // Popola select origine con nomi dei paesi
                 const origineSelect = document.getElementById('origine');
-                fetch('https://restcountries.com/v3.1/all?fields=name,translations')
+                fetch("{{ url_for('static', filename='country.json') }}")
                     .then(response => response.json())
-                    .then(data => {
-                        data.sort((a, b) => {
-                            const nameA = a.translations?.ita?.common || a.name.common;
-                            const nameB = b.translations?.ita?.common || b.name.common;
-                            return nameA.localeCompare(nameB, 'it');
-                        });
-                        data.forEach(country => {
+                    .then(countries => {
+                        Object.values(countries)
+                            .sort((nameA, nameB) => nameA.localeCompare(nameB, 'it'))
+                            .forEach(countryName => {
                             const option = document.createElement('option');
-                            option.value = country.translations?.ita?.common || country.name.common;
-                            option.textContent = country.translations?.ita?.common || country.name.common;
+                            option.value = countryName;
+                            option.textContent = countryName;
                             origineSelect.appendChild(option);
                         });
                     })
