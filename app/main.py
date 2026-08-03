@@ -5,6 +5,7 @@ import sys
 from flask import Flask, session, request
 from extensions import db
 from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo
+from models.recensioni import Recensione, Dipendente
 
 from config.links import get_links
 

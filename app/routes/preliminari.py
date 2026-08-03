@@ -1,16 +1,11 @@
-import json
 import xmltodict
 from io import BytesIO
 from flask import Blueprint, redirect, render_template, flash, request, url_for, current_app, send_file
 
 from datetime import datetime
 from config.secrets_manager import secrets_manager
-from extensions import db
-from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo
 from config.constants import ITALY_TZ
-from utils.utils import convert_datetime_to_italy_tz
-from sqlalchemy import or_
-from sqlalchemy.orm import joinedload
+from services.spedizioni import SpedizionePreliminareRepository
 
 preliminari_bp = Blueprint("preliminari", __name__, url_prefix="/preliminari")
 
@@ -21,51 +16,14 @@ def preliminari():
     search_identificativo = request.args.get("sent_search_identificativo", "").strip()
     search_ragione_sociale = request.args.get("sent_search_ragione_sociale", "").strip()
 
-    preliminari_stmt = db.select(SpedizionePreliminare)\
-        .where(SpedizionePreliminare.sent.is_(False))\
-        .options(joinedload(SpedizionePreliminare.identificativi_rel))
-
-    preliminari = db.session.execute(preliminari_stmt).scalars().unique().all()
+    preliminari = SpedizionePreliminareRepository.get_pending()
     inviate = []
 
-    if search_data_invio or search_identificativo or search_ragione_sociale:
-        identificativo_expr = (
-            SpedizioneIdentificativo.sigla + " " +
-            SpedizioneIdentificativo.serie + "/" +
-            SpedizioneIdentificativo.numero
-        )
-
-        inviate_stmt = db.select(SpedizionePreliminare)\
-            .where(SpedizionePreliminare.sent.is_(True))\
-            .options(joinedload(SpedizionePreliminare.identificativi_rel))
-
-        if search_data_invio:
-            inviate_stmt = inviate_stmt.where(
-                db.func.date(SpedizionePreliminare.sent_at) == search_data_invio
-            )
-
-        if search_ragione_sociale:
-            ragione_sociale_pattern = f"%{search_ragione_sociale}%"
-            inviate_stmt = inviate_stmt.where(
-                SpedizionePreliminare.ragione_sociale_cliente.ilike(ragione_sociale_pattern)
-            )
-
-        if search_identificativo:
-            identificativo_pattern = f"%{search_identificativo}%"
-            inviate_stmt = inviate_stmt.where(
-                SpedizionePreliminare.identificativi_rel.any(
-                    or_(
-                        SpedizioneIdentificativo.sigla.ilike(identificativo_pattern),
-                        SpedizioneIdentificativo.serie.ilike(identificativo_pattern),
-                        SpedizioneIdentificativo.numero.ilike(identificativo_pattern),
-                        identificativo_expr.ilike(identificativo_pattern),
-                    )
-                )
-            )
-
-        inviate = db.session.execute(inviate_stmt).scalars().unique().all()
-        for spedizione in inviate:
-            spedizione.sent_at = convert_datetime_to_italy_tz(spedizione.sent_at)
+    inviate = SpedizionePreliminareRepository.get_sent_filtered(
+        data_invio=search_data_invio,
+        ragione_sociale=search_ragione_sociale,
+        identificativo=search_identificativo
+    )
 
     return render_template(
         "preliminari.html", 
@@ -80,20 +38,17 @@ def preliminari():
 @preliminari_bp.route("/elimina/<string:id>", methods=["POST"])
 def elimina(id):
     try:
-        spedizione = db.session.get(SpedizionePreliminare, id)
+        spedizione = SpedizionePreliminareRepository.get_by_id(id)
         
         if not spedizione:
             flash("Spedizione preliminare non trovata.", "warning")
             return redirect(url_for("preliminari.preliminari"))
 
-        db.session.delete(spedizione)
-        db.session.commit()
+        SpedizionePreliminareRepository.delete(spedizione)
         
-        current_app.logger.info(f"Spedizione preliminare {id} eliminata con successo.")
         flash("Spedizione preliminare eliminata correttamente.", "success")
         
     except Exception as e:
-        db.session.rollback()
         current_app.logger.error(f"Errore durante l'eliminazione della spedizione {id}: {e}")
         flash("Errore a database durante l'eliminazione della spedizione preliminare.", "danger")
 
@@ -101,7 +56,7 @@ def elimina(id):
 
 @preliminari_bp.route("/download-xml/<string:id>", methods=["GET"])
 def download_xml(id):
-    spedizione = db.session.get(SpedizionePreliminare, id)
+    spedizione = SpedizionePreliminareRepository.get_by_id(id)
 
     if not spedizione:
         flash("Spedizione preliminare non trovata.", "warning")
@@ -122,7 +77,7 @@ def download_xml(id):
 
 @preliminari_bp.route('/spedizione/<string:id>')
 def visualizza_spedizione(id):
-    spedizione = db.session.get(SpedizionePreliminare, id)
+    spedizione = SpedizionePreliminareRepository.get_by_id(id)
     if not spedizione:
         flash("Spedizione preliminare non trovata.", "warning")
         return redirect(url_for("preliminari.preliminari"))
@@ -174,14 +129,8 @@ def invia():
     if not spedizioni_ids:
         flash("Nessuna spedizione preliminare selezionata.", "warning")
         return redirect(url_for("preliminari.preliminari"))
-    
-    current_app.logger.info(f"Ricevute {len(spedizioni_ids)} spedizioni preliminari selezionate.")
 
-    spedizioni = SpedizionePreliminare.query.filter(
-            SpedizionePreliminare.id.in_(spedizioni_ids)
-        ).options(
-            joinedload(SpedizionePreliminare.identificativi_rel)
-        ).all()
+    spedizioni = SpedizionePreliminareRepository.get_by_ids(spedizioni_ids)
 
     if not spedizioni:
         flash("Spedizioni selezionate non trovate a database.", "danger")
@@ -203,9 +152,7 @@ def invia():
                 
                 try:
                     sftp.send_content(spedizione.xml, filename)
-                    spedizione.sent = True
-                    spedizione.sent_at = datetime.now(ITALY_TZ)
-                    db.session.commit()
+                    SpedizionePreliminareRepository.mark_as_sent(spedizione, datetime.now(ITALY_TZ))
                     inviati += 1
                     current_app.logger.info(f"Spedizione {spedizione.id} inviata a Fercam e aggiornata sul database.")
                 except Exception as e:
