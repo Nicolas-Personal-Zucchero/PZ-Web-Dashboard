@@ -9,6 +9,7 @@ services:
     environment:
       - LOG_LEVEL=INFO
       - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=?personalzucchero2026personalzucchero!
     depends_on:
       - redis
     restart: unless-stopped
@@ -40,6 +41,17 @@ services:
     restart: unless-stopped
     networks:
       - backend
+  
+  sqlite-web:
+    image: coleifer/sqlite-web
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/app/instance
+    command: sqlite_web -H 0.0.0.0 /app/app/instance/database.db
+    environment:
+      - SQLITE_WEB_PASSWORD=tactile
 
 networks:
   backend:

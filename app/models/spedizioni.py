@@ -1,7 +1,4 @@
-import os
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
+from extensions import db
 
 class SpedizionePreliminare(db.Model):
     __tablename__ = 'spedizioni_preliminari'
@@ -49,16 +46,3 @@ class SpedizioneIdentificativo(db.Model):
     serie = db.Column(db.String(10), nullable=False)
     numero = db.Column(db.String(20), nullable=False)
     cod_conto = db.Column(db.String(20), nullable=False)
-
-def init_database(flask_app):
-    db_dir = os.path.join(flask_app.instance_path)
-    if not os.path.exists(db_dir):
-        os.makedirs(db_dir)
-
-    flask_app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(db_dir, 'database.db')}"
-    flask_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    
-    db.init_app(flask_app)
-
-    with flask_app.app_context():
-        db.create_all()

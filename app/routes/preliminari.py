@@ -5,7 +5,8 @@ from flask import Blueprint, redirect, render_template, flash, request, url_for,
 
 from datetime import datetime
 from config.secrets_manager import secrets_manager
-from utils.database import db, SpedizionePreliminare, SpedizioneIdentificativo
+from extensions import db
+from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo
 from config.constants import ITALY_TZ
 from utils.utils import convert_datetime_to_italy_tz
 from sqlalchemy import or_
