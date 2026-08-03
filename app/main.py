@@ -3,7 +3,8 @@ import os
 import sys
 
 from flask import Flask, session, request
-from utils.database import init_database
+from extensions import db
+from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo
 
 from config.links import get_links
 
@@ -26,59 +27,6 @@ from routes.amministrazione.backups import backups_bp
 from routes.amministrazione.gestione_lotti import gestione_lotti_bp
 from routes.amministrazione.sigep_ticket_management import sigep_ticket_management_bp
 
-app = Flask(__name__)
-app.secret_key = "supersecretkey"  # Serve per flash()
-
-init_database(app)
-
-app.register_blueprint(wip_bp)
-
-app.register_blueprint(home_bp)
-app.register_blueprint(recensioni_bp)
-app.register_blueprint(assegna_agente_bp)
-app.register_blueprint(agents_map_bp)
-app.register_blueprint(sigep_ticket_bp)
-app.register_blueprint(trattative_agenti_bp)
-app.register_blueprint(etichette_spedizioni_bp)
-app.register_blueprint(fercam_bp)
-app.register_blueprint(preliminari_bp)
-
-amministrazione_bp.register_blueprint(gestione_lotti_bp)
-amministrazione_bp.register_blueprint(visualizza_impianti_bp)
-amministrazione_bp.register_blueprint(backups_bp)
-amministrazione_bp.register_blueprint(asset_bp)
-amministrazione_bp.register_blueprint(sigep_ticket_management_bp)
-app.register_blueprint(amministrazione_bp)
-
-@app.context_processor
-def inject_links():
-    path = request.path
-
-    # Mappatura path/section a tuple (args get_links..., home_link)
-    sections = {
-        'home': (['home'], '/'),
-        'admin': (['home', 'amministrazione'], '/amministrazione'),
-        'wip': (['wip'], '/wip'),
-    }
-
-    # Determina la sezione corrente
-    if path == "/":
-        section = 'home'
-    elif path.startswith("/amministrazione"):
-        section = 'admin'
-    elif path.startswith("/wip"):
-        section = 'wip'
-    else:
-        section = session.get('section', 'home')
-
-    session['section'] = section
-    args, home_link = sections.get(section, (['home'], '/'))
-
-    return {
-        'linkGroups': get_links(*args),
-        'home_link': home_link
-    }
-
 def setup_logging():
     # Rimuove eventuali handler predefiniti per evitare duplicati
     for handler in logging.root.handlers[:]:
@@ -95,10 +43,77 @@ def setup_logging():
         ]
     )
 
+def create_app():
+    app = Flask(__name__)
+    app.secret_key = os.environ.get('SECRET_KEY', 'dev-key-non-sicura')
+
+    # Inizializzazione database
+    db_dir = os.path.join(app.instance_path)
+    os.makedirs(db_dir, exist_ok=True)
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(db_dir, 'database.db')}"
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    db.init_app(app)
+
+    with app.app_context():
+        db.create_all()
+
+    # Registrazione dei blueprint
+    app.register_blueprint(wip_bp)
+
+    app.register_blueprint(home_bp)
+    app.register_blueprint(recensioni_bp)
+    app.register_blueprint(assegna_agente_bp)
+    app.register_blueprint(agents_map_bp)
+    app.register_blueprint(sigep_ticket_bp)
+    app.register_blueprint(trattative_agenti_bp)
+    app.register_blueprint(etichette_spedizioni_bp)
+    app.register_blueprint(fercam_bp)
+    app.register_blueprint(preliminari_bp)
+
+    amministrazione_bp.register_blueprint(gestione_lotti_bp)
+    amministrazione_bp.register_blueprint(visualizza_impianti_bp)
+    amministrazione_bp.register_blueprint(backups_bp)
+    amministrazione_bp.register_blueprint(asset_bp)
+    amministrazione_bp.register_blueprint(sigep_ticket_management_bp)
+    app.register_blueprint(amministrazione_bp)
+
+    @app.context_processor
+    def inject_links():
+        path = request.path
+
+        # Mappatura path/section a tuple (args get_links..., home_link)
+        sections = {
+            'home': (['home'], '/'),
+            'admin': (['home', 'amministrazione'], '/amministrazione'),
+            'wip': (['wip'], '/wip'),
+        }
+
+        # Determina la sezione corrente
+        if path == "/":
+            section = 'home'
+        elif path.startswith("/amministrazione"):
+            section = 'admin'
+        elif path.startswith("/wip"):
+            section = 'wip'
+        else:
+            section = session.get('section', 'home')
+
+        session['section'] = section
+        args, home_link = sections.get(section, (['home'], '/'))
+
+        return {
+            'linkGroups': get_links(*args),
+            'home_link': home_link
+        }
+
+    return app
+
 setup_logging()
 
-# Ignorato da gunicorn
 if __name__ == "__main__":
+    app = create_app()
     app.run(
         host="0.0.0.0",
         port=5000

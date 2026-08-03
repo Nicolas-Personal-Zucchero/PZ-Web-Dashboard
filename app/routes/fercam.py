@@ -11,7 +11,8 @@ from dachser_edi import CountryCode, Product, MeasurementName, UnitCode, Measure
 from utils.xml_builder import create_xml, generate_doc_id
 from utils.RedisMexalCache import RedisMexalCache
 from config.constants import PACKING_TYPE_MAP, PACKING_TYPE_ICONS, LABEL_TYPE_MAP, ID_PAGAMENTI_ALLA_CONSEGNA
-from utils.database import db, SpedizionePreliminare, SpedizioneIdentificativo
+from extensions import db
+from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo
 
 DAYS_TO_FETCH = 5
 mexal_cache = RedisMexalCache()
