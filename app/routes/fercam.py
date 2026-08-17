@@ -332,11 +332,22 @@ def get_altre_note(mexal, cliente: dict) -> str:
 
 def build_xml(fattura, ssccs):
     # Note e servizi accessori
-    notes = [
-            f"{k.capitalize()}: {v}" 
-            for k, v in fattura.get("note", {}).items() 
-            if v and v not in ["S", "N"] and "sosta_tecnica" not in k # Escludiamo le note boolean che indicherebbero la presenza di un servizio, che inserisco successivamente in modo più leggibile e evito di inserire le note relative alla sosta tecnica, che come indirizzo
-        ]
+    notes = []
+    for k, v in fattura.get("note", {}).items():
+        if not v:
+            continue
+
+        # Escludiamo le note boolean che indicherebbero la presenza di un servizio
+        if v in ["S", "N"]:
+            continue
+
+        # Evito di inserire le note relative alla sosta tecnica
+        if "sosta_tecnica" in k:
+            continue
+
+        # Denis mi ha richiesto di non scrivere aggiuntiva_1 o aggiuntiva_2
+        prefix = f"{k.capitalize()}: " if 'aggiuntiva' not in k.lower() else ""
+        notes.append(f"{prefix}{v}")
 
     if fattura.get("note", {}).get("facchinaggio") == "S":
         notes.append("Servizio di Facchinaggio richiesto")
