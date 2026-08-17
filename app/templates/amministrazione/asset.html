@@ -6,58 +6,75 @@
     <a href="{{ home_link }}" class="btn btn-light mb-3">
         <i class="bi bi-arrow-left"></i> Torna indietro
     </a>
-    <h1>Elenco Asset</h1>
 
-    <!-- Pulsante mostra/nascondi form -->
-    <button class="btn btn-info mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#formAsset"
-        aria-expanded="false" aria-controls="formAsset" id="btnToggle">
-        <i class="bi bi-plus-circle"></i> Aggiungi asset
-    </button>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h1 class="mb-0">Elenco Asset</h1>
 
-    <!-- Form per aggiunta asset -->
-    <div class="collapse mb-4" id="formAsset">
-        <form method="POST">
-            <div class="row mb-3">
-                <div class="col-md-3">
-                    <label for="nome" class="form-label">Nome</label>
-                    <input type="text" class="form-control" name="nome" id="nome" placeholder="Es: Macchina Zucchero 1"
-                        required>
+        <!-- Pulsante apertura modal -->
+        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#assetModal">
+            <i class="bi bi-plus-circle"></i> Aggiungi asset
+        </button>
+    </div>
+
+    <!-- Modal per aggiunta asset -->
+    <div class="modal fade" id="assetModal" tabindex="-1" aria-labelledby="assetModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="assetModalLabel">Aggiungi asset</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="col-md-3">
-                    <label for="modello" class="form-label">Modello</label>
-                    <input type="text" class="form-control" name="modello" id="modello" required>
-                </div>
-                <div class="col-md-2">
-                    <label for="selectTipologia" class="form-label">Tipologia</label>
-                    <select class="form-select" name="tipologia" id="selectTipologia" required>
-                        <option value="" disabled selected></option>
-                        <option>Macchina</option>
-                        <option>Veicolo</option>
-                        <option>Oggetto</option>
-                        <option>Carrello Elettrico</option>
-                        <option>Impianto</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label for="posizione" class="form-label">Posizione</label>
-                    <input type="text" class="form-control" name="posizione" id="posizione"
-                        placeholder="Es: Reparto produzione" required>
+                <div class="modal-body">
+                    <form method="POST">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="nome" class="form-label">Nome</label>
+                                <input type="text" class="form-control" name="nome" id="nome"
+                                    placeholder="Es: Macchina Zucchero 1" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modello" class="form-label">Modello</label>
+                                <input type="text" class="form-control" name="modello" id="modello" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="selectTipologia" class="form-label">Tipologia</label>
+                                <select class="form-select" name="tipologia" id="selectTipologia" required>
+                                    <option value="" disabled selected></option>
+                                    <option>Macchina</option>
+                                    <option>Veicolo</option>
+                                    <option>Oggetto</option>
+                                    <option>Carrello Elettrico</option>
+                                    <option>Impianto</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="posizione" class="form-label">Posizione</label>
+                                <input type="text" class="form-control" name="posizione" id="posizione"
+                                    placeholder="Es: Reparto produzione" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="intervallo_manutenzione" class="form-label">Intervallo Manutenzione (giorni)</label>
+                                <input type="number" class="form-control" name="intervallo_manutenzione"
+                                    id="intervallo_manutenzione" placeholder="Es: 365" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="intervallo_pulizia" class="form-label">Intervallo Pulizia (giorni)</label>
+                                <input type="number" class="form-control" name="intervallo_pulizia" id="intervallo_pulizia"
+                                    placeholder="Es: 30" min="0" required>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                            <button type="submit" class="btn btn-primary">Registra asset</button>
+                        </div>
+                    </form>
                 </div>
             </div>
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label for="intervallo_manutenzione" class="form-label">Intervallo Manutenzione (giorni)</label>
-                    <input type="number" class="form-control" name="intervallo_manutenzione"
-                        id="intervallo_manutenzione" placeholder="Es: 365" required>
-                </div>
-                <div class="col-md-4">
-                    <label for="intervallo_pulizia" class="form-label">Intervallo Pulizia (giorni)</label>
-                    <input type="number" class="form-control" name="intervallo_pulizia" id="intervallo_pulizia"
-                        placeholder="Es: 30" min="0" required>
-                </div>
-            </div>
-            <button type="submit" class="btn btn-primary">Registra asset</button>
-        </form>
+        </div>
     </div>
 
     <!-- Flash messages -->
@@ -94,7 +111,7 @@
         </div>
     </div>
 
-    <div style="max-height: 500px; overflow-y: auto;">
+    <div style="max-height: 625px; overflow-y: auto;">
         <ul class="list-group styled-table" id="assetList">
             <!-- Header -->
             <li class="list-group-item static-header">
@@ -103,10 +120,9 @@
                     <div class="col-md-2">Modello</div>
                     <div class="col-md-2">Tipologia</div>
                     <div class="col-md-2">Posizione</div>
-                    <div class="col-md-1">Int. Manutenzione</div>
+                    <div class="col-md-1">Int. Manuten.</div>
                     <div class="col-md-1">Int. Pulizia</div>
-                    <div class="col-md-1 text-end">Apri</div>
-                    <div class="col-md-1 text-end">Elimina</div>
+                    <div class="col-md-2 text-end">Azioni</div>
                 </div>
             </li>
 
@@ -120,15 +136,10 @@
                     <div class="col-md-2">{{ e.posizione }}</div>
                     <div class="col-md-1">{{ e.intervallo_manutenzione }}</div>
                     <div class="col-md-1">{{ e.intervallo_pulizia }}</div>
-                    <div class="col-md-1 text-end">
-                        <a href="/amministrazione/asset/{{ e.id }}" class="btn btn-primary btn-sm">Apri</a>
-                    </div>
-                    <div class="col-md-1 text-end">
-                        <form method="POST" action="/amministrazione/asset/elimina"
-                            onsubmit="return confirm('Sei sicuro di voler eliminare questo asset?');">
-                            <input type="hidden" name="asset_id" value="{{ e.id }}">
-                            <button type="submit" class="btn btn-danger btn-sm">Elimina</button>
-                        </form>
+                    <div class="col-md-2 text-end">
+                        <a href="/amministrazione/asset/{{ e.id }}" class="btn btn-outline-primary btn-sm" title="Apri dettaglio asset">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
                     </div>
                 </div>
             </li>
@@ -174,18 +185,6 @@
         if (tipologiaFilter) tipologiaFilter.addEventListener('change', filterAssets);
         if (posizioneFilter) posizioneFilter.addEventListener('change', filterAssets);
 
-        const toggleBtn = document.getElementById('btnToggle');
-        const formCollapse = document.getElementById('formAsset');
-
-        if (toggleBtn && formCollapse) {
-            formCollapse.addEventListener('show.bs.collapse', () => {
-                toggleBtn.innerHTML = '<i class="bi bi-x-circle"></i> Annulla';
-            });
-
-            formCollapse.addEventListener('hide.bs.collapse', () => {
-                toggleBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Aggiungi Lotto';
-            });
-        }
     });
 </script>
 {% endblock %}

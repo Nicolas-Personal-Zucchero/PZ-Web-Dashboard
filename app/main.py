@@ -9,8 +9,6 @@ from models.recensioni import Review, Employee
 
 from config.links import get_links
 
-from routes.wip import wip_bp
-
 from routes import home_bp
 from routes.recensioni import recensioni_bp
 from routes.assegna_agente import assegna_agente_bp
@@ -22,6 +20,7 @@ from routes.fercam import fercam_bp
 from routes.preliminari import preliminari_bp
 
 from routes.amministrazione.asset import asset_bp
+from routes.amministrazione.asset_dettaglio import asset_dettaglio_bp
 from routes.amministrazione.visualizza_impianti import visualizza_impianti_bp
 from routes.amministrazione import amministrazione_bp
 from routes.amministrazione.backups import backups_bp
@@ -46,12 +45,14 @@ def setup_logging():
 
 def create_app():
     app = Flask(__name__)
-    app.secret_key = os.environ.get('SECRET_KEY', 'dev-key-non-sicura')
+    app.secret_key = os.environ.get('SECRET_KEY') or os.urandom(24)
+    
+    # Limite massimo per il caricamento dei file (16MB)
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
-    # Inizializzazione database
+    # Database
     db_dir = os.path.join(app.instance_path)
     os.makedirs(db_dir, exist_ok=True)
-
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(db_dir, 'database.db')}"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -61,8 +62,6 @@ def create_app():
         db.create_all()
 
     # Registrazione dei blueprint
-    app.register_blueprint(wip_bp)
-
     app.register_blueprint(home_bp)
     app.register_blueprint(recensioni_bp)
     app.register_blueprint(assegna_agente_bp)
@@ -77,6 +76,7 @@ def create_app():
     amministrazione_bp.register_blueprint(visualizza_impianti_bp)
     amministrazione_bp.register_blueprint(backups_bp)
     amministrazione_bp.register_blueprint(asset_bp)
+    amministrazione_bp.register_blueprint(asset_dettaglio_bp)
     amministrazione_bp.register_blueprint(sigep_ticket_management_bp)
     app.register_blueprint(amministrazione_bp)
 
@@ -88,7 +88,6 @@ def create_app():
         sections = {
             'home': (['home'], '/'),
             'admin': (['home', 'amministrazione'], '/amministrazione'),
-            'wip': (['wip'], '/wip'),
         }
 
         # Determina la sezione corrente
@@ -96,8 +95,6 @@ def create_app():
             section = 'home'
         elif path.startswith("/amministrazione"):
             section = 'admin'
-        elif path.startswith("/wip"):
-            section = 'wip'
         else:
             section = session.get('section', 'home')
 
