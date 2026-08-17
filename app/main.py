@@ -46,12 +46,11 @@ def setup_logging():
 
 def create_app():
     app = Flask(__name__)
-    app.secret_key = os.environ.get('SECRET_KEY', 'dev-key-non-sicura')
+    app.secret_key = os.environ.get('SECRET_KEY') or os.urandom(24)
 
-    # Inizializzazione database
+    # Database
     db_dir = os.path.join(app.instance_path)
     os.makedirs(db_dir, exist_ok=True)
-
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(db_dir, 'database.db')}"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
