@@ -6,10 +6,12 @@ services:
       - ~/.secrets:/secrets
       - ~/agents_map:/app/app/static/agents_map
       - ./data:/app/app/instance
+      - ~/attachments/assets:/app/attachments/assets
     environment:
       - LOG_LEVEL=INFO
       - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=?personalzucchero2026personalzucchero!
+      - ASSET_ATTACHMENTS_DIR=/app/attachments/assets
     depends_on:
       - redis
     restart: unless-stopped

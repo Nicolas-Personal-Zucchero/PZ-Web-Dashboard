@@ -20,6 +20,7 @@ from routes.fercam import fercam_bp
 from routes.preliminari import preliminari_bp
 
 from routes.amministrazione.asset import asset_bp
+from routes.amministrazione.asset_dettaglio import asset_dettaglio_bp
 from routes.amministrazione.visualizza_impianti import visualizza_impianti_bp
 from routes.amministrazione import amministrazione_bp
 from routes.amministrazione.backups import backups_bp
@@ -45,6 +46,9 @@ def setup_logging():
 def create_app():
     app = Flask(__name__)
     app.secret_key = os.environ.get('SECRET_KEY') or os.urandom(24)
+    
+    # Limite massimo per il caricamento dei file (16MB)
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
     # Database
     db_dir = os.path.join(app.instance_path)
@@ -72,6 +76,7 @@ def create_app():
     amministrazione_bp.register_blueprint(visualizza_impianti_bp)
     amministrazione_bp.register_blueprint(backups_bp)
     amministrazione_bp.register_blueprint(asset_bp)
+    amministrazione_bp.register_blueprint(asset_dettaglio_bp)
     amministrazione_bp.register_blueprint(sigep_ticket_management_bp)
     app.register_blueprint(amministrazione_bp)
 

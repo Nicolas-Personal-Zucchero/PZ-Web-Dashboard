@@ -20,6 +20,14 @@
         </div>
     </div>
 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <h5 class="card-title mb-3">Informazioni generali</h5>
@@ -78,76 +86,68 @@
     </div>
 
     <div class="row g-4">
-        <div class="col-lg-6">
-            <h4 class="mb-3">Manutenzioni</h4>
-            {% if manutenzioni %}
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">Interventi</h4>
+                <div class="w-25">
+                    <select class="form-select" id="filtroTipoIntervento" onchange="filtraInterventi()">
+                        <option value="tutti">Tutti i tipi</option>
+                        <option value="manutenzione">Manutenzione</option>
+                        <option value="pulizia">Pulizia</option>
+                        <option value="analisi">Analisi</option>
+                    </select>
+                </div>
+            </div>
+
+            {% if interventi %}
             <div style="max-height: 500px; overflow-y: auto;" class="border rounded">
-                <ul class="list-group list-group-flush styled-table" id="listaLotti">
+                <ul class="list-group list-group-flush styled-table" id="listaInterventi">
                     <li class="list-group-item static-header sticky-top bg-light">
                         <div class="row fw-bold">
-                            <div class="col-md-2">Data</div>
+                            <div class="col-md-1">Data</div>
+                            <div class="col-md-2">Tipo</div>
                             <div class="col-md-2">Operatore</div>
-                            <div class="col-md-6">Note</div>
+                            <div class="col-md-5">Note</div>
                             <div class="col-md-2">Allegato</div>
                         </div>
                     </li>
 
-                    {% for m in manutenzioni %}
-                    <li class="list-group-item">
-                        <div class="row">
-                            <div class="col-md-2">{{ m.data }}</div>
-                            <div class="col-md-2">{{ m.operatore }}</div>
-                            <div class="col-md-6">{{ m.note }}</div>
-                            <div class="col-md-2"></div>
+                    {% for i in interventi %}
+                    <li class="list-group-item intervento-item" data-tipo="{{ i.tipo }}">
+                        <div class="row align-items-center">
+                            <div class="col-md-1">{{ i.data }}</div>
+                            <div class="col-md-2 text-capitalize">
+                                {{ i.tipo }}
+                            </div>
+                            <div class="col-md-2">{{ i.operatore }}</div>
+                            <div class="col-md-5">{{ i.note }}</div>
+                            <div class="col-md-2">
+                                {% if i.allegato_path and i.id %}
+                                <a href="/amministrazione/asset/{{ asset.id }}/intervento/{{ i.id }}/allegato"
+                                    class="btn btn-outline-primary btn-sm d-inline-block text-truncate w-100 text-start" 
+                                    title="{{ i.allegato_original_filename | default('Scarica allegato') }}">
+                                    <i class="bi bi-download me-1"></i>
+                                    {{ i.allegato_original_filename | default('Allegato') }}
+                                </a>
+                                {% endif %}
+                            </div>
                         </div>
                     </li>
                     {% endfor %}
                 </ul>
             </div>
             {% else %}
-            <p class="text-muted">Nessuna manutenzione registrata.</p>
-            {% endif %}
-        </div>
-
-        <div class="col-lg-6">
-            <h4 class="mb-3">Pulizie</h4>
-            {% if pulizie %}
-            <div style="max-height: 500px; overflow-y: auto;" class="border rounded">
-                <ul class="list-group list-group-flush styled-table">
-                    <li class="list-group-item static-header sticky-top bg-light">
-                        <div class="row fw-bold">
-                            <div class="col-md-2">Data</div>
-                            <div class="col-md-2">Operatore</div>
-                            <div class="col-md-6">Note</div>
-                            <div class="col-md-2">Allegato</div>
-                        </div>
-                    </li>
-                    {% for p in pulizie %}
-                    <li class="list-group-item">
-                        <div class="row">
-                            <div class="col-md-2">{{ p.data }}</div>
-                            <div class="col-md-2">{{ p.operatore }}</div>
-                            <div class="col-md-6">{{ p.note }}</div>
-                            <div class="col-md-2"></div>
-                        </div>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% else %}
-            <p class="text-muted">Nessuna pulizia registrata</p>
+            <p class="text-muted">Nessun intervento registrato.</p>
             {% endif %}
         </div>
     </div>
-
-
 </div>
 
 <!-- Modal Intervento -->
 <div class="modal fade" id="modalIntervento" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="/amministrazione/asset/{{ asset.id }}/add_intervento">
+            <form method="POST" action="/amministrazione/asset/{{ asset.id }}/add_intervento" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title">Registra Intervento</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -180,6 +180,11 @@
                         <textarea class="form-control" name="note"></textarea>
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label">Allegato</label>
+                        <input type="file" class="form-control" name="allegato">
+                    </div>
+
                 </div>
 
                 <div class="modal-footer">
@@ -190,5 +195,20 @@
         </div>
     </div>
 </div>
+
+<script>
+function filtraInterventi() {
+    const filter = document.getElementById('filtroTipoIntervento').value;
+    const items = document.querySelectorAll('.intervento-item');
+    
+    items.forEach(item => {
+        if (filter === 'tutti' || item.dataset.tipo === filter) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+</script>
 
 {% endblock %}
