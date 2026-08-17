@@ -9,7 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from extensions import db
 from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo
 
-class SpedizionePreliminareRepository:
+class SpedizioniPreliminariService:
     @staticmethod
     def get_pending() -> List[SpedizionePreliminare]:
         stmt = select(SpedizionePreliminare)\
