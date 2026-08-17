@@ -9,8 +9,6 @@ from models.recensioni import Review, Employee
 
 from config.links import get_links
 
-from routes.wip import wip_bp
-
 from routes import home_bp
 from routes.recensioni import recensioni_bp
 from routes.assegna_agente import assegna_agente_bp
@@ -60,8 +58,6 @@ def create_app():
         db.create_all()
 
     # Registrazione dei blueprint
-    app.register_blueprint(wip_bp)
-
     app.register_blueprint(home_bp)
     app.register_blueprint(recensioni_bp)
     app.register_blueprint(assegna_agente_bp)
@@ -87,7 +83,6 @@ def create_app():
         sections = {
             'home': (['home'], '/'),
             'admin': (['home', 'amministrazione'], '/amministrazione'),
-            'wip': (['wip'], '/wip'),
         }
 
         # Determina la sezione corrente
@@ -95,8 +90,6 @@ def create_app():
             section = 'home'
         elif path.startswith("/amministrazione"):
             section = 'admin'
-        elif path.startswith("/wip"):
-            section = 'wip'
         else:
             section = session.get('section', 'home')
 
