@@ -5,7 +5,7 @@ from flask import Blueprint, redirect, render_template, flash, request, url_for,
 from datetime import datetime
 from config.secrets_manager import secrets_manager
 from config.constants import ITALY_TZ
-from services.spedizioni import SpedizionePreliminareRepository
+from services.spedizioni import SpedizioniPreliminariService
 
 preliminari_bp = Blueprint("preliminari", __name__, url_prefix="/preliminari")
 
@@ -16,10 +16,10 @@ def preliminari():
     search_identificativo = request.args.get("sent_search_identificativo", "").strip()
     search_ragione_sociale = request.args.get("sent_search_ragione_sociale", "").strip()
 
-    preliminari = SpedizionePreliminareRepository.get_pending()
+    preliminari = SpedizioniPreliminariService.get_pending()
     inviate = []
 
-    inviate = SpedizionePreliminareRepository.get_sent_filtered(
+    inviate = SpedizioniPreliminariService.get_sent_filtered(
         data_invio=search_data_invio,
         ragione_sociale=search_ragione_sociale,
         identificativo=search_identificativo
@@ -38,13 +38,13 @@ def preliminari():
 @preliminari_bp.route("/elimina/<string:id>", methods=["POST"])
 def elimina(id):
     try:
-        spedizione = SpedizionePreliminareRepository.get_by_id(id)
+        spedizione = SpedizioniPreliminariService.get_by_id(id)
         
         if not spedizione:
             flash("Spedizione preliminare non trovata.", "warning")
             return redirect(url_for("preliminari.preliminari"))
 
-        SpedizionePreliminareRepository.delete(spedizione)
+        SpedizioniPreliminariService.delete(spedizione)
         
         flash("Spedizione preliminare eliminata correttamente.", "success")
         
@@ -56,7 +56,7 @@ def elimina(id):
 
 @preliminari_bp.route("/download-xml/<string:id>", methods=["GET"])
 def download_xml(id):
-    spedizione = SpedizionePreliminareRepository.get_by_id(id)
+    spedizione = SpedizioniPreliminariService.get_by_id(id)
 
     if not spedizione:
         flash("Spedizione preliminare non trovata.", "warning")
@@ -77,7 +77,7 @@ def download_xml(id):
 
 @preliminari_bp.route('/spedizione/<string:id>')
 def visualizza_spedizione(id):
-    spedizione = SpedizionePreliminareRepository.get_by_id(id)
+    spedizione = SpedizioniPreliminariService.get_by_id(id)
     if not spedizione:
         flash("Spedizione preliminare non trovata.", "warning")
         return redirect(url_for("preliminari.preliminari"))
@@ -130,7 +130,7 @@ def invia():
         flash("Nessuna spedizione preliminare selezionata.", "warning")
         return redirect(url_for("preliminari.preliminari"))
 
-    spedizioni = SpedizionePreliminareRepository.get_by_ids(spedizioni_ids)
+    spedizioni = SpedizioniPreliminariService.get_by_ids(spedizioni_ids)
 
     if not spedizioni:
         flash("Spedizioni selezionate non trovate a database.", "danger")
@@ -152,7 +152,7 @@ def invia():
                 
                 try:
                     sftp.send_content(spedizione.xml, filename)
-                    SpedizionePreliminareRepository.mark_as_sent(spedizione, datetime.now(ITALY_TZ))
+                    SpedizioniPreliminariService.mark_as_sent(spedizione, datetime.now(ITALY_TZ))
                     inviati += 1
                     current_app.logger.info(f"Spedizione {spedizione.id} inviata a Fercam e aggiornata sul database.")
                 except Exception as e:

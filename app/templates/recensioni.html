@@ -29,24 +29,12 @@
             </div>
         </div>
         <div class="mb-3">
-            <label for="nome_mittente" class="form-label">Mittente</label>
-            <select class="form-select" id="nome_mittente" name="nome_mittente" required>
+            <label for="sender" class="form-label">Mittente</label>
+            <select class="form-select" id="sender" name="sender" required>
                 <option value="" disabled selected></option>
-                <option>Arianna Bazzocchi - Ufficio Grafico</option>
-                <option>Arianna Riceputi - Ufficio Commerciale</option>
-                <option>Barbara Cinarelli - Ufficio Amministrativo</option>
-                <option>Denis Severini - Direzione</option>
-                <option>Elena Sama - Ufficio Commerciale</option>
-                <option>Elisa Cappa - Ufficio Amministrativo</option>
-                <option>Erika Lionetti - Ufficio Ordini</option>
-                <option>Marco Paolini - Ufficio Grafico</option>
-                <option>Marilena Barile - Ufficio Ordini</option>
-                <option>Mauro Amadori - Direzione</option>
-                <option>Nazzareno Balducci - Ufficio Amministrativo</option>
-                <option>Nicolas Amadori</option>
-                <option>Sabrina Cappa - Ufficio Ordini</option>
-                <option>Silvia Cinarelli - Ufficio Commerciale</option>
-                <option>Staff Personal Zucchero</option>
+                {% for employee in employees %}
+                    <option value="{{ employee.id }}">{{ employee.name }} - {{ employee.department }}</option>
+                {% endfor %}
             </select>
         </div>
         <button type="submit" class="btn btn-primary">Richiedi recensione</button>
@@ -91,19 +79,19 @@
             <li class="list-group-item">
                 <div class="row">
                     <div class="col-md-2">
-                        <strong>{{ r.customer }}</strong>
+                        <strong>{{ r.customer_name }}</strong>
                     </div>
                     <div class="col-md-4">
-                        {{ r.email }}
+                        {{ r.customer_email }}
                     </div>
                     <div class="col-md-2 js-mittente">
-                        {{ r.sender }}
+                        {{ r.sender.name }}
                     </div>
                     <div class="col-md-1">
                         {{ r.language }}
                     </div>
                     <div class="col-md-2">
-                        {{ r.formatted_time }}
+                        {{ r.local_creation_date.strftime('%d/%m/%Y %H:%M') if r.local_creation_date else 'N/A' }}
                     </div>
                     <div class="col-md-1 text-end">
                         <form method="POST" action="/recensioni/elimina"
@@ -123,8 +111,8 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         // === Gestione LocalStorage Mittente ===
-        const selectMittente = document.getElementById("nome_mittente");
-        const savedMittente = localStorage.getItem("mittente");
+        const selectMittente = document.getElementById("sender");
+        const savedMittente = localStorage.getItem("sender_id");
 
         if (savedMittente && selectMittente) {
             selectMittente.value = savedMittente;
@@ -132,7 +120,7 @@
 
         if (selectMittente) {
             selectMittente.addEventListener("change", function () {
-                localStorage.setItem("mittente", selectMittente.value);
+                localStorage.setItem("sender_id", selectMittente.value);
             });
         }
 

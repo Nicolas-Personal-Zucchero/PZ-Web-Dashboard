@@ -1,53 +1,51 @@
+from zoneinfo import ZoneInfo
+from datetime import datetime
+
 from extensions import db
 
-class Dipendente(db.Model):
-    __tablename__ = 'dipendenti'
+class Employee(db.Model):
+    __tablename__ = 'employees'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    nome = db.Column(db.String(255), nullable=False)
-    reparto = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    department = db.Column(db.String(255), nullable=False)
 
-    # Relazione 1:N
-    recensioni_rel = db.relationship(
-        'Recensione',
-        backref='mittente',
+    # Definizione esplicita e moderna
+    reviews = db.relationship(
+        'Review',
+        back_populates='sender',
         lazy=True
     )
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "nome": self.nome,
-            "reparto": self.reparto
-        }
-
-class Recensione(db.Model):
-    __tablename__ = 'recensioni'
+class Review(db.Model):
+    __tablename__ = 'reviews'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    nome_cliente = db.Column(db.String(255), nullable=False)
-    email_cliente = db.Column(db.String(255), nullable=False)
+    customer_name = db.Column(db.String(255), nullable=False)
+    customer_email = db.Column(db.String(255), nullable=False)
+    creation_date = db.Column(db.DateTime, server_default=db.func.now(), nullable=False)
+    hidden = db.Column(db.Boolean, default=False, nullable=False)
+    language = db.Column(db.String(3), nullable=False)
     
-    # Utilizzo server_default per demandare il default al database (coerente con DBML default: `now()`)
-    data_creazione = db.Column(db.DateTime, server_default=db.func.now(), nullable=False)
-    nascosta = db.Column(db.Boolean, default=False, nullable=False)
-    
-    lingua = db.Column(db.String(3), nullable=False)
-    
-    mittente_id = db.Column(
+    sender_id = db.Column(
         db.Integer, 
-        db.ForeignKey('dipendenti.id'), 
+        db.ForeignKey('employees.id'), 
         nullable=False
     )
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "nome_cliente": self.nome_cliente,
-            "email_cliente": self.email_cliente,
-            "data_creazione": self.data_creazione.isoformat() if self.data_creazione else None,
-            "nascosta": self.nascosta,
-            "lingua": self.lingua,
-            "mittente_id": self.mittente_id,
-            "mittente_nome": self.mittente.nome if self.mittente else None 
-        }
+    sender = db.relationship(
+        'Employee',
+        back_populates='reviews'
+    )
+
+    @property
+    def local_creation_date(self) -> datetime:
+        utc_tz = ZoneInfo("UTC")
+        rome_tz = ZoneInfo("Europe/Rome")
+        
+        if self.creation_date.tzinfo is None:
+            utc_aware = self.creation_date.replace(tzinfo=utc_tz)
+        else:
+            utc_aware = self.creation_date
+            
+        return utc_aware.astimezone(rome_tz)
