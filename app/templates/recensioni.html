@@ -56,8 +56,8 @@
         <div class="col-md-4">
             <select class="form-select" id="mittenteFilter">
                 <option value="">Tutti i mittenti</option>
-                {% for r in reviews|map(attribute='sender')|unique %}
-                <option value="{{ r }}">{{ r }}</option>
+                {% for s in reviews|map(attribute='sender')|unique %}
+                <option value="{{ s.name }}">{{ s.name }}</option>
                 {% endfor %}
             </select>
         </div>
