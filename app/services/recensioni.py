@@ -11,6 +11,10 @@ class ReviewService:
         return db.session.query(Employee).all()
 
     @staticmethod
+    def get_employee(employee_id: int) -> Employee | None:
+        return db.session.get(Employee, employee_id)
+
+    @staticmethod
     def does_review_exist(email: str) -> bool:
         return db.session.query(Review).filter_by(customer_email=email, hidden=False).first() is not None
 
