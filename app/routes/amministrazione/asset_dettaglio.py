@@ -1,11 +1,13 @@
 import os
 from pathlib import Path
-from flask import Blueprint, render_template, request, redirect, flash, send_from_directory, abort
+from flask import Blueprint, render_template, request, redirect, flash, send_from_directory, abort, make_response
 from datetime import datetime
 from config.constants import ITALY_TZ
 from utils.firebase_client import db
 from firebase_admin import firestore
 import ulid
+import io
+from weasyprint import HTML
 
 asset_dettaglio_bp = Blueprint("asset_dettaglio", __name__, url_prefix="/asset")
 
@@ -131,3 +133,42 @@ def download_intervento_allegato(asset_id, intervento_id):
         as_attachment=True,
         download_name=download_name,
     )
+
+@asset_dettaglio_bp.route("/<asset_id>/pdf")
+def genera_pdf_riepilogo(asset_id):
+    doc = asset_collection.document(asset_id).get()
+    
+    if not doc.exists:
+        abort(404, description="Asset non trovato")
+
+    asset = doc.to_dict()
+    asset["id"] = doc.id
+    interventi = asset.get("interventi", [])
+
+    # Ordinamento decrescente per avere gli interventi più recenti in cima
+    interventi.sort(key=lambda x: x.get("data", ""), reverse=True)
+
+    for i in interventi:
+        if hasattr(i["data"], "astimezone"):
+            i["data"] = i["data"].astimezone(ITALY_TZ).strftime("%d/%m/%Y")
+
+    data_odierna = datetime.now(ITALY_TZ).strftime("%d/%m/%Y")
+
+    # Render HTML
+    rendered_html = render_template(
+        "amministrazione/asset_riepilogo_pdf.html",
+        asset=asset,
+        interventi=interventi,
+        data_odierna=data_odierna
+    )
+
+    # Generazione PDF in-memory
+    pdf_io = io.BytesIO()
+    HTML(string=rendered_html).write_pdf(pdf_io)
+    pdf_io.seek(0)
+
+    response = make_response(pdf_io.read())
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'inline; filename=riepilogo_asset_{asset_id}.pdf'
+    
+    return response
