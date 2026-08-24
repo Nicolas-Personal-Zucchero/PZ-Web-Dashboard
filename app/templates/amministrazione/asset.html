@@ -38,7 +38,7 @@
                             </div>
                         </div>
                         <div class="row mb-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="selectTipologia" class="form-label">Tipologia</label>
                                 <select class="form-select" name="tipologia" id="selectTipologia" required>
                                     <option value="" disabled selected></option>
@@ -49,7 +49,16 @@
                                     <option>Impianto</option>
                                 </select>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-3">
+                                <label for="selectSede" class="form-label">Sede</label>
+                                <select class="form-select" name="sede" id="selectSede" required>
+                                    <option value="" disabled selected></option>
+                                    <option>1 - Allende</option>
+                                    <option>2 - King</option>
+                                    <option>3 - Neruda</option>
+                                </select>
+                            </div>
+                            <div class="col-md-5">
                                 <label for="posizione" class="form-label">Posizione</label>
                                 <input type="text" class="form-control" name="posizione" id="posizione"
                                     placeholder="Es: Reparto produzione" required>
@@ -87,24 +96,31 @@
 
     <!-- Filtro ricerca e tipologia -->
     {% if entries %}
-    <!-- <h3>Asset presenti nel gestionale:</h3> -->
 
     <div class="mb-3 row g-2">
         <div class="col-md-6">
             <input type="text" class="form-control" id="searchInput" placeholder="Cerca asset">
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <select class="form-select" id="tipologiaFilter">
                 <option value="">Tutte le tipologie</option>
-                {% for t in entries|map(attribute='tipologia')|unique %}
+                {% for t in entries|map(attribute='tipologia')|unique|sort if t and t|trim %}
                 <option value="{{ t }}">{{ t }}</option>
                 {% endfor %}
             </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
+            <select class="form-select" id="sedeFilter">
+                <option value="">Tutte le sedi</option>
+                {% for t in entries|map(attribute='sede')|unique|sort if t and t|trim %}
+                <option value="{{ t }}">{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
             <select class="form-select" id="posizioneFilter">
                 <option value="">Tutte le posizioni</option>
-                {% for t in entries|map(attribute='posizione')|unique %}
+                {% for t in entries|map(attribute='posizione')|unique|sort if t and t|trim %}
                 <option value="{{ t }}">{{ t }}</option>
                 {% endfor %}
             </select>
@@ -115,28 +131,35 @@
         <ul class="list-group styled-table" id="assetList">
             <!-- Header -->
             <li class="list-group-item static-header">
-                <div class="row">
-                    <div class="col-md-2">Nome</div>
-                    <div class="col-md-2">Modello</div>
-                    <div class="col-md-2">Tipologia</div>
-                    <div class="col-md-2">Posizione</div>
-                    <div class="col-md-1">Int. Manuten.</div>
-                    <div class="col-md-1">Int. Pulizia</div>
-                    <div class="col-md-2 text-end">Azioni</div>
+                <div class="asset-custom-grid">
+                    <div>Nome</div>
+                    <div>Modello</div>
+                    <div>Tipologia</div>
+                    <div>Sede</div>
+                    <div>Posizione</div>
+                    <div>Int. Manuten.</div>
+                    <div>Int. Pulizia</div>
+                    <div class="text-end">Azioni</div>
                 </div>
             </li>
 
             <!-- Asset entries -->
             {% for e in entries %}
-            <li class="list-group-item">
-                <div class="row">
-                    <div class="col-md-2"><strong>{{ e.nome }}</strong></div>
-                    <div class="col-md-2">{{ e.modello }}</div>
-                    <div class="col-md-2">{{ e.tipologia }}</div>
-                    <div class="col-md-2">{{ e.posizione }}</div>
-                    <div class="col-md-1">{{ e.intervallo_manutenzione }}</div>
-                    <div class="col-md-1">{{ e.intervallo_pulizia }}</div>
-                    <div class="col-md-2 text-end">
+            <li class="list-group-item asset-row"
+                data-name="{{ e.nome|lower }}" 
+                data-model="{{ e.modello|lower }}" 
+                data-type="{{ e.tipologia|lower }}" 
+                data-site="{{ e.sede|lower }}" 
+                data-position="{{ e.posizione|lower }}">
+                <div class="asset-custom-grid">
+                    <div><strong>{{ e.nome }}</strong></div>
+                    <div>{{ e.modello }}</div>
+                    <div>{{ e.tipologia }}</div>
+                    <div>{{ e.sede }}</div>
+                    <div>{{ e.posizione }}</div>
+                    <div>{{ e.intervallo_manutenzione }}</div>
+                    <div>{{ e.intervallo_pulizia }}</div>
+                    <div class="text-end">
                         <a href="/amministrazione/asset/{{ e.id }}" class="btn btn-outline-primary btn-sm" title="Apri dettaglio asset">
                             <i class="bi bi-box-arrow-up-right"></i>
                         </a>
@@ -156,26 +179,24 @@
     document.addEventListener("DOMContentLoaded", function () {
         const searchInput = document.getElementById('searchInput');
         const tipologiaFilter = document.getElementById('tipologiaFilter');
+        const sedeFilter = document.getElementById('sedeFilter');
         const posizioneFilter = document.getElementById('posizioneFilter');
-        const items = document.querySelectorAll('#assetList .list-group-item');
+        const items = document.querySelectorAll('.asset-row');
 
         function filterAssets() {
             const searchText = searchInput.value.toLowerCase();
-            const tipologia = tipologiaFilter.value.toLowerCase();
-            const posizione = posizioneFilter.value.toLowerCase();
+            const selectedType = tipologiaFilter.value.toLowerCase();
+            const selectedSite = sedeFilter.value.toLowerCase();
+            const selectedPosition = posizioneFilter.value.toLowerCase();
 
             items.forEach(item => {
-                if (item.classList.contains('static-header')) return;
-
-                const nome = item.querySelector('.col-md-2:nth-child(1)')?.textContent.toLowerCase() || '';
-                const modello = item.querySelector('.col-md-2:nth-child(2)')?.textContent.toLowerCase() || '';
-                const tipo = item.querySelector('.col-md-2:nth-child(3)')?.textContent.toLowerCase() || '';
-                const pos = item.querySelector('.col-md-2:nth-child(4)')?.textContent.toLowerCase() || '';
-
+                const { name, model, type, site, position } = item.dataset;
+                console.log(name, model, type, site, position);
                 const match =
-                    (nome.includes(searchText) || modello.includes(searchText)) &&
-                    (tipologia === '' || tipo.includes(tipologia)) &&
-                    (posizione === '' || pos.includes(posizione));
+                    (name.includes(searchText) || model.includes(searchText)) &&
+                    (selectedType === '' || type.includes(selectedType)) &&
+                    (selectedSite === '' || site.includes(selectedSite)) &&
+                    (selectedPosition === '' || position.includes(selectedPosition));
 
                 item.style.display = match ? '' : 'none';
             });
@@ -183,8 +204,28 @@
 
         if (searchInput) searchInput.addEventListener('input', filterAssets);
         if (tipologiaFilter) tipologiaFilter.addEventListener('change', filterAssets);
+        if (sedeFilter) sedeFilter.addEventListener('change', filterAssets);
         if (posizioneFilter) posizioneFilter.addEventListener('change', filterAssets);
 
     });
 </script>
+
+<style>
+    /* Layout mobile a singola colonna di default, come farebbe Bootstrap */
+    .asset-custom-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    /* Layout desktop a partire dal breakpoint MD (768px) */
+    @media (min-width: 768px) {
+        .asset-custom-grid {
+            /* I valori 'fr' simulano i vecchi pesi col-md-* gestendo un totale di 13 frazioni */
+            grid-template-columns: 2fr 2fr 2fr 2fr 2fr 1fr 1fr 1fr;
+            align-items: center;
+            gap: 1rem;
+        }
+    }
+</style>
 {% endblock %}

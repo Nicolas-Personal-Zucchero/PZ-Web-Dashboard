@@ -18,6 +18,7 @@ def asset():
         nome = request.form.get("nome", "").strip()
         modello = request.form.get("modello", "").strip()
         tipologia = request.form.get("tipologia", "").strip()
+        sede = request.form.get("sede", "").strip()
         posizione = request.form.get("posizione", "").strip()
         intervallo_manutenzione = request.form.get("intervallo_manutenzione", "").strip()
         intervallo_pulizia = request.form.get("intervallo_pulizia", "").strip()
@@ -26,6 +27,7 @@ def asset():
                     "nome": nome,
                     "modello": modello,
                     "tipologia": tipologia,
+                    "sede": sede,
                     "posizione": posizione,
                     "intervallo_manutenzione": int(intervallo_manutenzione),
                     "intervallo_pulizia": int(intervallo_pulizia),
