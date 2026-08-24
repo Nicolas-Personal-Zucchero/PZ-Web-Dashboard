@@ -112,3 +112,35 @@ def generate_dachser_label(sscc, id, datetime, counter, total, ragione_sociale, 
 
     zpl_rows.append("^XZ")
     return "\n".join(zpl_rows)
+
+def generate_asset_qrcode_label(asset_id, asset_name, asset_description):
+    zpl_rows = [
+        "^XA",
+        "^CI28",
+        "^PW839",
+        "^LL1200",
+        "^LH0,0",
+        "^FWR"
+        f"^FO60,30^GF{LOGO_DATA}^FS",
+        f"^FO60,1045^GF{LOGO_DATA}^FS",
+        "^FO730,50^GB3,1100,3^FS",
+        "^FX Sezione Centrale: Destinatario con flow dinamico",
+        "^CF0,60",
+        f"^FO770,60^FB1098,1,10,L,0^FD{asset_name[:20]}^FS",
+        "^CF0,30",
+        f"^FO750,60^FB1098,1,10,L,0^FD{asset_description[:50]}^FS",
+        "^CF0,37",
+        "^FO670,60^FB1098,1,10,C,0^FDSCANSIONA PER REGISTRARE UN INTERVENTO SU QUESTA MACCHINA^FS",
+        "^FX QRCode",
+        "^FO206,371",
+        "^BQN,2,15",
+        f"^FDQA,https://nicolas-personal-zucchero.github.io/asset/scan?id={asset_id}^FS",
+        "^FX Sezione Mittente",
+        "^FO190,50^GB3,1100,3^FS",
+        "^CF0,65",
+        "^FO100,50^FB1098,1,0,C^FDPersonal Zucchero SRL\\&^FS",
+        "^CFB,17",
+        "^FO75,63^FB1098,1,0,C^FDPiazza Allende 1 - 47824 Poggio Torriana RN - Italy\\&^FS"
+        "^XZ"
+    ]
+    return "\n".join(zpl_rows)
