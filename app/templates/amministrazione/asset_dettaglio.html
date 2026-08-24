@@ -122,7 +122,7 @@
                             <div class="col-md-2">Tipo</div>
                             <div class="col-md-2">Operatore</div>
                             <div class="col-md-3">Note</div>
-                            <div class="col-md-2">Allegato</div>
+                            <div class="col-md-2">Allegati</div>
                             <div class="col-md-2 text-end">Azioni</div>
                         </div>
                     </li>
@@ -133,15 +133,17 @@
                             <div class="col-md-1">{{ i.data }}</div>
                             <div class="col-md-2 text-capitalize">{{ i.tipo }}</div>
                             <div class="col-md-2">{{ i.operatore }}</div>
-                            <div class="col-md-3 text-truncate" title="{{ i.note }}">{{ i.note }}</div>
+                            <div class="col-md-3" title="{{ i.note }}">{{ i.note }}</div>
                             <div class="col-md-2">
-                                {% if i.allegato_path and i.id %}
-                                <a href="/amministrazione/asset/{{ asset.id }}/intervento/{{ i.id }}/allegato"
-                                    class="btn btn-outline-primary btn-sm d-inline-block text-truncate w-100 text-start" 
-                                    title="{{ i.allegato_original_filename | default('Scarica allegato') }}">
-                                    <i class="bi bi-download me-1"></i>
-                                    {{ i.allegato_original_filename | default('Allegato') }}
-                                </a>
+                                {% if i.allegati %}
+                                    {% for a in i.allegati %}
+                                    <a href="/amministrazione/asset/{{ asset.id }}/intervento/{{ i.id }}/allegato/{{ a.path }}"
+                                        class="btn btn-outline-primary btn-sm d-inline-block text-truncate w-100 text-start" 
+                                        title="{{ a.original_filename | default('Scarica allegato') }}">
+                                        <i class="bi bi-download me-1"></i>
+                                        {{ a.original_filename | default('Allegato') }}
+                                    </a>
+                                    {% endfor %}
                                 {% endif %}
                             </div>
                             <div class="col-md-2 text-end">
@@ -269,8 +271,8 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Allegato</label>
-                        <input type="file" class="form-control" name="allegato">
+                        <label class="form-label">Allegati</label>
+                        <input type="file" class="form-control" name="allegati" multiple>
                     </div>
 
                 </div>
