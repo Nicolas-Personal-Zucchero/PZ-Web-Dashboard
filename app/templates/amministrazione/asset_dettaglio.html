@@ -35,7 +35,12 @@
     
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <h5 class="card-title mb-3">Informazioni generali</h5>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">Informazioni generali</h5>
+                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalModificaAsset">
+                    Modifica asset
+                </button>
+            </div>
             <div class="row g-3">
                 <div class="col-md-2">
                     <p class="mb-1"><strong>Tipologia:</strong></p>
@@ -200,6 +205,70 @@
                     <button type="submit" class="btn btn-primary">Salva</button>
                 </div>
 
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Modifica Asset -->
+<div class="modal fade" id="modalModificaAsset" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST" action="/amministrazione/asset/{{ asset.id }}/update">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifica Asset</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nome</label>
+                            <input type="text" class="form-control" name="nome" value="{{ asset.nome }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Modello</label>
+                            <input type="text" class="form-control" name="modello" value="{{ asset.modello }}" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Tipologia</label>
+                            <select class="form-select" name="tipologia" required>
+                                <option value="Macchina" {% if asset.tipologia == 'Macchina' %}selected{% endif %}>Macchina</option>
+                                <option value="Veicolo" {% if asset.tipologia == 'Veicolo' %}selected{% endif %}>Veicolo</option>
+                                <option value="Oggetto" {% if asset.tipologia == 'Oggetto' %}selected{% endif %}>Oggetto</option>
+                                <option value="Carrello Elettrico" {% if asset.tipologia == 'Carrello Elettrico' %}selected{% endif %}>Carrello Elettrico</option>
+                                <option value="Impianto" {% if asset.tipologia == 'Impianto' %}selected{% endif %}>Impianto</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Sede</label>
+                            <select class="form-select" name="sede" required>
+                                <option value="1 - Allende" {% if asset.sede == '1 - Allende' %}selected{% endif %}>1 - Allende</option>
+                                <option value="2 - King" {% if asset.sede == '2 - King' %}selected{% endif %}>2 - King</option>
+                                <option value="3 - Neruda" {% if asset.sede == '3 - Neruda' %}selected{% endif %}>3 - Neruda</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Posizione</label>
+                            <input type="text" class="form-control" name="posizione" value="{{ asset.posizione }}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Intervallo Manutenzione (giorni)</label>
+                            <input type="number" class="form-control" name="intervallo_manutenzione" value="{{ asset.intervallo_manutenzione }}" required min="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Intervallo Pulizia (giorni)</label>
+                            <input type="number" class="form-control" name="intervallo_pulizia" value="{{ asset.intervallo_pulizia }}" required min="0">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Salva modifiche</button>
+                </div>
             </form>
         </div>
     </div>

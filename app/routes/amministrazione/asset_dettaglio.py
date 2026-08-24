@@ -162,3 +162,26 @@ def genera_pdf_riepilogo(asset_id):
     response.headers['Content-Disposition'] = f'inline; filename=riepilogo_asset_{asset_id}.pdf'
     
     return response
+
+@asset_dettaglio_bp.route("/<asset_id>/update", methods=["POST"])
+def update_asset(asset_id):
+    try:
+        payload = {
+            "nome": request.form.get("nome", "").strip(),
+            "modello": request.form.get("modello", "").strip(),
+            "tipologia": request.form.get("tipologia", "").strip(),
+            "sede": request.form.get("sede", "").strip(),
+            "posizione": request.form.get("posizione", "").strip(),
+            "intervallo_manutenzione": int(request.form.get("intervallo_manutenzione", 0)),
+            "intervallo_pulizia": int(request.form.get("intervallo_pulizia", 0)),
+        }
+        result = AssetService.update(asset_id, payload)
+
+        if result:
+            flash("Asset aggiornato con successo.", "success")
+        else:
+            flash("Errore durante l'aggiornamento dell'asset su database.", "danger")
+    except ValueError:
+        flash("Errore di validazione: intervalli non numerici.", "danger")
+        
+    return redirect(f"/amministrazione/asset/{asset_id}")
