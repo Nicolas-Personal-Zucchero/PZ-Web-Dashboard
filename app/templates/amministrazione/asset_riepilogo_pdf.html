@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+            @bottom-right {
+                content: "Pagina " counter(page) " di " counter(pages);
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                font-size: 9pt;
+                color: #6c757d;
+            }
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 10.5pt;
+            color: #212529;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 22pt;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        /* Header informativo */
+        .info-card {
+            background-color: #f8f9fa;
+            border-left: 4px solid #0d6efd;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .info-grid {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-grid td {
+            padding: 6px 0;
+            vertical-align: top;
+            width: 50%;
+            color: #495057;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #343a40;
+            margin-right: 8px;
+        }
+
+        /* Tabella interventi */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .data-table th {
+            background-color: #e9ecef;
+            color: #495057;
+            font-weight: 600;
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid #dee2e6;
+            font-size: 10pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+            vertical-align: top;
+            page-break-inside: avoid;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #fcfcfc;
+        }
+
+        .text-capitalize {
+            text-transform: capitalize;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Riepilogo interventi {{ asset.nome }}</h1>
+    
+    <div class="info-card">
+        <table class="info-grid">
+            <tr>
+                <td><span class="info-label">Data Riepilogo:</span> {{ data_odierna }}</td>
+                <td><span class="info-label">Tipologia:</span> {{ asset.tipologia }}</td>
+            </tr>
+            <tr>
+                <td><span class="info-label">Sede:</span> {{ asset.sede }}</td>
+                <td><span class="info-label">Posizione:</span> {{ asset.posizione }}</td>
+            </tr>
+            <tr>
+                <td><span class="info-label">Intervallo Manutenzione:</span> {{ asset.intervallo_manutenzione }} gg</td>
+                <td><span class="info-label">Intervallo Pulizia:</span> {{ asset.intervallo_pulizia }} gg</td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 12%;">Data</th>
+                <th style="width: 15%;">Tipo</th>
+                <th style="width: 18%;">Operatore</th>
+                <th style="width: 55%;">Note</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in interventi %}
+            <tr>
+                <td>{{ i.data }}</td>
+                <td class="text-capitalize">{{ i.tipo }}</td>
+                <td>{{ i.operatore }}</td>
+                <td>{{ i.note }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="empty-state">Nessun intervento registrato per questo asset.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>
