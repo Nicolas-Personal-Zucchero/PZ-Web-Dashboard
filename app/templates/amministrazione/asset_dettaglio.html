@@ -35,7 +35,12 @@
     
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <h5 class="card-title mb-3">Informazioni generali</h5>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">Informazioni generali</h5>
+                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalModificaAsset">
+                    Modifica asset
+                </button>
+            </div>
             <div class="row g-3">
                 <div class="col-md-2">
                     <p class="mb-1"><strong>Tipologia:</strong></p>
@@ -116,8 +121,9 @@
                             <div class="col-md-1">Data</div>
                             <div class="col-md-2">Tipo</div>
                             <div class="col-md-2">Operatore</div>
-                            <div class="col-md-5">Note</div>
+                            <div class="col-md-3">Note</div>
                             <div class="col-md-2">Allegato</div>
+                            <div class="col-md-2 text-end">Azioni</div>
                         </div>
                     </li>
 
@@ -125,11 +131,9 @@
                     <li class="list-group-item intervento-item" data-tipo="{{ i.tipo }}">
                         <div class="row align-items-center">
                             <div class="col-md-1">{{ i.data }}</div>
-                            <div class="col-md-2 text-capitalize">
-                                {{ i.tipo }}
-                            </div>
+                            <div class="col-md-2 text-capitalize">{{ i.tipo }}</div>
                             <div class="col-md-2">{{ i.operatore }}</div>
-                            <div class="col-md-5">{{ i.note }}</div>
+                            <div class="col-md-3 text-truncate" title="{{ i.note }}">{{ i.note }}</div>
                             <div class="col-md-2">
                                 {% if i.allegato_path and i.id %}
                                 <a href="/amministrazione/asset/{{ asset.id }}/intervento/{{ i.id }}/allegato"
@@ -139,6 +143,17 @@
                                     {{ i.allegato_original_filename | default('Allegato') }}
                                 </a>
                                 {% endif %}
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                        onclick="apriModaleModifica('{{ i.id }}', '{{ i.tipo }}', '{{ i.data }}', '{{ i.operatore }}', '{{ i.note }}')">
+                                    Modifica
+                                </button>
+                                <form method="POST" action="/amministrazione/asset/{{ asset.id }}/intervento/{{ i.id }}/delete" class="d-inline" onsubmit="return confirm('Procedere con l\'eliminazione definitiva di questo intervento?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        Elimina
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </li>
@@ -152,7 +167,71 @@
     </div>
 </div>
 
-<!-- Modal Intervento -->
+<!-- Modal Modifica Asset -->
+<div class="modal fade" id="modalModificaAsset" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST" action="/amministrazione/asset/{{ asset.id }}/update">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifica Asset</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nome</label>
+                            <input type="text" class="form-control" name="nome" value="{{ asset.nome }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Modello</label>
+                            <input type="text" class="form-control" name="modello" value="{{ asset.modello }}" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Tipologia</label>
+                            <select class="form-select" name="tipologia" required>
+                                <option value="Macchina" {% if asset.tipologia == 'Macchina' %}selected{% endif %}>Macchina</option>
+                                <option value="Veicolo" {% if asset.tipologia == 'Veicolo' %}selected{% endif %}>Veicolo</option>
+                                <option value="Oggetto" {% if asset.tipologia == 'Oggetto' %}selected{% endif %}>Oggetto</option>
+                                <option value="Carrello Elettrico" {% if asset.tipologia == 'Carrello Elettrico' %}selected{% endif %}>Carrello Elettrico</option>
+                                <option value="Impianto" {% if asset.tipologia == 'Impianto' %}selected{% endif %}>Impianto</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Sede</label>
+                            <select class="form-select" name="sede" required>
+                                <option value="1 - Allende" {% if asset.sede == '1 - Allende' %}selected{% endif %}>1 - Allende</option>
+                                <option value="2 - King" {% if asset.sede == '2 - King' %}selected{% endif %}>2 - King</option>
+                                <option value="3 - Neruda" {% if asset.sede == '3 - Neruda' %}selected{% endif %}>3 - Neruda</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Posizione</label>
+                            <input type="text" class="form-control" name="posizione" value="{{ asset.posizione }}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Intervallo Manutenzione (giorni)</label>
+                            <input type="number" class="form-control" name="intervallo_manutenzione" value="{{ asset.intervallo_manutenzione }}" required min="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Intervallo Pulizia (giorni)</label>
+                            <input type="number" class="form-control" name="intervallo_pulizia" value="{{ asset.intervallo_pulizia }}" required min="0">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Salva modifiche</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Aggiungi Intervento -->
 <div class="modal fade" id="modalIntervento" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -205,6 +284,45 @@
     </div>
 </div>
 
+<!-- Modal Modifica Intervento -->
+<div class="modal fade" id="modalModificaIntervento" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="formModificaIntervento" method="POST" action="">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifica Intervento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tipo Intervento</label>
+                        <select class="form-select" name="tipo" id="edit_tipo" required>
+                            <option value="manutenzione">Manutenzione</option>
+                            <option value="pulizia">Pulizia</option>
+                            <option value="analisi">Analisi</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Data</label>
+                        <input type="date" class="form-control" name="data" id="edit_data" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Operatore</label>
+                        <input type="text" class="form-control" name="operatore" id="edit_operatore" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Note</label>
+                        <textarea class="form-control" name="note" id="edit_note"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Salva modifiche</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 function filtraInterventi() {
     const filter = document.getElementById('filtroTipoIntervento').value;
@@ -217,6 +335,24 @@ function filtraInterventi() {
             item.style.display = 'none';
         }
     });
+}
+
+function apriModaleModifica(id, tipo, dataStr, operatore, note) {
+    const form = document.getElementById('formModificaIntervento');
+    form.action = `/amministrazione/asset/{{ asset.id }}/intervento/${id}/update`;
+    
+    document.getElementById('edit_tipo').value = tipo;
+    document.getElementById('edit_operatore').value = operatore;
+    document.getElementById('edit_note').value = note;
+    
+    if (dataStr) {
+        const parts = dataStr.split('/');
+        if (parts.length === 3) {
+            document.getElementById('edit_data').value = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+    }
+    
+    new bootstrap.Modal(document.getElementById('modalModificaIntervento')).show();
 }
 </script>
 
