@@ -62,7 +62,7 @@ def add_intervento(asset_id):
     operatore = request.form.get("operatore", "").strip()
     note = request.form.get("note", "").strip()
     data_str = request.form.get("data")
-    allegato = request.files.get("allegato")
+    allegati = request.files.getlist("allegati")
 
     if data_str:
         uploaded_at = datetime.strptime(data_str, "%Y-%m-%d")
@@ -74,19 +74,23 @@ def add_intervento(asset_id):
         "tipo": tipo,
         "data": uploaded_at,
         "operatore": operatore,
-        "note": note
+        "note": note,
+        "allegati": []
     }
 
-    if allegato and allegato.filename:
-        original_filename = os.path.basename(allegato.filename).strip()
-        extension = Path(original_filename).suffix.lower()
-        storage_name = f"{str(ulid.new()).lower()}{extension}"
-        storage_path = os.path.join(get_attachments_dir(), storage_name)
+    for allegato in allegati:
+        if allegato and allegato.filename:
+            original_filename = os.path.basename(allegato.filename).strip()
+            extension = Path(original_filename).suffix.lower()
+            storage_name = f"{str(ulid.new()).lower()}{extension}"
+            storage_path = os.path.join(get_attachments_dir(), storage_name)
 
-        allegato.save(storage_path)
+            allegato.save(storage_path)
 
-        entry["allegato_original_filename"] = original_filename
-        entry["allegato_path"] = storage_name
+            entry["allegati"].append({
+                "original_filename": original_filename,
+                "path": storage_name
+            })
 
     result = AssetService.add_intervento(asset_id, entry)
     if not result:
@@ -96,8 +100,8 @@ def add_intervento(asset_id):
 
     return redirect(f"/amministrazione/asset/{asset_id}")
 
-@asset_dettaglio_bp.route("/<asset_id>/intervento/<intervento_id>/allegato")
-def download_intervento_allegato(asset_id, intervento_id):
+@asset_dettaglio_bp.route("/<asset_id>/intervento/<intervento_id>/allegato/<allegato_path>")
+def download_intervento_allegato(asset_id, intervento_id, allegato_path):
     asset = AssetService.get(asset_id)
     if not asset:
         abort(404)
@@ -107,8 +111,11 @@ def download_intervento_allegato(asset_id, intervento_id):
     if not intervento:
         abort(404)
 
-    stored_name = intervento.get("allegato_path", "")
-    original_name = intervento.get("allegato_original_filename", "")
+    for a in intervento.get("allegati", []):
+        if a.get("path") == allegato_path:
+            stored_name = a.get("path", "")
+            original_name = a.get("original_filename", "")
+            break
 
     if not stored_name:
         abort(404)
