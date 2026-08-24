@@ -61,22 +61,6 @@ def etichette_spedizioni():
 
     return render_template("etichette_spedizioni.html", customer=customer)
 
-def genera_pdf_ritiro(data_destinatario, data_spedizione):
-    env = Environment(loader=FileSystemLoader('.'))
-    template = env.get_template('bartolini-template.html')
-    
-    # Rendering dell'HTML con i dati
-    html_content = template.render(
-        destinatario=data_destinatario,
-        spedizione={
-            **data_spedizione,
-            "data": datetime.now().strftime("%d/%m/%Y")
-        }
-    )
-
-    HTML(string=html_content).write_pdf("ritiro_brt.pdf")
-    print("PDF generato con successo.")
-
 @etichette_spedizioni_bp.route("/stampa", methods=["POST"])
 def stampa_etichetta():
     numero_etichette = int(request.form.get("numero_etichette", 1))
@@ -119,7 +103,7 @@ def stampa_etichetta():
         brt_logo_base_64 = ""
 
     # 3. Generazione PDF in memoria (senza scrivere su disco)
-    rendered_html = render_template('bartolini-template.html', 
+    rendered_html = render_template('pdf/bartolini_template.html', 
                                     destinatario=dati_etichetta, 
                                     spedizione=spedizione,
                                     brt_logo=brt_logo_base_64)

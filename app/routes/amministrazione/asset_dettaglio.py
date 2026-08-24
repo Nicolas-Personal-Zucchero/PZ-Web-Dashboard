@@ -156,7 +156,7 @@ def genera_pdf_riepilogo(asset_id):
 
     # Render HTML
     rendered_html = render_template(
-        "amministrazione/asset_riepilogo_pdf.html",
+        "pdf/asset_riepilogo.html",
         asset=asset,
         interventi=interventi,
         data_odierna=data_odierna
