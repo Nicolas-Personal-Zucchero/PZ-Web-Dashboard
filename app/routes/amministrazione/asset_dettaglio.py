@@ -3,16 +3,13 @@ from pathlib import Path
 from flask import Blueprint, render_template, request, redirect, flash, send_from_directory, abort, make_response
 from datetime import datetime
 from config.constants import ITALY_TZ
-from utils.firebase_client import db
-from firebase_admin import firestore
 import ulid
 import io
 from weasyprint import HTML
+from services.asset import AssetService
 
 asset_dettaglio_bp = Blueprint("asset_dettaglio", __name__, url_prefix="/asset")
 
-# Collezione Firestore
-asset_collection = db.collection("asset")
 ATTACHMENTS_DIR = os.environ.get("ASSET_ATTACHMENTS_DIR", "/attachments/asset_interventi")
 
 def get_attachments_dir():
@@ -31,14 +28,11 @@ def calcola_giorni(interventi, intervallo):
 
 @asset_dettaglio_bp.route("/<asset_id>")
 def asset_detail(asset_id):
-    doc = asset_collection.document(asset_id).get()
+    asset = AssetService.get(asset_id)
 
-    if not doc.exists:
+    if not asset:
         flash("Asset non trovato.", "warning")
         return redirect("/amministrazione/asset")
-
-    asset = doc.to_dict()
-    asset["id"] = doc.id
 
     interventi = asset.get("interventi", [])
     interventi.sort(key=lambda x: x.get("data", ""), reverse=True)
@@ -77,11 +71,8 @@ def add_intervento(asset_id):
     else:
         uploaded_at = datetime.now(ITALY_TZ)
 
-    doc_ref = asset_collection.document(asset_id)
-    intervento_id = str(ulid.new()).lower()
-
     entry = {
-        "id": intervento_id,
+        "id": str(ulid.new()).lower(),
         "tipo": tipo,
         "data": uploaded_at,
         "operatore": operatore,
@@ -99,18 +90,20 @@ def add_intervento(asset_id):
         entry["allegato_original_filename"] = original_filename
         entry["allegato_path"] = storage_name
 
-    doc_ref.update({"interventi": firestore.ArrayUnion([entry])})
+    result = AssetService.add_intervento(asset_id, entry)
+    if not result:
+        flash("Errore durante la registrazione dell'intervento.", "danger")
+        return redirect(f"/amministrazione/asset/{asset_id}")
     flash(f"Intervento ({tipo}) registrato con successo!", "success")
 
     return redirect(f"/amministrazione/asset/{asset_id}")
 
 @asset_dettaglio_bp.route("/<asset_id>/intervento/<intervento_id>/allegato")
 def download_intervento_allegato(asset_id, intervento_id):
-    doc = asset_collection.document(asset_id).get()
-    if not doc.exists:
+    asset = AssetService.get(asset_id)
+    if not asset:
         abort(404)
 
-    asset = doc.to_dict()
     interventi = asset.get("interventi", [])
     
     intervento = next((i for i in interventi if str(i.get("id", "")) == intervento_id), None)
@@ -136,13 +129,10 @@ def download_intervento_allegato(asset_id, intervento_id):
 
 @asset_dettaglio_bp.route("/<asset_id>/pdf")
 def genera_pdf_riepilogo(asset_id):
-    doc = asset_collection.document(asset_id).get()
-    
-    if not doc.exists:
+    asset = AssetService.get(asset_id)
+    if not asset:
         abort(404, description="Asset non trovato")
 
-    asset = doc.to_dict()
-    asset["id"] = doc.id
     interventi = asset.get("interventi", [])
 
     # Ordinamento decrescente per avere gli interventi più recenti in cima
