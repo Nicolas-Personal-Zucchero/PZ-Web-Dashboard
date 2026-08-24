@@ -7,6 +7,9 @@ import ulid
 import io
 from weasyprint import HTML
 from services.asset import AssetService
+from utils.utils import send_to_zebra
+from config.constants import ZEBRA_IP
+from utils.label_factory import generate_asset_qrcode_label
 
 asset_dettaglio_bp = Blueprint("asset_dettaglio", __name__, url_prefix="/asset")
 
@@ -162,6 +165,19 @@ def genera_pdf_riepilogo(asset_id):
     response.headers['Content-Disposition'] = f'inline; filename=riepilogo_asset_{asset_id}.pdf'
     
     return response
+
+@asset_dettaglio_bp.route("/<asset_id>/label")
+def generate_label(asset_id):
+    asset = AssetService.get(asset_id)
+    if not asset:
+        abort(404, description="Asset non trovato")
+
+    send_to_zebra(ZEBRA_IP, generate_asset_qrcode_label(
+        asset_id=asset.get("id"),
+        asset_name=asset.get("nome"),
+        asset_description=asset.get("modello")
+    ))
+    return redirect(f"/amministrazione/asset/{asset_id}")
 
 @asset_dettaglio_bp.route("/<asset_id>/update", methods=["POST"])
 def update_asset(asset_id):

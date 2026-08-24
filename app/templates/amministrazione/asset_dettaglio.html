@@ -9,7 +9,9 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
         <h2 class="mb-0">{{ asset.nome }}</h2>
         <div class="d-flex gap-2">
-            <!-- Pulsante generazione PDF -->
+            <a href="/amministrazione/asset/{{ asset.id }}/label" class="btn btn-outline-info">
+                <i class="bi bi-qr-code-scan"></i> Genera Etichetta
+            </a>
             <a href="/amministrazione/asset/{{ asset.id }}/pdf" target="_blank" class="btn btn-outline-info">
                 <i class="bi bi-file-pdf"></i> Genera PDF
             </a>
