@@ -121,8 +121,9 @@
                             <div class="col-md-1">Data</div>
                             <div class="col-md-2">Tipo</div>
                             <div class="col-md-2">Operatore</div>
-                            <div class="col-md-5">Note</div>
+                            <div class="col-md-3">Note</div>
                             <div class="col-md-2">Allegato</div>
+                            <div class="col-md-2 text-end">Azioni</div>
                         </div>
                     </li>
 
@@ -130,11 +131,9 @@
                     <li class="list-group-item intervento-item" data-tipo="{{ i.tipo }}">
                         <div class="row align-items-center">
                             <div class="col-md-1">{{ i.data }}</div>
-                            <div class="col-md-2 text-capitalize">
-                                {{ i.tipo }}
-                            </div>
+                            <div class="col-md-2 text-capitalize">{{ i.tipo }}</div>
                             <div class="col-md-2">{{ i.operatore }}</div>
-                            <div class="col-md-5">{{ i.note }}</div>
+                            <div class="col-md-3 text-truncate" title="{{ i.note }}">{{ i.note }}</div>
                             <div class="col-md-2">
                                 {% if i.allegato_path and i.id %}
                                 <a href="/amministrazione/asset/{{ asset.id }}/intervento/{{ i.id }}/allegato"
@@ -145,6 +144,17 @@
                                 </a>
                                 {% endif %}
                             </div>
+                            <div class="col-md-2 text-end">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                        onclick="apriModaleModifica('{{ i.id }}', '{{ i.tipo }}', '{{ i.data }}', '{{ i.operatore }}', '{{ i.note }}')">
+                                    Modifica
+                                </button>
+                                <form method="POST" action="/amministrazione/asset/{{ asset.id }}/intervento/{{ i.id }}/delete" class="d-inline" onsubmit="return confirm('Procedere con l\'eliminazione definitiva di questo intervento?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        Elimina
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </li>
                     {% endfor %}
@@ -153,59 +163,6 @@
             {% else %}
             <p class="text-muted">Nessun intervento registrato.</p>
             {% endif %}
-        </div>
-    </div>
-</div>
-
-<!-- Modal Intervento -->
-<div class="modal fade" id="modalIntervento" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form method="POST" action="/amministrazione/asset/{{ asset.id }}/add_intervento" enctype="multipart/form-data">
-                <div class="modal-header">
-                    <h5 class="modal-title">Registra Intervento</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-
-                <div class="modal-body">
-
-                    <div class="mb-3">
-                        <label class="form-label">Tipo Intervento</label>
-                        <select class="form-select" name="tipo" required>
-                            <option value="manutenzione">Manutenzione</option>
-                            <option value="pulizia">Pulizia</option>
-                            <option value="analisi">Analisi</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Data</label>
-                        <input type="date" class="form-control" name="data" id="data"
-                            value="{{ datetime.now().strftime('%Y-%m-%d') }}" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Operatore</label>
-                        <input type="text" class="form-control" name="operatore" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Note</label>
-                        <textarea class="form-control" name="note"></textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Allegato</label>
-                        <input type="file" class="form-control" name="allegato">
-                    </div>
-
-                </div>
-
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Salva</button>
-                </div>
-
-            </form>
         </div>
     </div>
 </div>
@@ -274,6 +231,98 @@
     </div>
 </div>
 
+<!-- Modal Aggiungi Intervento -->
+<div class="modal fade" id="modalIntervento" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="/amministrazione/asset/{{ asset.id }}/add_intervento" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title">Registra Intervento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">Tipo Intervento</label>
+                        <select class="form-select" name="tipo" required>
+                            <option value="manutenzione">Manutenzione</option>
+                            <option value="pulizia">Pulizia</option>
+                            <option value="analisi">Analisi</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Data</label>
+                        <input type="date" class="form-control" name="data" id="data"
+                            value="{{ datetime.now().strftime('%Y-%m-%d') }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Operatore</label>
+                        <input type="text" class="form-control" name="operatore" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Note</label>
+                        <textarea class="form-control" name="note"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Allegato</label>
+                        <input type="file" class="form-control" name="allegato">
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Salva</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Modifica Intervento -->
+<div class="modal fade" id="modalModificaIntervento" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="formModificaIntervento" method="POST" action="">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifica Intervento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tipo Intervento</label>
+                        <select class="form-select" name="tipo" id="edit_tipo" required>
+                            <option value="manutenzione">Manutenzione</option>
+                            <option value="pulizia">Pulizia</option>
+                            <option value="analisi">Analisi</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Data</label>
+                        <input type="date" class="form-control" name="data" id="edit_data" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Operatore</label>
+                        <input type="text" class="form-control" name="operatore" id="edit_operatore" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Note</label>
+                        <textarea class="form-control" name="note" id="edit_note"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Salva modifiche</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 function filtraInterventi() {
     const filter = document.getElementById('filtroTipoIntervento').value;
@@ -286,6 +335,24 @@ function filtraInterventi() {
             item.style.display = 'none';
         }
     });
+}
+
+function apriModaleModifica(id, tipo, dataStr, operatore, note) {
+    const form = document.getElementById('formModificaIntervento');
+    form.action = `/amministrazione/asset/{{ asset.id }}/intervento/${id}/update`;
+    
+    document.getElementById('edit_tipo').value = tipo;
+    document.getElementById('edit_operatore').value = operatore;
+    document.getElementById('edit_note').value = note;
+    
+    if (dataStr) {
+        const parts = dataStr.split('/');
+        if (parts.length === 3) {
+            document.getElementById('edit_data').value = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+    }
+    
+    new bootstrap.Modal(document.getElementById('modalModificaIntervento')).show();
 }
 </script>
 

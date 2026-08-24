@@ -34,8 +34,7 @@ def asset_detail(asset_id):
         flash("Asset non trovato.", "warning")
         return redirect("/amministrazione/asset")
 
-    interventi = asset.get("interventi", [])
-    interventi.sort(key=lambda x: x.get("data", ""), reverse=True)
+    interventi = AssetService.get_interventi(asset_id)
 
     manutenzioni = [i for i in interventi if i.get("tipo") == "manutenzione"]
     pulizie = [i for i in interventi if i.get("tipo") == "pulizia"]
@@ -72,7 +71,6 @@ def add_intervento(asset_id):
         uploaded_at = datetime.now(ITALY_TZ)
 
     entry = {
-        "id": str(ulid.new()).lower(),
         "tipo": tipo,
         "data": uploaded_at,
         "operatore": operatore,
@@ -94,7 +92,7 @@ def add_intervento(asset_id):
     if not result:
         flash("Errore durante la registrazione dell'intervento.", "danger")
         return redirect(f"/amministrazione/asset/{asset_id}")
-    flash(f"Intervento ({tipo}) registrato con successo!", "success")
+    flash(f"Intervento di tipo {tipo} registrato con successo!", "success")
 
     return redirect(f"/amministrazione/asset/{asset_id}")
 
@@ -104,9 +102,7 @@ def download_intervento_allegato(asset_id, intervento_id):
     if not asset:
         abort(404)
 
-    interventi = asset.get("interventi", [])
-    
-    intervento = next((i for i in interventi if str(i.get("id", "")) == intervento_id), None)
+    intervento = AssetService.get_intervento(asset_id, intervento_id)
 
     if not intervento:
         abort(404)
@@ -133,10 +129,7 @@ def genera_pdf_riepilogo(asset_id):
     if not asset:
         abort(404, description="Asset non trovato")
 
-    interventi = asset.get("interventi", [])
-
-    # Ordinamento decrescente per avere gli interventi più recenti in cima
-    interventi.sort(key=lambda x: x.get("data", ""), reverse=True)
+    interventi = AssetService.get_interventi(asset_id)
 
     for i in interventi:
         if hasattr(i["data"], "astimezone"):
@@ -183,5 +176,45 @@ def update_asset(asset_id):
             flash("Errore durante l'aggiornamento dell'asset su database.", "danger")
     except ValueError:
         flash("Errore di validazione: intervalli non numerici.", "danger")
+        
+    return redirect(f"/amministrazione/asset/{asset_id}")
+
+@asset_dettaglio_bp.route("/<asset_id>/intervento/<intervento_id>/update", methods=["POST"])
+def update_intervento(asset_id, intervento_id):
+    tipo = request.form.get("tipo")
+    operatore = request.form.get("operatore", "").strip()
+    note = request.form.get("note", "").strip()
+    data_str = request.form.get("data")
+
+    update_data = {
+        "tipo": tipo,
+        "operatore": operatore,
+        "note": note
+    }
+
+    if data_str:
+        try:
+            dt = datetime.strptime(data_str, "%Y-%m-%d")
+            update_data["data"] = ITALY_TZ.localize(dt)
+        except ValueError:
+            flash("Formato data non valido.", "danger")
+            return redirect(f"/amministrazione/asset/{asset_id}")
+
+    result = AssetService.update_intervento(asset_id, intervento_id, update_data)
+    
+    if result:
+        flash("Intervento aggiornato con successo.", "success")
+    else:
+        flash("Errore durante l'aggiornamento dell'intervento.", "danger")
+        
+    return redirect(f"/amministrazione/asset/{asset_id}")
+
+@asset_dettaglio_bp.route("/<asset_id>/intervento/<intervento_id>/delete", methods=["POST"])
+def delete_intervento(asset_id, intervento_id):
+    result = AssetService.delete_intervento(asset_id, intervento_id)
+    if result:
+        flash("Intervento eliminato.", "success")
+    else:
+        flash("Errore durante l'eliminazione dell'intervento.", "danger")
         
     return redirect(f"/amministrazione/asset/{asset_id}")

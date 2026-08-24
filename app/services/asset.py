@@ -3,6 +3,7 @@ from firebase_admin import firestore
 import re
 
 class AssetService:
+    _BATCH_SIZE = 400
     _collection = db.collection("asset")
 
     def _natural_key(s):
@@ -33,7 +34,6 @@ class AssetService:
             "posizione": posizione,
             "intervallo_manutenzione": intervallo_manutenzione,
             "intervallo_pulizia": intervallo_pulizia,
-            "interventi": [],
             "created_at": firestore.SERVER_TIMESTAMP
         }
         
@@ -43,10 +43,8 @@ class AssetService:
     @staticmethod
     def update(asset_id: str, data: dict) -> bool:
         payload = data.copy()
-        # Prevenzione side-effects: rimuove l'id se presente nel dizionario in ingresso
         payload.pop("id", None) 
         doc_ref = AssetService._collection.document(asset_id)
-        
         try:
             doc_ref.update(payload)
             return True
@@ -55,69 +53,69 @@ class AssetService:
 
     @staticmethod
     def delete(asset_id: str) -> bool:
-        doc_ref = AssetService._collection.document(asset_id)
-        doc_ref.delete()
-        return True
+        parent_doc_ref = AssetService._collection.document(asset_id)
+        subcollection_ref = parent_doc_ref.collection("interventi")
 
-    @staticmethod
-    def add_intervento(asset_id: str, intervento: dict) -> bool:
-        doc_ref = AssetService._collection.document(asset_id)
         try:
-            doc_ref.update({"interventi": firestore.ArrayUnion([intervento])})
+            while True:
+                docs = subcollection_ref.limit(AssetService._BATCH_SIZE).stream()
+                batch = db.batch()
+                deleted_count = 0
+
+                for doc in docs:
+                    batch.delete(doc.reference)
+                    deleted_count += 1
+
+                if deleted_count == 0:
+                    break
+
+                batch.commit()
+            parent_doc_ref.delete()
             return True
         except Exception:
             return False
 
     @staticmethod
-    @firestore.transactional
-    def _transactional_update_intervento(transaction, doc_ref, intervento_id: str, update_data: dict) -> bool:
-        snapshot = doc_ref.get(transaction=transaction)
-        if not snapshot.exists:
+    def get_intervento(asset_id: str, intervento_id: str) -> dict | None:
+        doc_ref = AssetService._collection.document(asset_id).collection("interventi").document(intervento_id)
+        
+        try:
+            snapshot = doc_ref.get()
+            if not snapshot.exists:
+                return None
+            return {"id": snapshot.id, **snapshot.to_dict()}
+        except Exception:
+            return None
+        
+    @staticmethod
+    def get_interventi(asset_id: str) -> list[dict]:
+        docs = AssetService._collection.document(asset_id).collection("interventi").order_by("data", direction=firestore.Query.DESCENDING).stream()
+        entries = [{"id": doc.id, **doc.to_dict()} for doc in docs]
+        entries.sort(key=lambda x: x.get("data", ""), reverse=True)
+        return entries
+
+    @staticmethod
+    def add_intervento(asset_id: str, intervento: dict) -> bool:
+        try:
+            AssetService._collection.document(asset_id).collection("interventi").add(intervento)
+            return True
+        except Exception:
             return False
-        
-        data = snapshot.to_dict()
-        interventi = data.get("interventi", [])
-        
-        updated = False
-        for i, intervento in enumerate(interventi):
-            if intervento.get("id") == intervento_id:
-                interventi[i].update(update_data)
-                updated = True
-                break
-        
-        if not updated:
-            return False
-            
-        transaction.update(doc_ref, {"interventi": interventi})
-        return True
 
     @staticmethod
     def update_intervento(asset_id: str, intervento_id: str, update_data: dict) -> bool:
-        transaction = db.transaction()
-        doc_ref = AssetService._collection.document(asset_id)
-        return AssetService._transactional_update_intervento(transaction, doc_ref, intervento_id, update_data)
-
-    @staticmethod
-    @firestore.transactional
-    def _transactional_delete_intervento(transaction, doc_ref, intervento_id: str) -> bool:
-        snapshot = doc_ref.get(transaction=transaction)
-        if not snapshot.exists:
+        doc_ref = AssetService._collection.document(asset_id).collection("interventi").document(intervento_id)
+        try:
+            doc_ref.update(update_data)
+            return True
+        except Exception:
             return False
-            
-        data = snapshot.to_dict()
-        interventi = data.get("interventi", [])
-        
-        # Filtra l'array in memoria rimuovendo il target
-        filtered_interventi = [i for i in interventi if i.get("id") != intervento_id]
-        
-        if len(interventi) == len(filtered_interventi):
-            return False
-            
-        transaction.update(doc_ref, {"interventi": filtered_interventi})
-        return True
 
     @staticmethod
     def delete_intervento(asset_id: str, intervento_id: str) -> bool:
-        transaction = db.transaction()
-        doc_ref = AssetService._collection.document(asset_id)
-        return AssetService._transactional_delete_intervento(transaction, doc_ref, intervento_id)
+        doc_ref = AssetService._collection.document(asset_id).collection("interventi").document(intervento_id)
+        try:
+            doc_ref.delete()
+            return True
+        except Exception:
+            return False
