@@ -136,6 +136,7 @@
             </button>
         </div>
 
+        <input type="hidden" name="speed_booleans" id="speedBooleans" value="{}">
         <input type="hidden" name="telefono_overrides" id="telefonoOverrides" value="{}">
         <input type="hidden" name="nr_colli_overrides" id="nrColliOverrides" value="{}">
         <input type="hidden" name="peso_overrides" id="pesoOverrides" value="{}">
@@ -183,6 +184,7 @@
         const btnInvia = document.getElementById("btnInvia");
         const fercamList = document.getElementById("fercamList");
         const fercamForm = document.getElementById("fercamForm");
+        const speedBooleans = document.getElementById("speedBooleans");
         const telefonoOverrides = document.getElementById("telefonoOverrides");
         const nrColliOverrides = document.getElementById("nrColliOverrides");
         const pesoOverrides = document.getElementById("pesoOverrides");
@@ -375,10 +377,11 @@
                                 <th class="text-center" style="width: 50px;" title="Grande Distribuzione Organizzata">GDO</th>
                                 <th class="text-center" style="width: 50px;" title="Sbancalamento">Sbancalamento</th>
                                 <th class="text-center" style="width: 50px;" title="Preavviso">Preavviso</th>
+                                <th class="text-center" style="width: 50px;" title="Speed">Speed</th>
                                 <th style="min-width: 120px; width: 12%;">Telefono</th>
                                 <th style="min-width: 90px; width: 10%;">Nr. Colli</th>
                                 <th style="min-width: 100px; width: 10%;">Peso Totale</th>
-                                <th style="min-width: 120px; width: 15%;">Contrassegno</th>
+                                <th style="min-width: 120px; width: 10%;">Contrassegno</th>
                                 <th style="width: 80px;" title="Seleziona un raggruppamento per unire più fatture in una spedizione">Gruppo</th>
                             </tr>
                         </thead>
@@ -398,6 +401,7 @@
                                     <td class="text-center">${item.GDO ? "<i class='bi bi-check-lg text-success fs-5'></i>" : ""}</td>
                                     <td class="text-center">${item.sbancalamento ? "<i class='bi bi-check-lg text-success fs-5'></i>" : ""}</td>
                                     <td class="text-center">${item.preavviso ? "<i class='bi bi-check-lg text-success fs-5'></i>" : ""}</td>
+                                    <td class="text-center"><input type="checkbox" class="form-check-input speed-input" data-fattura-id="${item.id}"></td>
                                     <td>
                                         <input
                                             type="text"
@@ -507,11 +511,21 @@
         }
 
         function collectModalInputs() {
+            const speedBooleans = {};
             const telefonoOverrides = {};
             const nrColliOverrides = {};
             const pesoOverrides = {};
             const codAmountOverrides = {};
             const raggruppamenti = {};
+
+            document.querySelectorAll(".speed-input").forEach(input => {
+                const fatturaId = input.dataset.fatturaId;
+                const isChecked = input.checked;
+
+                if (fatturaId) {
+                    speedBooleans[fatturaId] = isChecked;
+                }
+            });
 
             document.querySelectorAll(".telefono-input").forEach(input => {
                 const fatturaId = input.dataset.fatturaId;
@@ -558,7 +572,7 @@
                 }
             });
 
-            return [telefonoOverrides, nrColliOverrides, pesoOverrides, codAmountOverrides, raggruppamenti];
+            return [speedBooleans, telefonoOverrides, nrColliOverrides, pesoOverrides, codAmountOverrides, raggruppamenti];
         }
 
         function validateRaggruppamenti() {
@@ -626,7 +640,11 @@
                     return;
                 }
 
-                const [telefonoData, nrColliData, pesoData, codAmountData, raggruppamentiData] = collectModalInputs();
+                const [speedData, telefonoData, nrColliData, pesoData, codAmountData, raggruppamentiData] = collectModalInputs();
+
+                if (speedBooleans) {
+                    speedBooleans.value = JSON.stringify(speedData);
+                }
 
                 if (telefonoOverrides) {
                     telefonoOverrides.value = JSON.stringify(telefonoData);
