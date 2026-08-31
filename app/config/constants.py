@@ -51,3 +51,33 @@ ID_PAGAMENTI_ALLA_CONSEGNA = [
     "210", "211", "212",
     "320", "370"
 ]
+
+OPERATORI_INTERVENTI = [
+    "Daniel Barbieri",
+    "Gianluca Magnanelli",
+    "Luca Soldati", 
+    "Denis Severini", 
+    "Mauro Amadori",
+    "Nicolas Amadori"
+]
+
+TIPOLOGIE_INTERVENTI = {
+    "controllo_periodico": "Controllo Periodico",
+    "manutenzione_straordinaria": "Manutenzione Straordinaria",
+    "pulizia": "Pulizia",
+    "analisi": "Analisi"
+}
+
+SEDI = {
+    "1": "Allende",
+    "2": "King",
+    "3": "Neruda"
+}
+
+TIPOLOGIE_ASSET = [
+    "Macchina",
+    "Veicolo",
+    "Oggetto",
+    "Carrello Elettrico",
+    "Impianto"
+]

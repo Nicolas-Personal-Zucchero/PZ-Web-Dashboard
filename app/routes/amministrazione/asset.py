@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, flash 
 from services.asset import AssetService
+from config.constants import SEDI, TIPOLOGIE_ASSET
 
 asset_bp = Blueprint("asset", __name__, url_prefix="/asset")
 
@@ -20,7 +21,12 @@ def asset():
         flash("Asset registrato con successo!", "success")
         return redirect("/amministrazione/asset")
 
-    return render_template("/amministrazione/asset.html", entries=AssetService.get_all())
+    return render_template(
+        "/amministrazione/asset.html",
+        sedi=SEDI,
+        tipologie_asset=TIPOLOGIE_ASSET,
+        entries=AssetService.get_all()
+    )
 
 @asset_bp.route("/elimina", methods=["POST"])
 def elimina_asset():

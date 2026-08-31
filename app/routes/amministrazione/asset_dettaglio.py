@@ -2,13 +2,13 @@ import os
 from pathlib import Path
 from flask import Blueprint, render_template, request, redirect, flash, send_from_directory, abort, make_response
 from datetime import datetime
-from config.constants import ITALY_TZ
+from config.constants import ITALY_TZ, TIPOLOGIE_ASSET
 import ulid
 import io
 from weasyprint import HTML
 from services.asset import AssetService
 from utils.utils import send_to_zebra
-from config.constants import ZEBRA_IP
+from config.constants import ZEBRA_IP, OPERATORI_INTERVENTI, TIPOLOGIE_INTERVENTI, SEDI
 from utils.label_factory import generate_asset_qrcode_label
 
 asset_dettaglio_bp = Blueprint("asset_dettaglio", __name__, url_prefix="/asset")
@@ -50,6 +50,10 @@ def asset_detail(asset_id):
 
     return render_template(
         "/amministrazione/asset_dettaglio.html",
+        operatori=OPERATORI_INTERVENTI,
+        tipologie_interventi=TIPOLOGIE_INTERVENTI,
+        sedi=SEDI,
+        tipologie_asset=TIPOLOGIE_ASSET,
         asset=asset,
         interventi=interventi,
         giorni_dal_controllo_periodico=giorni_dal_controllo_periodico,
@@ -62,7 +66,8 @@ def asset_detail(asset_id):
 @asset_dettaglio_bp.route("/<asset_id>/add_intervento", methods=["POST"])
 def add_intervento(asset_id):
     tipo = request.form.get("tipo")
-    operatore = request.form.get("operatore", "").strip()
+    operatore = request.form.get("operatore", "")
+    operatore_esterno = request.form.get("operatore_esterno")
     note = request.form.get("note", "").strip()
     data_str = request.form.get("data")
     allegati = request.files.getlist("allegati")
@@ -93,13 +98,14 @@ def add_intervento(asset_id):
         tipo,
         data,
         operatore,
+        operatore_esterno,
         note,
         allegati
     )
     if not result:
         flash("Errore durante la registrazione dell'intervento.", "danger")
         return redirect(f"/amministrazione/asset/{asset_id}")
-    flash(f"Intervento di tipo {tipo} registrato con successo!", "success")
+    flash(f"Intervento di tipo {tipo.replace('_', ' ')} registrato con successo!", "success")
 
     return redirect(f"/amministrazione/asset/{asset_id}")
 
@@ -208,6 +214,7 @@ def update_asset(asset_id):
 def update_intervento(asset_id, intervento_id):
     tipo = request.form.get("tipo")
     operatore = request.form.get("operatore", "").strip()
+    operatore_esterno = request.form.get("operatore_esterno", "").strip()
     note = request.form.get("note", "").strip()
     data_str = request.form.get("data")
     data = None
@@ -220,7 +227,7 @@ def update_intervento(asset_id, intervento_id):
             flash("Formato data non valido.", "danger")
             return redirect(f"/amministrazione/asset/{asset_id}")
 
-    result = AssetService.update_intervento(asset_id, intervento_id, tipo, data, operatore, note)
+    result = AssetService.update_intervento(asset_id, intervento_id, tipo, data, operatore, operatore_esterno, note)
     
     if result:
         flash("Intervento aggiornato con successo.", "success")

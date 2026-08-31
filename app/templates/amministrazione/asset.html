@@ -41,21 +41,19 @@
                             <div class="col-md-4">
                                 <label for="selectTipologia" class="form-label">Tipologia</label>
                                 <select class="form-select" name="tipologia" id="selectTipologia" required>
-                                    <option value="" disabled selected></option>
-                                    <option>Macchina</option>
-                                    <option>Veicolo</option>
-                                    <option>Oggetto</option>
-                                    <option>Carrello Elettrico</option>
-                                    <option>Impianto</option>
+                                    <option value="" selected></option>
+                                    {% for t in tipologie_asset %}
+                                        <option value="{{ t }}">{{ t }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                             <div class="col-md-3">
                                 <label for="selectSede" class="form-label">Sede</label>
                                 <select class="form-select" name="sede" id="selectSede" required>
                                     <option value="" disabled selected></option>
-                                    <option>1 - Allende</option>
-                                    <option>2 - King</option>
-                                    <option>3 - Neruda</option>
+                                    {% for key, value in sedi.items() %}
+                                        <option value="{{ key }} - {{ value }}">{{ key }} - {{ value }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                             <div class="col-md-5">
