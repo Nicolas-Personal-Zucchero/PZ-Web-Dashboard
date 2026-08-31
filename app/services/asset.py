@@ -1,3 +1,4 @@
+from datetime import datetime
 from utils.firebase_client import db
 from firebase_admin import firestore
 import re
@@ -96,17 +97,32 @@ class AssetService:
         return entries
 
     @staticmethod
-    def add_intervento(asset_id: str, intervento: dict) -> bool:
+    def add_intervento(asset_id: str, tipo: str, data: datetime, operatore: str, note: str, allegati: list[tuple[str, str]]) -> bool:
         try:
-            AssetService._collection.document(asset_id).collection("interventi").add(intervento)
+            AssetService._collection.document(asset_id).collection("interventi").add({
+                "tipo": tipo,
+                "data": data,
+                "operatore": operatore,
+                "note": note,
+                "allegati": allegati
+            })
             return True
         except Exception:
             return False
 
     @staticmethod
-    def update_intervento(asset_id: str, intervento_id: str, update_data: dict) -> bool:
+    def update_intervento(asset_id: str, intervento_id: str, tipo: Optional[str], data: Optional[datetime], operatore: Optional[str], note: Optional[str]) -> bool:
         doc_ref = AssetService._collection.document(asset_id).collection("interventi").document(intervento_id)
         try:
+            update_data = {}
+            if tipo is not None:
+                update_data["tipo"] = tipo
+            if data is not None:
+                update_data["data"] = data
+            if operatore is not None:
+                update_data["operatore"] = operatore
+            if note is not None:
+                update_data["note"] = note
             doc_ref.update(update_data)
             return True
         except Exception:
