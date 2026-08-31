@@ -114,10 +114,9 @@
                 <div class="w-25">
                     <select class="form-select" id="filtroTipoIntervento" onchange="filtraInterventi()">
                         <option value="tutti">Tutti i tipi</option>
-                        <option value="controllo_periodico">Controllo Periodico</option>
-                        <option value="manutenzione_straordinaria">Manutenzione Straordinaria</option>
-                        <option value="pulizia">Pulizia</option>
-                        <option value="analisi">Analisi</option>
+                        {% for key, value in tipologie_interventi.items() %}
+                            <option value="{{ key }}">{{ value }}</option>
+                        {% endfor %}
                     </select>
                 </div>
             </div>
@@ -130,8 +129,9 @@
                             <div class="col-md-1">Data</div>
                             <div class="col-md-2">Tipo</div>
                             <div class="col-md-2">Operatore</div>
-                            <div class="col-md-3">Note</div>
-                            <div class="col-md-2">Allegati</div>
+                            <div class="col-md-2">Operatore Esterno</div>
+                            <div class="col-md-2">Note</div>
+                            <div class="col-md-1">Allegati</div>
                             <div class="col-md-2 text-end">Azioni</div>
                         </div>
                     </li>
@@ -142,8 +142,9 @@
                             <div class="col-md-1">{{ i.data }}</div>
                             <div class="col-md-2 text-capitalize">{{ i.tipo | capitalize | replace('_', ' ') }}</div>
                             <div class="col-md-2">{{ i.operatore }}</div>
-                            <div class="col-md-3" title="{{ i.note }}">{{ i.note }}</div>
-                            <div class="col-md-2">
+                            <div class="col-md-2">{{ i.operatore_esterno if i.operatore_esterno else '' }}</div>
+                            <div class="col-md-2" title="{{ i.note }}">{{ i.note }}</div>
+                            <div class="col-md-1">
                                 {% if i.allegati %}
                                     {% for a in i.allegati %}
                                     <a href="/amministrazione/asset/{{ asset.id }}/intervento/{{ i.id }}/allegato/{{ a.path }}"
@@ -160,7 +161,8 @@
                                         data-id="{{ i.id }}" 
                                         data-tipo="{{ i.tipo }}" 
                                         data-data="{{ i.data }}" 
-                                        data-operatore="{{ i.operatore }}" 
+                                        data-operatore="{{ i.operatore }}"
+                                        data-operatore_esterno="{{ i.operatore_esterno }}" 
                                         data-note="{{ i.note }}">
                                     Modifica
                                 </button>
@@ -206,19 +208,17 @@
                         <div class="col-md-4">
                             <label class="form-label">Tipologia</label>
                             <select class="form-select" name="tipologia" required>
-                                <option value="Macchina" {% if asset.tipologia == 'Macchina' %}selected{% endif %}>Macchina</option>
-                                <option value="Veicolo" {% if asset.tipologia == 'Veicolo' %}selected{% endif %}>Veicolo</option>
-                                <option value="Oggetto" {% if asset.tipologia == 'Oggetto' %}selected{% endif %}>Oggetto</option>
-                                <option value="Carrello Elettrico" {% if asset.tipologia == 'Carrello Elettrico' %}selected{% endif %}>Carrello Elettrico</option>
-                                <option value="Impianto" {% if asset.tipologia == 'Impianto' %}selected{% endif %}>Impianto</option>
+                                {% for t in tipologie_asset %}
+                                    <option value="{{ t }}" {% if asset.tipologia == t %}selected{% endif %}>{{ t }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Sede</label>
                             <select class="form-select" name="sede" required>
-                                <option value="1 - Allende" {% if asset.sede == '1 - Allende' %}selected{% endif %}>1 - Allende</option>
-                                <option value="2 - King" {% if asset.sede == '2 - King' %}selected{% endif %}>2 - King</option>
-                                <option value="3 - Neruda" {% if asset.sede == '3 - Neruda' %}selected{% endif %}>3 - Neruda</option>
+                                {% for key, value in sedi.items() %}
+                                    <option value="{{ key }} - {{ value }}" {% if asset.sede == key ~ ' - ' ~ value %}selected{% endif %}>{{ key }} - {{ value }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="col-md-4">
@@ -261,10 +261,10 @@
                     <div class="mb-3">
                         <label class="form-label">Tipo Intervento</label>
                         <select class="form-select" name="tipo" required>
-                            <option value="controllo_periodico">Controllo Periodico</option>
-                            <option value="manutenzione_straordinaria">Manutenzione Straordinaria</option>
-                            <option value="pulizia">Pulizia</option>
-                            <option value="analisi">Analisi</option>
+                            <option value="" selected></option>
+                            {% for key, value in tipologie_interventi.items() %}
+                                <option value="{{ key }}">{{ value }}</option>
+                            {% endfor %}
                         </select>
                     </div>
 
@@ -276,7 +276,17 @@
 
                     <div class="mb-3">
                         <label class="form-label">Operatore</label>
-                        <input type="text" class="form-control" name="operatore" required>
+                        <select class="form-select" name="operatore" required>
+                            <option value="" selected></option>
+                            {% for operatore in operatori %}
+                                <option value="{{ operatore }}">{{ operatore }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Operatore Esterno</label>
+                        <input type="text" class="form-control" name="operatore_esterno">
                     </div>
 
                     <div class="mb-3">
@@ -313,10 +323,9 @@
                     <div class="mb-3">
                         <label class="form-label">Tipo Intervento</label>
                         <select class="form-select" name="tipo" id="edit_tipo" required>
-                            <option value="controllo_periodico">Controllo Periodico</option>
-                            <option value="manutenzione_straordinaria">Manutenzione Straordinaria</option>
-                            <option value="pulizia">Pulizia</option>
-                            <option value="analisi">Analisi</option>
+                            {% for key, value in tipologie_interventi.items() %}
+                                <option value="{{ key }}">{{ value }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div class="mb-3">
@@ -325,7 +334,16 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Operatore</label>
-                        <input type="text" class="form-control" name="operatore" id="edit_operatore" required>
+                        <select class="form-select" name="operatore" id="edit_operatore" required>
+                            <option value="" disabled selected>Seleziona un operatore</option>
+                            {% for operatore in operatori %}
+                                <option value="{{ operatore }}">{{ operatore }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Operatore Esterno</label>
+                        <input type="text" class="form-control" name="operatore_esterno" id="edit_operatore_esterno">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Note</label>
@@ -358,13 +376,14 @@ document.addEventListener('click', function(event) {
     const btn = event.target.closest('.btn-modifica-intervento');
     if (!btn) return;
 
-    const { id, tipo, data, operatore, note } = btn.dataset;
+    const { id, tipo, data, operatore, operatore_esterno, note } = btn.dataset;
     
     const form = document.getElementById('formModificaIntervento');
     form.action = `/amministrazione/asset/{{ asset.id }}/intervento/${id}/update`;
     
     document.getElementById('edit_tipo').value = tipo;
     document.getElementById('edit_operatore').value = operatore;
+    document.getElementById('edit_operatore_esterno').value = operatore_esterno;
     document.getElementById('edit_note').value = note;
     
     if (data) {

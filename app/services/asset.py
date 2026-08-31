@@ -97,12 +97,13 @@ class AssetService:
         return entries
 
     @staticmethod
-    def add_intervento(asset_id: str, tipo: str, data: datetime, operatore: str, note: str, allegati: list[tuple[str, str]]) -> bool:
+    def add_intervento(asset_id: str, tipo: str, data: datetime, operatore: str, operatore_esterno: Optional[str], note: str, allegati: list[tuple[str, str]]) -> bool:
         try:
             AssetService._collection.document(asset_id).collection("interventi").add({
                 "tipo": tipo,
                 "data": data,
                 "operatore": operatore,
+                "operatore_esterno": operatore_esterno,
                 "note": note,
                 "allegati": allegati
             })
@@ -111,7 +112,7 @@ class AssetService:
             return False
 
     @staticmethod
-    def update_intervento(asset_id: str, intervento_id: str, tipo: Optional[str], data: Optional[datetime], operatore: Optional[str], note: Optional[str]) -> bool:
+    def update_intervento(asset_id: str, intervento_id: str, tipo: Optional[str], data: Optional[datetime], operatore: Optional[str], operatore_esterno: Optional[str], note: Optional[str]) -> bool:
         doc_ref = AssetService._collection.document(asset_id).collection("interventi").document(intervento_id)
         try:
             update_data = {}
@@ -121,6 +122,8 @@ class AssetService:
                 update_data["data"] = data
             if operatore is not None:
                 update_data["operatore"] = operatore
+            if operatore_esterno is not None:
+                update_data["operatore_esterno"] = operatore_esterno
             if note is not None:
                 update_data["note"] = note
             doc_ref.update(update_data)
