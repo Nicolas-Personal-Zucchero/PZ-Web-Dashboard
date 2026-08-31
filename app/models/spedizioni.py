@@ -8,6 +8,7 @@ class SpedizionePreliminare(db.Model):
     nr_colli = db.Column(db.Integer, nullable=False)
     peso = db.Column(db.Numeric(10, 2), nullable=False)
     cash_on_delivery = db.Column(db.Numeric(10, 2), default=None, nullable=True)
+    speed = db.Column(db.Boolean, default=False, nullable=False)
     xml = db.Column(db.Text, nullable=False)
     sent = db.Column(db.Boolean, default=False, nullable=False)
     sent_at = db.Column(db.DateTime, nullable=True)
@@ -28,6 +29,7 @@ class SpedizionePreliminare(db.Model):
             "nr_colli": self.nr_colli,
             "peso": self.peso,
             "cash_on_delivery": self.cash_on_delivery,
+            "speed": self.speed,
             "xml": self.xml,
             "sent": self.sent,
             "sent_at": self.sent_at

@@ -11,6 +11,44 @@ from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo
 
 class SpedizioniPreliminariService:
     @staticmethod
+    def create(
+        doc_id: str,
+        ragione_sociale_cliente: str,
+        nr_colli: int,
+        peso: float,
+        cash_on_delivery: Optional[float],
+        xml: str,
+        identificativi: List[tuple[str, str, str, str]],
+        speed: bool = False,
+    ) -> SpedizionePreliminare:
+        nuova_spedizione = SpedizionePreliminare(
+            id=doc_id,
+            ragione_sociale_cliente=ragione_sociale_cliente,
+            nr_colli=nr_colli,
+            peso=peso,
+            cash_on_delivery=cash_on_delivery,
+            speed=speed,
+            xml=xml,
+            identificativi_rel=[
+                SpedizioneIdentificativo(
+                    sigla=sigla,
+                    serie=serie,
+                    numero=numero,
+                    cod_conto=cod_conto,
+                )
+                for sigla, serie, numero, cod_conto in identificativi
+            ],
+        )
+
+        try:
+            db.session.add(nuova_spedizione)
+            db.session.commit()
+            return nuova_spedizione
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            raise e
+
+    @staticmethod
     def get_pending() -> List[SpedizionePreliminare]:
         stmt = select(SpedizionePreliminare)\
             .where(SpedizionePreliminare.sent.is_(False))\

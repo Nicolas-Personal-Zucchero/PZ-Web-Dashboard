@@ -11,7 +11,7 @@ from dachser_edi import CountryCode, Product, MeasurementName, UnitCode, Measure
 from utils.xml_builder import create_xml, generate_doc_id
 from utils.RedisMexalCache import RedisMexalCache
 from config.constants import PACKING_TYPE_MAP, PACKING_TYPE_ICONS, LABEL_TYPE_MAP, ID_PAGAMENTI_ALLA_CONSEGNA
-from extensions import db
+from services.spedizioni import SpedizioniPreliminariService
 from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo
 
 DAYS_TO_FETCH = 5
@@ -105,22 +105,16 @@ def _safe_json_load(raw_string):
 
 
 def create_spedizione_preliminare(doc_id, fattura_unica, xml, identificativi):
-    db.session.add(SpedizionePreliminare(
-        id=doc_id,
+    SpedizioniPreliminariService.create(
+        doc_id=doc_id,
         ragione_sociale_cliente=fattura_unica["cliente"]["ragione_sociale"],
         nr_colli=fattura_unica["nr_colli_sped"][0][1],
         peso=fattura_unica["peso_spedizione"][0][1],
         cash_on_delivery=fattura_unica["cod_amount"],
+        speed=fattura_unica["SPEED"],
         xml=xml,
-        identificativi_rel=[
-            SpedizioneIdentificativo(
-                sigla=sigla,
-                serie=serie,
-                numero=numero,
-                cod_conto=cod_conto
-            ) for sigla, serie, numero, cod_conto in identificativi
-        ]
-    ))
+        identificativi=identificativi,
+    )
 
 @fercam_bp.route("/invia", methods=["POST"])
 def invia():
@@ -166,9 +160,6 @@ def invia():
             except Exception as e:
                 current_app.logger.error(f"Errore : {e}")
                 errors.append((f"", str(e)))
-
-        if not errors:
-            db.session.commit()
 
         for fattura_id, error_msg in errors:
             flash(f"Errore fattura {fattura_id}: {error_msg}", "danger")
@@ -500,6 +491,6 @@ def process_fatture_group(mexal, sscc_generator, fatture_info):
         merged["indirizzo_spedizione"]["cod_paese"] = merged.get("note", {}).get("sosta_tecnica_cod_paese")
 
     doc_id, xml = build_xml(merged, ssccs)
-    print_label(ssccs, merged)
+    # print_label(ssccs, merged)
     
     return doc_id, merged, xml, identificativi
