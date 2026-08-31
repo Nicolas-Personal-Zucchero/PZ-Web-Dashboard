@@ -39,11 +39,11 @@ def asset_detail(asset_id):
 
     interventi = AssetService.get_interventi(asset_id)
 
-    manutenzioni = [i for i in interventi if i.get("tipo") == "manutenzione"]
+    controlli_periodici = [i for i in interventi if i.get("tipo") == "controllo_periodico"]
     pulizie = [i for i in interventi if i.get("tipo") == "pulizia"]
 
-    giorni_dalla_manutenzione, giorni_ritardo_manutenzione = calcola_giorni(manutenzioni, asset["intervallo_manutenzione"])
-    giorni_dalla_pulizia, giorni_ritardo_pulizia = calcola_giorni(pulizie, asset["intervallo_pulizia"])
+    giorni_dal_controllo_periodico, giorni_ritardo_controllo_periodico = calcola_giorni(controlli_periodici, asset["intervallo_controllo_periodico"])
+    giorni_dalla_pulizia, giorni_ritardo_pulizia = calcola_giorni(pulizie, asset["intervallo_pulizia"]) if asset["intervallo_pulizia"] else (None, None)
 
     for i in interventi:
         i["data"] = i["data"].astimezone(ITALY_TZ).strftime("%d/%m/%Y")
@@ -52,9 +52,9 @@ def asset_detail(asset_id):
         "/amministrazione/asset_dettaglio.html",
         asset=asset,
         interventi=interventi,
-        giorni_dalla_manutenzione=giorni_dalla_manutenzione,
+        giorni_dal_controllo_periodico=giorni_dal_controllo_periodico,
         giorni_dalla_pulizia=giorni_dalla_pulizia,
-        giorni_ritardo_manutenzione=giorni_ritardo_manutenzione,
+        giorni_ritardo_controllo_periodico=giorni_ritardo_controllo_periodico,
         giorni_ritardo_pulizia=giorni_ritardo_pulizia,
         datetime=datetime
     )
@@ -68,19 +68,12 @@ def add_intervento(asset_id):
     allegati = request.files.getlist("allegati")
 
     if data_str:
-        uploaded_at = datetime.strptime(data_str, "%Y-%m-%d")
-        uploaded_at = ITALY_TZ.localize(uploaded_at)
+        data = datetime.strptime(data_str, "%Y-%m-%d")
+        data = ITALY_TZ.localize(data)
     else:
-        uploaded_at = datetime.now(ITALY_TZ)
+        data = datetime.now(ITALY_TZ)
 
-    entry = {
-        "tipo": tipo,
-        "data": uploaded_at,
-        "operatore": operatore,
-        "note": note,
-        "allegati": []
-    }
-
+    allegati = []
     for allegato in allegati:
         if allegato and allegato.filename:
             original_filename = os.path.basename(allegato.filename).strip()
@@ -90,12 +83,19 @@ def add_intervento(asset_id):
 
             allegato.save(storage_path)
 
-            entry["allegati"].append({
+            allegati.append({
                 "original_filename": original_filename,
                 "path": storage_name
             })
 
-    result = AssetService.add_intervento(asset_id, entry)
+    result = AssetService.add_intervento(
+        asset_id,
+        tipo,
+        data,
+        operatore,
+        note,
+        allegati
+    )
     if not result:
         flash("Errore durante la registrazione dell'intervento.", "danger")
         return redirect(f"/amministrazione/asset/{asset_id}")
@@ -188,9 +188,11 @@ def update_asset(asset_id):
             "tipologia": request.form.get("tipologia", "").strip(),
             "sede": request.form.get("sede", "").strip(),
             "posizione": request.form.get("posizione", "").strip(),
-            "intervallo_manutenzione": int(request.form.get("intervallo_manutenzione", 0)),
-            "intervallo_pulizia": int(request.form.get("intervallo_pulizia", 0)),
+            "intervallo_controllo_periodico": int(request.form.get("intervallo_controllo_periodico", 0)),
         }
+        int_pulizia_raw = request.form.get("intervallo_pulizia", "").strip()
+        payload["intervallo_pulizia"] = int(int_pulizia_raw) if int_pulizia_raw else None
+
         result = AssetService.update(asset_id, payload)
 
         if result:
@@ -208,22 +210,17 @@ def update_intervento(asset_id, intervento_id):
     operatore = request.form.get("operatore", "").strip()
     note = request.form.get("note", "").strip()
     data_str = request.form.get("data")
-
-    update_data = {
-        "tipo": tipo,
-        "operatore": operatore,
-        "note": note
-    }
+    data = None
 
     if data_str:
         try:
             dt = datetime.strptime(data_str, "%Y-%m-%d")
-            update_data["data"] = ITALY_TZ.localize(dt)
+            data = ITALY_TZ.localize(dt)
         except ValueError:
             flash("Formato data non valido.", "danger")
             return redirect(f"/amministrazione/asset/{asset_id}")
 
-    result = AssetService.update_intervento(asset_id, intervento_id, update_data)
+    result = AssetService.update_intervento(asset_id, intervento_id, tipo, data, operatore, note)
     
     if result:
         flash("Intervento aggiornato con successo.", "success")

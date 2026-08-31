@@ -491,6 +491,6 @@ def process_fatture_group(mexal, sscc_generator, fatture_info):
         merged["indirizzo_spedizione"]["cod_paese"] = merged.get("note", {}).get("sosta_tecnica_cod_paese")
 
     doc_id, xml = build_xml(merged, ssccs)
-    # print_label(ssccs, merged)
+    print_label(ssccs, merged)
     
     return doc_id, merged, xml, identificativi
