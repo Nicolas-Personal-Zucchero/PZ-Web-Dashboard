@@ -6,6 +6,7 @@ from flask import Flask, session, request
 from extensions import db
 from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo
 from models.recensioni import Review, Employee
+from models.sigep_tickets import Ticket, TicketAssignment
 
 from config.links import get_links
 
