@@ -39,11 +39,11 @@ def asset_detail(asset_id):
 
     interventi = AssetService.get_interventi(asset_id)
 
-    manutenzioni = [i for i in interventi if i.get("tipo") == "manutenzione"]
+    controlli_periodici = [i for i in interventi if i.get("tipo") == "controllo_periodico"]
     pulizie = [i for i in interventi if i.get("tipo") == "pulizia"]
 
-    giorni_dalla_manutenzione, giorni_ritardo_manutenzione = calcola_giorni(manutenzioni, asset["intervallo_manutenzione"])
-    giorni_dalla_pulizia, giorni_ritardo_pulizia = calcola_giorni(pulizie, asset["intervallo_pulizia"])
+    giorni_dal_controllo_periodico, giorni_ritardo_controllo_periodico = calcola_giorni(controlli_periodici, asset["intervallo_controllo_periodico"])
+    giorni_dalla_pulizia, giorni_ritardo_pulizia = calcola_giorni(pulizie, asset["intervallo_pulizia"]) if asset["intervallo_pulizia"] else (None, None)
 
     for i in interventi:
         i["data"] = i["data"].astimezone(ITALY_TZ).strftime("%d/%m/%Y")
@@ -52,9 +52,9 @@ def asset_detail(asset_id):
         "/amministrazione/asset_dettaglio.html",
         asset=asset,
         interventi=interventi,
-        giorni_dalla_manutenzione=giorni_dalla_manutenzione,
+        giorni_dal_controllo_periodico=giorni_dal_controllo_periodico,
         giorni_dalla_pulizia=giorni_dalla_pulizia,
-        giorni_ritardo_manutenzione=giorni_ritardo_manutenzione,
+        giorni_ritardo_controllo_periodico=giorni_ritardo_controllo_periodico,
         giorni_ritardo_pulizia=giorni_ritardo_pulizia,
         datetime=datetime
     )
@@ -188,9 +188,11 @@ def update_asset(asset_id):
             "tipologia": request.form.get("tipologia", "").strip(),
             "sede": request.form.get("sede", "").strip(),
             "posizione": request.form.get("posizione", "").strip(),
-            "intervallo_manutenzione": int(request.form.get("intervallo_manutenzione", 0)),
-            "intervallo_pulizia": int(request.form.get("intervallo_pulizia", 0)),
+            "intervallo_controllo_periodico": int(request.form.get("intervallo_controllo_periodico", 0)),
         }
+        int_pulizia_raw = request.form.get("intervallo_pulizia", "").strip()
+        payload["intervallo_pulizia"] = int(int_pulizia_raw) if int_pulizia_raw else None
+
         result = AssetService.update(asset_id, payload)
 
         if result:

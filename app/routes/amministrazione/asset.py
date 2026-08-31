@@ -11,10 +11,12 @@ def asset():
         tipologia = request.form.get("tipologia", "").strip()
         sede = request.form.get("sede", "").strip()
         posizione = request.form.get("posizione", "").strip()
-        intervallo_manutenzione = int(request.form.get("intervallo_manutenzione", "").strip())
-        intervallo_pulizia = int(request.form.get("intervallo_pulizia", "").strip())
+        intervallo_controllo_periodico = int(request.form.get("intervallo_controllo_periodico", "").strip())
+        intervallo_pulizia = request.form.get("intervallo_pulizia").strip()
+        if intervallo_pulizia:
+            intervallo_pulizia = int(intervallo_pulizia.strip())
 
-        AssetService.create(nome, modello, tipologia, sede, posizione, intervallo_manutenzione, intervallo_pulizia)
+        AssetService.create(nome, modello, tipologia, sede, posizione, intervallo_controllo_periodico, intervallo_pulizia)
         flash("Asset registrato con successo!", "success")
         return redirect("/amministrazione/asset")
 

@@ -1,6 +1,7 @@
 from utils.firebase_client import db
 from firebase_admin import firestore
 import re
+from typing import Optional
 
 class AssetService:
     _BATCH_SIZE = 400
@@ -25,14 +26,14 @@ class AssetService:
         return {"id": doc.id, **doc.to_dict()}
 
     @staticmethod
-    def create(nome: str, modello: str, tipologia: str, sede: str, posizione: str, intervallo_manutenzione: int, intervallo_pulizia: int) -> str:
+    def create(nome: str, modello: str, tipologia: str, sede: str, posizione: str, intervallo_controllo_periodico: int, intervallo_pulizia: Optional[int]) -> str:
         payload = {
             "nome": nome,
             "modello": modello,
             "tipologia": tipologia,
             "sede": sede,
             "posizione": posizione,
-            "intervallo_manutenzione": intervallo_manutenzione,
+            "intervallo_controllo_periodico": intervallo_controllo_periodico,
             "intervallo_pulizia": intervallo_pulizia,
             "created_at": firestore.SERVER_TIMESTAMP
         }

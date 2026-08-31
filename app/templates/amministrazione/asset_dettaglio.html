@@ -57,12 +57,16 @@
                     <p class="mb-0">{{ asset.posizione }}</p>
                 </div>
                 <div class="col-md-3">
-                    <p class="mb-1"><strong>Intervallo Manutenzione:</strong></p>
-                    <p class="mb-0">{{ asset.intervallo_manutenzione }} giorni</p>
+                    <p class="mb-1"><strong>Intervallo Controllo Periodico:</strong></p>
+                    <p class="mb-0">{{ asset.intervallo_controllo_periodico }} giorni</p>
                 </div>
                 <div class="col-md-3">
                     <p class="mb-1"><strong>Intervallo Pulizia:</strong></p>
-                    <p class="mb-0">{{ asset.intervallo_pulizia }} giorni</p>
+                    {% if asset.intervallo_pulizia is not none %}
+                        <p class="mb-0">{{ asset.intervallo_pulizia }} giorni</p>
+                    {% else %}
+                        <p class="mb-0">Non impostato</p>
+                    {% endif %}
                 </div>
             </div>
 
@@ -70,31 +74,33 @@
 
             <div class="row g-3">
                 <div class="col-md-6">
-                    <p class="mb-1"><strong>Stato Manutenzione</strong></p>
-                    {% if giorni_dalla_manutenzione is not none %}
-                    {% if giorni_ritardo_manutenzione %}
-                    <p class="text-danger fw-semibold mb-0">
-                        Ultima: {{ giorni_dalla_manutenzione }} giorni fa (RITARDO di {{ giorni_ritardo_manutenzione }} giorni)
-                    </p>
+                    <p class="mb-1"><strong>Stato Controllo Periodico</strong></p>
+                    {% if giorni_dal_controllo_periodico is none %}
+                        <p class="text-muted small mb-0">Nessun controllo periodico registrato</p>
                     {% else %}
-                    <p class="text-muted small mb-0">Ultima: {{ giorni_dalla_manutenzione }} giorni fa</p>
-                    {% endif %}
-                    {% else %}
-                    <p class="text-muted small mb-0">Nessuna manutenzione registrata</p>
+                        {% if giorni_ritardo_controllo_periodico %}
+                            <p class="text-danger fw-semibold mb-0">
+                                Ultima: {{ giorni_dal_controllo_periodico }} giorni fa (RITARDO di {{ giorni_ritardo_controllo_periodico }} giorni)
+                            </p>
+                        {% else %}
+                            <p class="text-muted small mb-0">Ultima: {{ giorni_dal_controllo_periodico }} giorni fa</p>
+                        {% endif %}
                     {% endif %}
                 </div>
                 <div class="col-md-6">
                     <p class="mb-1"><strong>Stato Pulizia</strong></p>
-                    {% if giorni_dalla_pulizia is not none %}
-                    {% if giorni_ritardo_pulizia %}
-                    <p class="text-danger fw-semibold mb-0">
-                        Ultima: {{ giorni_dalla_pulizia }} giorni fa (RITARDO di {{ giorni_ritardo_pulizia }} giorni)
-                    </p>
+                    {% if asset.intervallo_pulizia is none %}
+                        <p class="text-muted small mb-0">Intervallo pulizia non impostato</p>
+                    {% elif giorni_dalla_pulizia is none %}
+                        <p class="text-muted small mb-0">Nessuna pulizia registrata</p>
                     {% else %}
-                    <p class="text-muted small mb-0">Ultima: {{ giorni_dalla_pulizia }} giorni fa</p>
-                    {% endif %}
-                    {% else %}
-                    <p class="text-muted small mb-0">Nessuna pulizia registrata</p>
+                        {% if giorni_ritardo_pulizia %}
+                            <p class="text-danger fw-semibold mb-0">
+                                Ultima: {{ giorni_dalla_pulizia }} giorni fa (RITARDO di {{ giorni_ritardo_pulizia }} giorni)
+                            </p>
+                        {% else %}
+                            <p class="text-muted small mb-0">Ultima: {{ giorni_dalla_pulizia }} giorni fa</p>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
@@ -108,7 +114,8 @@
                 <div class="w-25">
                     <select class="form-select" id="filtroTipoIntervento" onchange="filtraInterventi()">
                         <option value="tutti">Tutti i tipi</option>
-                        <option value="manutenzione">Manutenzione</option>
+                        <option value="controllo_periodico">Controllo Periodico</option>
+                        <option value="manutenzione_straordinaria">Manutenzione Straordinaria</option>
                         <option value="pulizia">Pulizia</option>
                         <option value="analisi">Analisi</option>
                     </select>
@@ -133,7 +140,7 @@
                     <li class="list-group-item intervento-item" data-tipo="{{ i.tipo }}">
                         <div class="row align-items-center">
                             <div class="col-md-1">{{ i.data }}</div>
-                            <div class="col-md-2 text-capitalize">{{ i.tipo }}</div>
+                            <div class="col-md-2 text-capitalize">{{ i.tipo | capitalize | replace('_', ' ') }}</div>
                             <div class="col-md-2">{{ i.operatore }}</div>
                             <div class="col-md-3" title="{{ i.note }}">{{ i.note }}</div>
                             <div class="col-md-2">
@@ -149,8 +156,12 @@
                                 {% endif %}
                             </div>
                             <div class="col-md-2 text-end">
-                                <button type="button" class="btn btn-sm btn-outline-secondary" 
-                                        onclick="apriModaleModifica('{{ i.id }}', '{{ i.tipo }}', '{{ i.data }}', '{{ i.operatore }}', '{{ i.note }}')">
+                                <button type="button" class="btn btn-sm btn-outline-secondary btn-modifica-intervento" 
+                                        data-id="{{ i.id }}" 
+                                        data-tipo="{{ i.tipo }}" 
+                                        data-data="{{ i.data }}" 
+                                        data-operatore="{{ i.operatore }}" 
+                                        data-note="{{ i.note }}">
                                     Modifica
                                 </button>
                                 <form method="POST" action="/amministrazione/asset/{{ asset.id }}/intervento/{{ i.id }}/delete" class="d-inline" onsubmit="return confirm('Procedere con l\'eliminazione definitiva di questo intervento?');">
@@ -217,12 +228,12 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Intervallo Manutenzione (giorni)</label>
-                            <input type="number" class="form-control" name="intervallo_manutenzione" value="{{ asset.intervallo_manutenzione }}" required min="0">
+                            <label class="form-label">Intervallo controllo periodico (giorni)</label>
+                            <input type="number" class="form-control" name="intervallo_controllo_periodico" value="{{ asset.intervallo_controllo_periodico }}" required min="0">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Intervallo Pulizia (giorni)</label>
-                            <input type="number" class="form-control" name="intervallo_pulizia" value="{{ asset.intervallo_pulizia }}" required min="0">
+                            <input type="number" class="form-control" name="intervallo_pulizia" value="{{ asset.intervallo_pulizia }}" min="0">
                         </div>
                     </div>
                 </div>
@@ -250,7 +261,8 @@
                     <div class="mb-3">
                         <label class="form-label">Tipo Intervento</label>
                         <select class="form-select" name="tipo" required>
-                            <option value="manutenzione">Manutenzione</option>
+                            <option value="controllo_periodico">Controllo Periodico</option>
+                            <option value="manutenzione_straordinaria">Manutenzione Straordinaria</option>
                             <option value="pulizia">Pulizia</option>
                             <option value="analisi">Analisi</option>
                         </select>
@@ -301,7 +313,8 @@
                     <div class="mb-3">
                         <label class="form-label">Tipo Intervento</label>
                         <select class="form-select" name="tipo" id="edit_tipo" required>
-                            <option value="manutenzione">Manutenzione</option>
+                            <option value="controllo_periodico">Controllo Periodico</option>
+                            <option value="manutenzione_straordinaria">Manutenzione Straordinaria</option>
                             <option value="pulizia">Pulizia</option>
                             <option value="analisi">Analisi</option>
                         </select>
@@ -341,7 +354,12 @@ function filtraInterventi() {
     });
 }
 
-function apriModaleModifica(id, tipo, dataStr, operatore, note) {
+document.addEventListener('click', function(event) {
+    const btn = event.target.closest('.btn-modifica-intervento');
+    if (!btn) return;
+
+    const { id, tipo, data, operatore, note } = btn.dataset;
+    
     const form = document.getElementById('formModificaIntervento');
     form.action = `/amministrazione/asset/{{ asset.id }}/intervento/${id}/update`;
     
@@ -349,15 +367,16 @@ function apriModaleModifica(id, tipo, dataStr, operatore, note) {
     document.getElementById('edit_operatore').value = operatore;
     document.getElementById('edit_note').value = note;
     
-    if (dataStr) {
-        const parts = dataStr.split('/');
+    if (data) {
+        const parts = data.split('/');
         if (parts.length === 3) {
             document.getElementById('edit_data').value = `${parts[2]}-${parts[1]}-${parts[0]}`;
         }
     }
     
-    new bootstrap.Modal(document.getElementById('modalModificaIntervento')).show();
-}
+    const modal = new bootstrap.Modal(document.getElementById('modalModificaIntervento'));
+    modal.show();
+});
 </script>
 
 {% endblock %}

@@ -65,13 +65,13 @@
                         </div>
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="intervallo_manutenzione" class="form-label">Intervallo Manutenzione (giorni)</label>
-                                <input type="number" class="form-control" name="intervallo_manutenzione" id="intervallo_manutenzione" placeholder="Es: 365" min="0"required>
+                                <label for="intervallo_controllo_periodico" class="form-label">Intervallo Controllo Periodico (giorni)</label>
+                                <input type="number" class="form-control" name="intervallo_controllo_periodico" id="intervallo_controllo_periodico" placeholder="Es: 365" min="0" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="intervallo_pulizia" class="form-label">Intervallo Pulizia (giorni)</label>
                                 <input type="number" class="form-control" name="intervallo_pulizia" id="intervallo_pulizia"
-                                    placeholder="Es: 30" min="0" required>
+                                    placeholder="Es: 30" min="0">
                             </div>
                         </div>
                         <div class="d-flex justify-content-end gap-2">
@@ -135,8 +135,8 @@
                     <div>Tipologia</div>
                     <div>Sede</div>
                     <div>Posizione</div>
-                    <div>Int. Manuten.</div>
-                    <div>Int. Pulizia</div>
+                    <div title="Intervallo Controllo Periodico">C. Period.</div>
+                    <div title="Intervallo Pulizia">Pulizia</div>
                     <div class="text-end">Azioni</div>
                 </div>
             </li>
@@ -155,8 +155,8 @@
                     <div>{{ e.tipologia }}</div>
                     <div>{{ e.sede }}</div>
                     <div>{{ e.posizione }}</div>
-                    <div>{{ e.intervallo_manutenzione }}</div>
-                    <div>{{ e.intervallo_pulizia }}</div>
+                    <div>{{ e.intervallo_controllo_periodico }}</div>
+                    <div>{{ e.intervallo_pulizia if e.intervallo_pulizia is not none else '' }}</div>
                     <div class="text-end">
                         <a href="/amministrazione/asset/{{ e.id }}" class="btn btn-outline-primary btn-sm" title="Apri dettaglio asset">
                             <i class="bi bi-box-arrow-up-right"></i>
