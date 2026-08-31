@@ -129,6 +129,7 @@ def invia():
         flash("Nessun documento selezionato per l'invio.", "danger")
         return redirect(url_for("fercam.fercam"))
 
+    speed_booleans = _safe_json_load(request.form.get("speed_booleans", "{}"))
     telefoni_overrides = _safe_json_load(request.form.get("telefono_overrides", "{}"))
     nr_colli_overrides = _safe_json_load(request.form.get("nr_colli_overrides", "{}"))
     peso_overrides = _safe_json_load(request.form.get("peso_overrides", "{}"))
@@ -146,11 +147,12 @@ def invia():
 
         groups = {}
         for fattura_id in fatture_ids:
+            is_speed_selected = speed_booleans.get(fattura_id)
             telefono_override = telefoni_overrides.get(fattura_id)
             nr_colli_override = int(nr_colli_overrides.get(fattura_id)) if nr_colli_overrides.get(fattura_id) else None
             peso_override = parse_float_amount(peso_overrides.get(fattura_id))
             cod_override = parse_float_amount(cod_amount_overrides.get(fattura_id))
-            info = (fattura_id, telefono_override, nr_colli_override, peso_override, cod_override)
+            info = (fattura_id, is_speed_selected, telefono_override, nr_colli_override, peso_override, cod_override)
             group = raggruppamenti.get(fattura_id)
             groups.setdefault(group if group else fattura_id, []).append(info)
 
@@ -374,7 +376,7 @@ def build_xml(fattura, ssccs):
             "forwarder": {
                 "id": "956" # Codice fisso fornito da loro
             },
-            "product": Product.TARGOFLEX, # O targospeed in alcuni rari casi, da verificare sul codice vettore
+            "product": Product.TARGOSPEED if fattura["SPEED"] else Product.TARGOFLEX,
             "items": [
                 {
                     "quantity": fattura["nr_colli_sped"][0][1], #numeri di cartoni, pallet a perdere o pallet a scambio, a seconda del packing type
@@ -449,7 +451,7 @@ def process_fatture_group(mexal, sscc_generator, fatture_info):
     identificativi = []
     last_id_pagamento = None
 
-    for fid, telefono_override, nr_colli_override, peso_override, cod_amount_override in fatture_info:
+    for fid, is_speed, telefono_override, nr_colli_override, peso_override, cod_amount_override in fatture_info:
         sigla, serie, numero, cod_conto = fid.split("+")
         f = load_fattura_for_send(mexal, sigla, serie, numero, cod_conto)
         
@@ -458,6 +460,7 @@ def process_fatture_group(mexal, sscc_generator, fatture_info):
         last_id_pagamento = str(f["id_pagamento"])
 
         # Override individuali
+        f["SPEED"] = is_speed
         if telefono_override is not None: f["cliente"]["telefono"] = telefono_override
         if nr_colli_override is not None: f["nr_colli_sped"][0][1] = nr_colli_override
         if peso_override is not None: f["peso_spedizione"][0][1] = peso_override
@@ -477,6 +480,7 @@ def process_fatture_group(mexal, sscc_generator, fatture_info):
             merged["cod_code"] = "02"
             merged["note"]["incasso"] = "R - Titolo come rilasciato"
 
+    # Somma i valori di più fatture unite insieme
     for f in fatture[1:]:
         merged["nr_colli_sped"][0][1] += f["nr_colli_sped"][0][1]
         merged["peso_spedizione"][0][1] += f["peso_spedizione"][0][1]
