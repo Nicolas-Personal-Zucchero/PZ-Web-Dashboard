@@ -67,8 +67,9 @@
                         <div class="col-md-3">Ragione Sociale Cliente</div>
                         <div class="col-md-1">Numero Colli</div>
                         <div class="col-md-1">Peso Totale</div>
-                        <div class="col-md-2">Contrassegno</div>
-                        <div class="col-md-1">Azioni</div>
+                        <div class="col-md-1">Contrassegno</div>
+                        <div class="col-md-1 text-center">Speed</div>
+                        <div class="col-md-1 text-end">Azioni</div>
                     </div>
                 </li>
 
@@ -93,8 +94,13 @@
                         <div class="col-md-1">
                             {{ spedizione.peso }}
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-1">
                             {{ spedizione.cash_on_delivery if spedizione.cash_on_delivery is not none else '' }}
+                        </div>
+                        <div class="col-md-1 text-center">
+                            {% if spedizione.speed %}
+                                <i class='bi bi-check-lg text-success fs-5'></i>
+                            {% endif %}
                         </div>
                         <div class="col-md-1 text-end">
                             <a class="btn btn-outline-primary btn-sm me-1"
@@ -201,8 +207,9 @@
                     <div class="col-md-3">Ragione Sociale Cliente</div>
                     <div class="col-md-1">Numero Colli</div>
                     <div class="col-md-1">Peso Totale</div>
-                    <div class="col-md-2">Contrassegno</div>
-                    <div class="col-md-1">Azioni</div>
+                    <div class="col-md-1">Contrassegno</div>
+                    <div class="col-md-1 text-center">Speed</div>
+                    <div class="col-md-1 text-end">Azioni</div>
                 </div>
             </li>
 
@@ -230,8 +237,13 @@
                     <div class="col-md-1">
                         {{ spedizione.peso }}
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-1">
                         {{ spedizione.cash_on_delivery if spedizione.cash_on_delivery is not none else '' }}
+                    </div>
+                    <div class="col-md-1 text-center">
+                        {% if spedizione.speed %}
+                            <i class='bi bi-check-lg text-success fs-5'></i>
+                        {% endif %}
                     </div>
                     <div class="col-md-1 text-end">
                         <a class="btn btn-outline-primary btn-sm me-1"
