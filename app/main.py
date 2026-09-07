@@ -5,8 +5,10 @@ import sys
 from flask import Flask, session, request
 from extensions import db
 from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo
-from models.recensioni import Review, Employee
+from models.recensioni import Review
+from models.employees import Employee
 from models.sigep_tickets import Ticket, TicketAssignment
+from models.events_generic_production import Event, Batch, Production
 
 from config.links import get_links
 
@@ -19,6 +21,7 @@ from routes.trattative_agenti import trattative_agenti_bp
 from routes.etichette_spedizioni import etichette_spedizioni_bp
 from routes.fercam import fercam_bp
 from routes.preliminari import preliminari_bp
+from pages.produzione_generici.produzione_generici import produzione_generici_bp
 
 from routes.amministrazione.asset import asset_bp
 from routes.amministrazione.asset_dettaglio import asset_dettaglio_bp
@@ -72,6 +75,7 @@ def create_app():
     app.register_blueprint(etichette_spedizioni_bp)
     app.register_blueprint(fercam_bp)
     app.register_blueprint(preliminari_bp)
+    app.register_blueprint(produzione_generici_bp)
 
     amministrazione_bp.register_blueprint(gestione_lotti_bp)
     amministrazione_bp.register_blueprint(visualizza_impianti_bp)

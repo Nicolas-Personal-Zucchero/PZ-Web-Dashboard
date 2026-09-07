@@ -4,6 +4,7 @@ from config.secrets_manager import secrets_manager
 from config.constants import ITALY_TZ
 from config.mail_config import EMAIL_TEMPLATES
 from services.recensioni import ReviewService
+from services.employees import EmployeeService
 
 recensioni_bp = Blueprint("recensioni", __name__, url_prefix="/recensioni")
 
@@ -23,7 +24,7 @@ def recensioni():
             flash("Hai già inviato una richiesta di recensione a questa email.", "warning")
             return redirect("/recensioni")
 
-        sender = ReviewService.get_employee(sender_id) 
+        sender = EmployeeService.get_employee(sender_id) 
         if not sender:
             flash("Mittente selezionato non valido.", "danger")
             return redirect("/recensioni")
@@ -45,7 +46,7 @@ def recensioni():
 
     return render_template(
         "recensioni.html",
-        employees=ReviewService.get_all_employees(),
+        employees=EmployeeService.get_employees(departments=["Ufficio Grafico", "Ufficio Commerciale", "Ufficio Amministrativo", "Ufficio Ordini", "Direzione", ""]),
         reviews=ReviewService.get_reviews(hidden=False)
     )
 

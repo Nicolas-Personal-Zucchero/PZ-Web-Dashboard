@@ -1,19 +1,11 @@
 from models.recensioni import Review
 from extensions import db
-from models.recensioni import Employee
+from models.employees import Employee
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
 
 class ReviewService:
-    @staticmethod
-    def get_all_employees() -> list:
-        return db.session.query(Employee).all()
-
-    @staticmethod
-    def get_employee(employee_id: int) -> Employee | None:
-        return db.session.get(Employee, employee_id)
-
     @staticmethod
     def does_review_exist(email: str) -> bool:
         return db.session.query(Review).filter_by(customer_email=email, hidden=False).first() is not None
