@@ -8,7 +8,7 @@ from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo
 from models.recensioni import Review
 from models.employees import Employee
 from models.sigep_tickets import Ticket, TicketAssignment
-from models.events_generic_production import Event, Batch, Production
+from models.themes_production import Theme, Batch, Production
 
 from config.links import get_links
 
