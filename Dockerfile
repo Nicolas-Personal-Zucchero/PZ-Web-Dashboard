@@ -1,7 +1,7 @@
 FROM python:3.11-slim
 
 # Creazione utente non privilegiato per sicurezza
-RUN groupadd -r pzuser && useradd -r -g pzuser pzuser
+RUN groupadd -g 10000 pzuser && useradd -r -u 10000 -g pzuser pzuser
 
 WORKDIR /app
 
