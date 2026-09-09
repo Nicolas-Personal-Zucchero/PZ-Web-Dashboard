@@ -324,8 +324,14 @@
         });
 
         if (btnInvia) {
-            btnInvia.addEventListener("click", function () {
+            btnInvia.addEventListener("click", function (event) {
                 if (!btnInvia.disabled && fercamForm) {
+                    // Previene invii multipli accidentali
+                    event.preventDefault();
+
+                    btnInvia.disabled = true;
+                    btnInvia.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Invio in corso...';
+
                     fercamForm.submit();
                 }
             });
