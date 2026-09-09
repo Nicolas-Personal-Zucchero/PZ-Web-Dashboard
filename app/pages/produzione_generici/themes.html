@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Produzione generici{% endblock %}
+
+{% block content %}
+<style>
+    .row-selected {
+        background-color: #cff4fc !important;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    .generico-row, .batch-row {
+        cursor: pointer;
+    }
+
+    a.list-group-item, a.list-group-item:hover {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    @media (min-width: 1400px) {
+        .modal-xxl {
+            max-width: 1620px;
+        }
+    }
+</style>
+
+<div class="p-4">
+    <div class="d-flex align-items-center mb-3">
+        <a href="{{ home_link }}" class="btn btn-light">
+            <i class="bi bi-arrow-left"></i> Torna indietro
+        </a>
+        <h1 class="h3 mb-0 ms-3">Produzione generici</h1>
+    </div>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+        <div class="toast align-items-center text-white bg-{{ 'danger' if category == 'error' else category }} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+            <div class="d-flex">
+                <div class="toast-body">
+                    {{ message }}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        {% endfor %}
+        {% endwith %}
+    </div>
+
+    <!-- Tabella 1: Temi -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h5 mb-0">Temi</h2>
+        <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#themeModal">
+            <i class="bi bi-plus-circle"></i> Aggiungi tema
+        </button>
+    </div>
+    <div style="max-height: 300px; overflow-y: auto;" class="mb-4 border rounded">
+        <ul class="list-group list-group-flush styled-table">
+            <li class="list-group-item static-header sticky-top bg-light">
+                <div class="row align-items-center fw-bold">
+                    <div class="col-12">Nome</div>
+                </div>
+            </li>
+
+            {% for generico in generici %}
+            <a class="list-group-item generico-row {{ 'row-selected' if selected_theme and selected_theme.id == generico.id }}"
+               href="{{ url_for('produzione_generici.produzione_generici', theme_id=generico.id) }}">
+                <div class="row">
+                    <div class="col-12">{{ generico.name }}</div>
+                </div>
+            </a>
+            {% else %}
+            <li class="list-group-item text-center text-muted">
+                Nessun tema disponibile.
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Tabella 2: Lotti -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h5 mb-0">Lotti{% if selected_theme %} di "{{ selected_theme.name }}"{% endif %}</h2>
+        <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#batchModal" {{ 'disabled' if not selected_theme }}>
+            <i class="bi bi-plus-circle"></i> Aggiungi lotto
+        </button>
+    </div>
+    {% if selected_theme %}
+    <div style="max-height: 300px; overflow-y: auto;" class="mb-4 border rounded">
+        <ul class="list-group list-group-flush styled-table">
+            <li class="list-group-item static-header sticky-top bg-light">
+                <div class="row align-items-center fw-bold">
+                    <div class="col-12">Codice</div>
+                </div>
+            </li>
+
+            {% for batch in batches %}
+            <a class="list-group-item batch-row {{ 'row-selected' if selected_batch and selected_batch.id == batch.id }}"
+               href="{{ url_for('produzione_generici.produzione_generici', theme_id=selected_theme.id, batch_id=batch.id) }}">
+                <div class="row">
+                    <div class="col-12">{{ batch.code }}</div>
+                </div>
+            </a>
+            {% else %}
+            <li class="list-group-item text-center text-muted">
+                Nessun lotto disponibile.
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% else %}
+    <p class="text-muted mb-4">Seleziona un tema per visualizzare i lotti.</p>
+    {% endif %}
+
+    <!-- Tabella 3: Produzioni -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h5 mb-0">Produzioni{% if selected_batch %} del lotto "{{ selected_batch.code }}"{% endif %}</h2>
+        <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#productionModal" {{ 'disabled' if not selected_batch }}>
+            <i class="bi bi-plus-circle"></i> Aggiungi produzione
+        </button>
+    </div>
+    {% if selected_batch %}
+    <div style="max-height: 300px; overflow-y: auto;" class="mb-4 border rounded">
+        <ul class="list-group list-group-flush styled-table">
+            <li class="list-group-item static-header sticky-top bg-light">
+                <div class="row align-items-center fw-bold">
+                    <div class="col-md-3">Data</div>
+                    <div class="col-md-3">Lotto Bobina</div>
+                    <div class="col-md-3">Quantità</div>
+                    <div class="col-md-3">Operatore</div>
+                </div>
+            </li>
+
+            {% for production in productions %}
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-md-3">{{ production.local_date.strftime("%d/%m/%Y") if production.local_date else "" }}</div>
+                    <div class="col-md-3">{{ production.reel_batch }}</div>
+                    <div class="col-md-3">{{ production.quantity }}</div>
+                    <div class="col-md-3">{{ production.operator.name if production.operator else "" }}</div>
+                </div>
+            </li>
+            {% else %}
+            <li class="list-group-item text-center text-muted">
+                Nessuna produzione disponibile.
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% else %}
+    <p class="text-muted">Seleziona un lotto per visualizzare le produzioni.</p>
+    {% endif %}
+</div>
+
+<!-- Modal: Aggiungi Tema -->
+<div class="modal fade" id="themeModal" tabindex="-1" aria-labelledby="themeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('produzione_generici.create_theme') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="themeModalLabel">Aggiungi tema</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="themeName" class="form-label">Nome tema</label>
+                    <input type="text" class="form-control" name="name" id="themeName" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Crea tema</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Aggiungi lotto -->
+<div class="modal fade" id="batchModal" tabindex="-1" aria-labelledby="batchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('produzione_generici.crea_lotto') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="batchModalLabel">Aggiungi lotto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="theme_id" value="{{ selected_theme.id if selected_theme else '' }}">
+                    {% if selected_theme %}
+                    <p class="mb-3">Tema: <strong>{{ selected_theme.name }}</strong></p>
+                    {% endif %}
+                    <label for="batchCode" class="form-label">Codice lotto</label>
+                    <input type="text" class="form-control" name="code" id="batchCode" placeholder="2712S" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Crea lotto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Aggiungi produzione -->
+<div class="modal fade" id="productionModal" tabindex="-1" aria-labelledby="productionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('produzione_generici.crea_produzione') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productionModalLabel">Aggiungi produzione</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="theme_id" value="{{ selected_theme.id if selected_theme else '' }}">
+                    <input type="hidden" name="batch_id" value="{{ selected_batch.id if selected_batch else '' }}">
+                    {% if selected_batch %}
+                    <p class="mb-3">Lotto: <strong>{{ selected_batch.code }}</strong></p>
+                    {% endif %}
+                    <div class="mb-3">
+                        <label for="productionDate" class="form-label">Data</label>
+                        <input type="date" class="form-control" name="date" id="productionDate" value="{{ today }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reelBatch" class="form-label">Lotto Bobina</label>
+                        <input type="text" class="form-control" name="reel_batch" id="reelBatch" placeholder="6-2614" maxlength="6" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Quantità (Kg)</label>
+                        <input type="number" step="1" min="0" class="form-control" name="quantity" id="quantity" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="operatorId" class="form-label">Operatore</label>
+                        <select class="form-select" name="operator_id" id="operatorId" required>
+                            <option value="" selected disabled></option>
+                            {% for employee in employees %}
+                            <option value="{{ employee.id }}">{{ employee.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Registra produzione</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const batchInput = document.getElementById('batchCode');
+    const reelbatchInput = document.getElementById('reelBatch');
+
+    batchInput.addEventListener('input', function() {
+        let value = this.value.toUpperCase();
+        let digits = value.slice(0, 4).replace(/\D/g, '');
+        let letter = value.slice(4, 5).replace(/[^A-Z]/g, '');
+        this.value = digits + letter;
+    });
+
+    reelbatchInput.addEventListener('input', function() {
+        let value = this.value.replace(/\D/g, '').slice(0, 5);
+        
+        if (value.length > 1) {
+            value = value[0] + '-' + value.slice(1);
+        }
+        
+        this.value = value;
+    });
+</script>
+{% endblock %}

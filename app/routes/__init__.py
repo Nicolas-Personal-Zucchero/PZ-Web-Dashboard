@@ -26,6 +26,12 @@ register_links("home", [
             {"name": "Preparazione Fercam", "url": "/fercam", "description": "Preparazione delle spedizioni per Fercam", "icon": "bi bi-truck-front-fill me-2"},
             {"name": "Spedizioni Preliminari", "url": "/preliminari", "description": "Invio a Fercam delle spedizioni preliminari", "icon": "bi bi-box-seam-fill me-2"},
         ]
+    },
+    {
+        "title": "Produzione",
+        "links": [
+            { "name": "Produzione generici", "url": "/produzione_generici", "description": "Gestione della produzione dei lotti generici.", "icon": "bi bi-gear-fill me-2" }
+        ]
     }
 ])
 
