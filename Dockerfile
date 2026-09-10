@@ -1,7 +1,7 @@
 FROM python:3.11-slim
 
 # Creazione utente non privilegiato per sicurezza
-RUN groupadd -g 10000 pzuser && useradd -m -r -u 10000 -g pzuser pzuser
+#RUN groupadd -g 10000 pzuser && useradd -m -r -u 10000 -g pzuser pzuser
 
 WORKDIR /app
 
@@ -27,8 +27,8 @@ COPY app/ ./app
 WORKDIR /app/app
 
 # Assegnazione permessi e switch utente
-RUN chown -R pzuser:pzuser /app
-USER pzuser
+#RUN chown -R pzuser:pzuser /app
+#USER pzuser
 
 EXPOSE 5000
 
