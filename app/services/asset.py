@@ -97,7 +97,7 @@ class AssetService:
         return entries
 
     @staticmethod
-    def add_intervento(asset_id: str, tipo: str, data: datetime, operatore: str, operatore_esterno: Optional[str], note: str, allegati: list[tuple[str, str]]) -> bool:
+    def add_intervento(asset_id: str, tipo: str, data: datetime, operatore: str, operatore_esterno: Optional[str], note: str, allegati: list[dict[str, str]]) -> bool:
         try:
             AssetService._collection.document(asset_id).collection("interventi").add({
                 "tipo": tipo,

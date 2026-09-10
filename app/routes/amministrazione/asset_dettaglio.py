@@ -70,7 +70,7 @@ def add_intervento(asset_id):
     operatore_esterno = request.form.get("operatore_esterno")
     note = request.form.get("note", "").strip()
     data_str = request.form.get("data")
-    allegati = request.files.getlist("allegati")
+    uploaded_allegati = request.files.getlist("allegati")
 
     if data_str:
         data = datetime.strptime(data_str, "%Y-%m-%d")
@@ -79,7 +79,7 @@ def add_intervento(asset_id):
         data = datetime.now(ITALY_TZ)
 
     allegati = []
-    for allegato in allegati:
+    for allegato in uploaded_allegati:
         if allegato and allegato.filename:
             original_filename = os.path.basename(allegato.filename).strip()
             extension = Path(original_filename).suffix.lower()
@@ -113,13 +113,15 @@ def add_intervento(asset_id):
 def download_intervento_allegato(asset_id, intervento_id, allegato_path):
     asset = AssetService.get(asset_id)
     if not asset:
-        abort(404)
+        return abort(404)
 
     intervento = AssetService.get_intervento(asset_id, intervento_id)
 
     if not intervento:
-        abort(404)
+        return abort(404)
 
+    stored_name = ""
+    original_name = ""
     for a in intervento.get("allegati", []):
         if a.get("path") == allegato_path:
             stored_name = a.get("path", "")
@@ -176,7 +178,7 @@ def genera_pdf_riepilogo(asset_id):
 def generate_label(asset_id):
     asset = AssetService.get(asset_id)
     if not asset:
-        abort(404, description="Asset non trovato")
+        return abort(404, description="Asset non trovato")
 
     send_to_zebra(ZEBRA_IP, generate_asset_qrcode_label(
         asset_id=asset.get("id"),
