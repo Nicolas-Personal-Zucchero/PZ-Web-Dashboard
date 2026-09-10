@@ -22,6 +22,7 @@ from routes.etichette_spedizioni import etichette_spedizioni_bp
 from routes.fercam import fercam_bp
 from routes.preliminari import preliminari_bp
 from pages.produzione_generici.produzione_generici import produzione_generici_bp
+from pages.produzione_generici_team.produzione_generici_team import produzione_generici_team_bp
 
 from routes.amministrazione.asset import asset_bp
 from routes.amministrazione.asset_dettaglio import asset_dettaglio_bp
@@ -76,6 +77,7 @@ def create_app():
     app.register_blueprint(fercam_bp)
     app.register_blueprint(preliminari_bp)
     app.register_blueprint(produzione_generici_bp)
+    app.register_blueprint(produzione_generici_team_bp)
 
     amministrazione_bp.register_blueprint(gestione_lotti_bp)
     amministrazione_bp.register_blueprint(visualizza_impianti_bp)
