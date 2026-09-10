@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "layout_sidebar.html" %}
 
 {% block title %}Homepage{% endblock %}
 
@@ -23,27 +23,4 @@
     </div>
     {% endfor %}
 </div>
-{% endblock %}
-
-{% block styles %}
-<style>
-    .hover-card {
-        transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out;
-        border: 1px solid #ddd;
-    }
-
-    .hover-card:hover {
-        transform: translateY(-5px) scale(1.02);
-        border-color: #4393C8;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-    }
-
-    .card-title {
-        color: #333;
-    }
-
-    .card-text {
-        color: #555;
-    }
-</style>
 {% endblock %}
