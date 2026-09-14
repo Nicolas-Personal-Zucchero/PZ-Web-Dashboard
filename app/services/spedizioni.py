@@ -1,13 +1,14 @@
 from datetime import date, datetime
 from typing import List, Optional
 
+from config.constants import ITALY_TZ
 from utils.utils import convert_datetime_to_italy_tz
-from sqlalchemy import select, or_, func
+from sqlalchemy import select, or_, func, update
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import SQLAlchemyError
 
 from extensions import db
-from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo
+from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo, StatoSpedizione
 
 class SpedizioniPreliminariService:
     @staticmethod
@@ -51,7 +52,7 @@ class SpedizioniPreliminariService:
     @staticmethod
     def get_pending() -> List[SpedizionePreliminare]:
         stmt = select(SpedizionePreliminare)\
-            .where(SpedizionePreliminare.sent.is_(False))\
+            .where(SpedizionePreliminare.state == StatoSpedizione.READY)\
             .options(joinedload(SpedizionePreliminare.identificativi_rel))
         
         return db.session.execute(stmt).scalars().unique().all()
@@ -64,11 +65,11 @@ class SpedizioniPreliminariService:
     ) -> List[SpedizionePreliminare]:
         
         stmt = select(SpedizionePreliminare)\
-            .where(SpedizionePreliminare.sent.is_(True))\
+            .where(SpedizionePreliminare.state == StatoSpedizione.SENT)\
             .options(joinedload(SpedizionePreliminare.identificativi_rel))
 
         if data_invio:
-            stmt = stmt.where(func.date(SpedizionePreliminare.sent_at) == data_invio)
+            stmt = stmt.where(func.date(SpedizionePreliminare.updated_state_at) == data_invio)
 
         if ragione_sociale:
             stmt = stmt.where(SpedizionePreliminare.ragione_sociale_cliente.ilike(f"%{ragione_sociale}%"))
@@ -94,7 +95,7 @@ class SpedizioniPreliminariService:
 
         result = db.session.execute(stmt).scalars().unique().all()
         for spedizione in result:
-            spedizione.sent_at = convert_datetime_to_italy_tz(spedizione.sent_at)
+            spedizione.updated_state_at = convert_datetime_to_italy_tz(spedizione.updated_state_at)
         return result
 
     @staticmethod
@@ -122,11 +123,58 @@ class SpedizioniPreliminariService:
             raise e
 
     @staticmethod
-    def mark_as_sent(spedizione: SpedizionePreliminare, timestamp: datetime) -> None:
+    def update_state(spedizione: SpedizionePreliminare, nuovo_stato: StatoSpedizione, timestamp: datetime) -> None:
         try:
-            spedizione.sent = True
-            spedizione.sent_at = timestamp
+            spedizione.state = nuovo_stato
+            spedizione.updated_state_at = timestamp
             db.session.commit()
         except SQLAlchemyError as e:
             db.session.rollback()
             raise e
+
+    @staticmethod
+    def lock_and_set_sending(spedizioni_ids: List[str]) -> List[SpedizionePreliminare]:
+        now = datetime.now(ITALY_TZ)
+        
+        stmt = (
+            update(SpedizionePreliminare)
+            .where(SpedizionePreliminare.id.in_(spedizioni_ids))
+            .where(SpedizionePreliminare.state == StatoSpedizione.READY)
+            .values(state=StatoSpedizione.SENDING, updated_state_at=now)
+            .returning(SpedizionePreliminare)
+        )
+        
+        try:
+            result = db.session.execute(stmt).scalars().all()
+            db.session.commit()
+            return result
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            raise e
+
+    @staticmethod
+    def get_identificativi_partitioned() -> tuple[set[str], set[str]]:
+        stmt = select(
+            SpedizioneIdentificativo.sigla,
+            SpedizioneIdentificativo.serie,
+            SpedizioneIdentificativo.numero,
+            SpedizionePreliminare.state
+        ).join(
+            SpedizionePreliminare, 
+            SpedizioneIdentificativo.spedizione_id == SpedizionePreliminare.id
+        )
+
+        result = db.session.execute(stmt).all()
+
+        identificativi_sent = set()
+        identificativi_non_sent = set()
+
+        for sigla, serie, numero, state in result:
+            formatted_id = f"{sigla} {serie}/{numero}"
+
+            if state == StatoSpedizione.SENT:
+                identificativi_sent.add(formatted_id)
+            else:
+                identificativi_non_sent.add(formatted_id)
+
+        return identificativi_sent, identificativi_non_sent

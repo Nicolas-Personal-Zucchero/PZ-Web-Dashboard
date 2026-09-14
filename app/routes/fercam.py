@@ -12,7 +12,6 @@ from utils.xml_builder import create_xml, generate_doc_id
 from utils.RedisMexalCache import RedisMexalCache
 from config.constants import PACKING_TYPE_MAP, PACKING_TYPE_ICONS, LABEL_TYPE_MAP, ID_PAGAMENTI_ALLA_CONSEGNA
 from services.spedizioni import SpedizioniPreliminariService
-from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo
 
 DAYS_TO_FETCH = 5
 mexal_cache = RedisMexalCache()
@@ -20,21 +19,7 @@ fercam_bp = Blueprint("fercam", __name__, url_prefix="/fercam")
 
 @fercam_bp.route("/", methods=["GET"])
 def fercam():
-    identificativi = (
-        SpedizioneIdentificativo.query
-        .join(SpedizionePreliminare, SpedizioneIdentificativo.spedizione_id == SpedizionePreliminare.id)
-        .all()
-    )
-    identificativi_sent = {
-        f"{i.sigla} {i.serie}/{i.numero}"
-        for i in identificativi
-        if i.spedizione.sent is True
-    }
-    identificativi_non_sent = {
-        f"{i.sigla} {i.serie}/{i.numero}"
-        for i in identificativi
-        if i.spedizione.sent is not True
-    }
+    identificativi_sent, identificativi_non_sent = SpedizioniPreliminariService.get_identificativi_partitioned()
 
     mexal = secrets_manager.get_mexal()
     if not mexal:
