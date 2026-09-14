@@ -15,7 +15,7 @@ class Theme(db.Model, TimezoneMixin):
     __tablename__ = 'themes'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now(), nullable=False)
 
     batches = db.relationship(
@@ -34,7 +34,7 @@ class Batch(db.Model, TimezoneMixin):
     __tablename__ = 'batches'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    code = db.Column(db.String(255), nullable=False)
+    code = db.Column(db.String(255), unique=True, nullable=False)
     theme_id = db.Column(
         db.Integer,
         db.ForeignKey('themes.id', ondelete='CASCADE'),

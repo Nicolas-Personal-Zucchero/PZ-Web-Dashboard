@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "layout_sidebar.html" %}
 
 {% block title %}Produzione generici{% endblock %}
 
@@ -247,6 +247,10 @@
 </div>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('.toast').forEach(toastEl => new bootstrap.Toast(toastEl).show());
+    });
+
     const batchInput = document.getElementById('batchCode');
     const reelbatchInput = document.getElementById('reelBatch');
 

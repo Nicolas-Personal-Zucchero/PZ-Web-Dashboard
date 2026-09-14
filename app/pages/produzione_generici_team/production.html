@@ -1,0 +1,250 @@
+{% extends "layout_fluid.html" %}
+
+{% block title %}Produzione{% endblock %}
+
+{% block content %}
+<style>
+    .production-page {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .theme-selector {
+        font-size: 1.15rem;
+        min-height: 52px;
+    }
+
+    .production-card {
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .production-start {
+        min-height: 52px;
+        font-size: 1.05rem;
+    }
+
+    .production-form .form-control,
+    .production-form .form-select {
+        min-height: 50px;
+        font-size: 1.05rem;
+    }
+
+    .production-form label {
+        font-weight: 600;
+    }
+
+    .selected-theme {
+        font-size: 1.15rem;
+    }
+
+    .last-productions {
+        max-height: 280px;
+        overflow-y: auto;
+    }
+</style>
+
+<div class="container py-4 production-page">
+    <div class="d-flex align-items-center mb-4">
+        <h1 class="h3 mb-0">Produzione</h1>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+        <i class="bi {{ 'bi-check-circle-fill' if category == 'success' else 'bi-exclamation-triangle-fill' }} me-1"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Chiudi"></button>
+    </div>
+    {% endfor %}
+    {% endwith %}
+
+    <div class="card production-card p-4 mb-4">
+        <label for="themeSelect" class="form-label mb-2">Tema</label>
+
+        {% if generici %}
+        <select
+            id="themeSelect"
+            class="form-select theme-selector mb-3"
+            aria-label="Seleziona tema"
+        >
+            <option value="">Seleziona un tema...</option>
+            {% for generico in generici %}
+            <option
+                value="{{ generico.id }}"
+                data-has-batch="{{ '1' if latest_batches.get(generico.id) else '0' }}"
+                {{ 'selected' if selected_theme and selected_theme.id == generico.id }}
+            >
+                {{ generico.name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <div id="noBatchMessage" class="small text-muted mt-2"
+             {% if not (selected_theme and not selected_batch) %}style="display:none;"{% endif %}>
+            Questo tema non ha ancora un lotto disponibile.
+        </div>
+        {% else %}
+        <div class="text-muted">Nessun tema disponibile.</div>
+        {% endif %}
+    </div>
+
+    <div
+        id="productionFormCard"
+        class="card production-card p-4 mb-4"
+        {% if not (selected_theme and selected_batch) %}style="display:none;"{% endif %}
+    >
+        <div class="mb-4">
+            <div class="text-muted small">Tema selezionato</div>
+            <div class="selected-theme fw-bold">
+                {{ selected_theme.name if selected_theme else '' }}
+            </div>
+        </div>
+
+        <form
+            method="POST"
+            action="{{ url_for('produzione_generici_team.crea_produzione_team') }}"
+            class="production-form"
+            id="productionForm"
+        >
+            <input
+                type="hidden"
+                name="theme_id"
+                value="{{ selected_theme.id if selected_theme else '' }}"
+            >
+
+            <div class="mb-3">
+                <label for="productionDate" class="form-label">Data</label>
+                <input
+                    type="date"
+                    class="form-control"
+                    name="date"
+                    id="productionDate"
+                    value="{{ today }}"
+                    required
+                >
+            </div>
+
+            <div class="mb-3">
+                <label for="reelBatch" class="form-label">Lotto Bobina</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    name="reel_batch"
+                    id="reelBatch"
+                    placeholder="6-2614"
+                    maxlength="6"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    required
+                >
+            </div>
+
+            <div class="mb-3">
+                <label for="quantity" class="form-label">Quantità (Kg)</label>
+                <input
+                    type="number"
+                    step="1"
+                    min="0"
+                    class="form-control"
+                    name="quantity"
+                    id="quantity"
+                    inputmode="numeric"
+                    required
+                >
+            </div>
+
+            <div class="mb-4">
+                <label for="operatorId" class="form-label">Operatore</label>
+                <select class="form-select" name="operator_id" id="operatorId" required>
+                    <option value="" selected disabled>Seleziona operatore...</option>
+                    {% for employee in employees %}
+                    <option value="{{ employee.id }}">{{ employee.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 production-start">
+                <i class="bi bi-check2-circle me-1"></i>
+                Registra produzione
+            </button>
+        </form>
+    </div>
+
+    {% if selected_theme and selected_batch %}
+    <div class="card production-card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h6 mb-0">Ultime produzioni</h2>
+            <span class="badge text-bg-light">{{ productions|length }}</span>
+        </div>
+
+        <div class="last-productions">
+            {% for production in productions|reverse %}
+            <div class="border-bottom py-2">
+                <div class="d-flex justify-content-between gap-3">
+                    <span>{{ production.reel_batch }}</span>
+                    <strong>{{ production.quantity }} Kg</strong>
+                </div>
+                <div class="small text-muted">
+                    {{ production.local_date.strftime("%d/%m/%Y") if production.local_date else "" }}
+                    · {{ production.operator.name if production.operator else "" }}
+                </div>
+            </div>
+            {% else %}
+            <div class="text-muted">Nessuna produzione registrata per il tema.</div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const themeSelect = document.getElementById("themeSelect");
+    const formCard = document.getElementById("productionFormCard");
+    const reelBatchInput = document.getElementById("reelBatch");
+    const noBatchMessage = document.getElementById("noBatchMessage");
+
+    function selectTheme(themeId) {
+        const baseUrl = "{{ url_for('produzione_generici_team.team_produzione') }}";
+
+        if (!themeId) {
+            window.location.href = baseUrl;
+            return;
+        }
+
+        window.location.href = baseUrl + "?theme_id=" + encodeURIComponent(themeId);
+    }
+
+    function syncButtonState() {
+        if (!themeSelect) return;
+
+        const option = themeSelect.options[themeSelect.selectedIndex];
+        const hasBatch = option && option.dataset.hasBatch === "1";
+        const hasTheme = !!(option && option.value);
+
+        if (noBatchMessage) {
+            noBatchMessage.style.display =
+                hasTheme && !hasBatch ? "" : "none";
+        }
+    }
+
+    themeSelect?.addEventListener("change", function () {
+        selectTheme(this.value);
+    });
+
+    reelBatchInput?.addEventListener("input", function () {
+        let value = this.value.replace(/\D/g, "").slice(0, 5);
+
+        if (value.length > 1) {
+            value = value[0] + "-" + value.slice(1);
+        }
+
+        this.value = value;
+    });
+
+    syncButtonState();
+});
+</script>
+{% endblock %}

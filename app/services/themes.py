@@ -25,7 +25,7 @@ class ThemeProductionService:
             return theme
         except IntegrityError as e:
             db.session.rollback()
-            raise ValueError("Errore di integrità durante la creazione del tema.") from e
+            raise ValueError("Il nome del tema deve essere univoco.") from e
 
     @staticmethod
     def update_theme(theme_id: int, name: str | None = None) -> Theme | None:
@@ -41,7 +41,7 @@ class ThemeProductionService:
             return theme
         except IntegrityError as e:
             db.session.rollback()
-            raise ValueError("Errore di integrità durante l'aggiornamento del tema.") from e
+            raise ValueError("Il nome del tema deve essere univoco.") from e
 
     @staticmethod
     def get_batches_by_theme(theme_id: int) -> list[Batch]:
@@ -63,7 +63,7 @@ class ThemeProductionService:
         except IntegrityError as e:
             db.session.rollback()
             raise ValueError(
-                f"Violazione di vincolo: impossibile creare il batch. Il tema con ID {theme_id} potrebbe non esistere."
+                "Il codice del lotto deve essere univoco."
             ) from e
 
     @staticmethod
@@ -83,7 +83,7 @@ class ThemeProductionService:
             return batch
         except IntegrityError as e:
             db.session.rollback()
-            raise ValueError("Violazione di vincolo durante l'aggiornamento del batch.") from e
+            raise ValueError("Il codice del lotto deve essere univoco.") from e
 
     @staticmethod
     def get_productions_by_batch(batch_id: int) -> list[Production]:

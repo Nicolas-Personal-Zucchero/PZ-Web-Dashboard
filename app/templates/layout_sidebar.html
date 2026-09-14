@@ -1,0 +1,74 @@
+{% extends "base_root.html" %}
+
+{% block styles %}
+<style>
+    /* Stili segregati per il layout con sidebar */
+    :root {
+        --sidebar-width: 230px;
+    }
+    .sidebar {
+        width: var(--sidebar-width);
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background-color: #f8f9fa;
+        padding-top: 1rem;
+        border-right: 1px solid #ddd;
+        transition: width 0.25s ease;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    .sidebar .navbar-brand span, .sidebar .nav-link span {
+        transition: opacity 0.2s ease;
+        word-break: break-word;
+    }
+    .sidebar .nav-link {
+        color: #333;
+        border-radius: 6px;
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .sidebar .nav-link:hover:not(.active), .sidebar .nav-link.active {
+        background-color: #4393C8;
+        color: white !important;
+    }
+    .content {
+        margin-left: var(--sidebar-width);
+        transition: margin-left 0.25s ease;
+        padding: 20px;
+    }
+</style>
+{{ super() }}
+{% endblock %}
+
+{% block layout %}
+<div class="sidebar d-flex flex-column" id="sidebar">
+    <a class="navbar-brand d-flex align-items-center px-3 mb-4" href="{{ home_link }}">
+        <img src="{{ url_for('static', filename='favicon.png') }}" alt="Logo" height="35" class="me-2">
+        <span>Personal Zucchero</span>
+    </a>
+
+    <ul class="nav nav-pills flex-column px-2 gap-1">
+        {% for group in linkGroups %}
+        <li class="nav-item mt-2">
+            <span class="text-muted small px-3">{{ group.title }}</span>
+        </li>
+        {% for link in group.links %}
+        <li class="nav-item">
+            <a class="nav-link {% if request.path == link.url %}active{% endif %}" href="{{ link.url }}">
+                <i class="{{ link.icon }}"></i>
+                <span>{{ link.name }}</span>
+            </a>
+        </li>
+        {% endfor %}
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="content">
+    {% block content %}{% endblock %}
+</div>
+{% endblock %}

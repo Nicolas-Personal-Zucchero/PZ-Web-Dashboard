@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
-from flask import Blueprint, redirect, render_template, flash, request, url_for, current_app
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from services.themes import ThemeProductionService
 from services.employees import EmployeeService
 
