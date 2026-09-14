@@ -220,7 +220,7 @@
                         {{ spedizione.id }}
                     </div>
                     <div class="col-md-2">
-                        {{ spedizione.sent_at.strftime('%d/%m/%Y %H:%M') if spedizione.sent_at is not none else '' }}
+                        {{ spedizione.updated_state_at.strftime('%d/%m/%Y %H:%M') if spedizione.updated_state_at is not none else '' }}
                     </div>
                     <div class="col-md-1">
                         {% for id_rel in spedizione.identificativi_rel %}
