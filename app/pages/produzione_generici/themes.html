@@ -59,7 +59,9 @@
         <ul class="list-group list-group-flush styled-table">
             <li class="list-group-item static-header sticky-top bg-light">
                 <div class="row align-items-center fw-bold">
-                    <div class="col-12">Nome</div>
+                    <div class="col-10">Nome</div>
+                    <div class="col-1">Nascosto</div>
+                    <div class="col-1 text-end">Azioni</div>
                 </div>
             </li>
 
@@ -67,7 +69,21 @@
             <a class="list-group-item generico-row {{ 'row-selected' if selected_theme and selected_theme.id == generico.id }}"
                href="{{ url_for('produzione_generici.produzione_generici', theme_id=generico.id) }}">
                 <div class="row">
-                    <div class="col-12">{{ generico.name }}</div>
+                    <div class="col-10">{{ generico.name }}</div>
+                    <div class="col-1">{{ 'Sì' if generico.hidden else 'No' }}</div>
+                    <div class="col-1 text-end text-nowrap">
+                        <button type="button" class="btn btn-warning btn-sm edit-theme-btn"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editThemeModal"
+                                data-name="{{ generico.name }}"
+                                data-hidden="{{ 'true' if generico.hidden else 'false' }}"
+                                data-action="{{ url_for('produzione_generici.edit_theme', theme_id=generico.id) }}">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <form method="POST" action="{{ url_for('produzione_generici.delete_theme', theme_id=generico.id) }}" class="d-inline action-form">
+                            <button type="submit" class="btn btn-danger btn-sm ms-1" onclick="return confirm('Eliminare il tema?');"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </div>
                 </div>
             </a>
             {% else %}
@@ -90,21 +106,35 @@
         <ul class="list-group list-group-flush styled-table">
             <li class="list-group-item static-header sticky-top bg-light">
                 <div class="row align-items-center fw-bold">
-                    <div class="col-12">Codice</div>
+                    <div class="col-10">Codice</div>
+                    <div class="col-2 text-end">Azioni</div>
                 </div>
             </li>
 
             {% for batch in batches %}
-            <a class="list-group-item batch-row {{ 'row-selected' if selected_batch and selected_batch.id == batch.id }}"
-               href="{{ url_for('produzione_generici.produzione_generici', theme_id=selected_theme.id, batch_id=batch.id) }}">
-                <div class="row">
-                    <div class="col-12">{{ batch.code }}</div>
-                </div>
-            </a>
+                <a class="list-group-item batch-row {{ 'row-selected' if selected_batch and selected_batch.id == batch.id }}"
+                href="{{ url_for('produzione_generici.produzione_generici', theme_id=selected_theme.id, batch_id=batch.id) }}">
+                    <div class="row align-items-center">
+                        <div class="col-10">{{ batch.code }}</div>
+                        <div class="col-2 text-end text-nowrap">
+                            <button type="button" class="btn btn-warning btn-sm edit-batch-btn"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#editBatchModal"
+                                    data-code="{{ batch.code }}"
+                                    data-action="{{ url_for('produzione_generici.edit_batch', batch_id=batch.id) }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <form method="POST" action="{{ url_for('produzione_generici.delete_batch', batch_id=batch.id) }}" class="d-inline action-form">
+                                <input type="hidden" name="theme_id" value="{{ selected_theme.id }}">
+                                <button type="submit" class="btn btn-danger btn-sm ms-1" onclick="return confirm('Eliminare il lotto?');"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                </a>
             {% else %}
-            <li class="list-group-item text-center text-muted">
-                Nessun lotto disponibile.
-            </li>
+                <li class="list-group-item text-center text-muted">
+                    Nessun lotto disponibile.
+                </li>
             {% endfor %}
         </ul>
     </div>
@@ -124,26 +154,44 @@
         <ul class="list-group list-group-flush styled-table">
             <li class="list-group-item static-header sticky-top bg-light">
                 <div class="row align-items-center fw-bold">
-                    <div class="col-md-3">Data</div>
+                    <div class="col-md-2">Data</div>
                     <div class="col-md-3">Lotto Bobina</div>
-                    <div class="col-md-3">Quantità</div>
+                    <div class="col-md-2">Quantità</div>
                     <div class="col-md-3">Operatore</div>
+                    <div class="col-md-2 text-end">Azioni</div>
                 </div>
             </li>
 
             {% for production in productions %}
-            <li class="list-group-item">
-                <div class="row">
-                    <div class="col-md-3">{{ production.local_date.strftime("%d/%m/%Y") if production.local_date else "" }}</div>
-                    <div class="col-md-3">{{ production.reel_batch }}</div>
-                    <div class="col-md-3">{{ production.quantity }}</div>
-                    <div class="col-md-3">{{ production.operator.name if production.operator else "" }}</div>
-                </div>
-            </li>
+                <li class="list-group-item">
+                    <div class="row align-items-center">
+                        <div class="col-md-2">{{ production.date.strftime("%Y-%m-%d") if production.date else "" }}</div>
+                        <div class="col-md-3">{{ production.reel_batch }}</div>
+                        <div class="col-md-2">{{ production.quantity }}</div>
+                        <div class="col-md-3">{{ production.operator.name if production.operator else "" }}</div>
+                        <div class="col-md-2 text-end text-nowrap">
+                            <button type="button" class="btn btn-warning btn-sm edit-production-btn"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#editProductionModal"
+                                    data-date="{{ production.date.strftime('%Y-%m-%d') if production.date else '' }}"
+                                    data-reel="{{ production.reel_batch }}"
+                                    data-quantity="{{ production.quantity }}"
+                                    data-operator="{{ production.operator_id }}"
+                                    data-action="{{ url_for('produzione_generici.edit_production', production_id=production.id) }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <form method="POST" action="{{ url_for('produzione_generici.delete_production', production_id=production.id) }}" class="d-inline">
+                                <input type="hidden" name="theme_id" value="{{ selected_theme.id }}">
+                                <input type="hidden" name="batch_id" value="{{ selected_batch.id }}">
+                                <button type="submit" class="btn btn-danger btn-sm ms-1" onclick="return confirm('Eliminare la produzione?');"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                </li>
             {% else %}
-            <li class="list-group-item text-center text-muted">
-                Nessuna produzione disponibile.
-            </li>
+                <li class="list-group-item text-center text-muted">
+                    Nessuna produzione disponibile.
+                </li>
             {% endfor %}
         </ul>
     </div>
@@ -174,6 +222,37 @@
     </div>
 </div>
 
+<!-- Modal: Modifica Tema -->
+<div class="modal fade" id="editThemeModal" tabindex="-1" aria-labelledby="editThemeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="editThemeForm" method="POST" action="">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editThemeModalLabel">Modifica tema</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editThemeName" class="form-label">Nome tema</label>
+                        <input type="text" class="form-control" name="name" id="editThemeName" required>
+                    </div>
+                    <div class="form-check">
+                        <!-- Lato Python, request.form.get('hidden') restituirà 'on' se checked, altrimenti None -->
+                        <input class="form-check-input" type="checkbox" name="hidden" id="editThemeHidden">
+                        <label class="form-check-label" for="editThemeHidden">
+                            Nascondi all'utente
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Salva modifiche</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Modal: Aggiungi lotto -->
 <div class="modal fade" id="batchModal" tabindex="-1" aria-labelledby="batchModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -189,11 +268,34 @@
                     <p class="mb-3">Tema: <strong>{{ selected_theme.name }}</strong></p>
                     {% endif %}
                     <label for="batchCode" class="form-label">Codice lotto</label>
-                    <input type="text" class="form-control" name="code" id="batchCode" placeholder="2712S" required>
+                    <input type="text" class="form-control" name="code" id="batchCode" required>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
                     <button type="submit" class="btn btn-primary">Crea lotto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Modifica lotto -->
+<div class="modal fade" id="editBatchModal" tabindex="-1" aria-labelledby="editBatchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="editBatchForm" method="POST" action="">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editBatchModalLabel">Modifica lotto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="theme_id" value="{{ selected_theme.id if selected_theme else '' }}">
+                    <label for="editBatchCode" class="form-label">Codice lotto</label>
+                    <input type="text" class="form-control" name="code" id="editBatchCode" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Salva modifiche</button>
                 </div>
             </form>
         </div>
@@ -246,29 +348,117 @@
     </div>
 </div>
 
+<!-- Modal: Modifica produzione -->
+<div class="modal fade" id="editProductionModal" tabindex="-1" aria-labelledby="editProductionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="editProductionForm" method="POST" action="">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProductionModalLabel">Modifica produzione</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="theme_id" value="{{ selected_theme.id if selected_theme else '' }}">
+                    <input type="hidden" name="batch_id" value="{{ selected_batch.id if selected_batch else '' }}">
+                    
+                    <div class="mb-3">
+                        <label for="editProductionDate" class="form-label">Data</label>
+                        <input type="date" class="form-control" name="date" id="editProductionDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editReelBatch" class="form-label">Lotto Bobina</label>
+                        <input type="text" class="form-control" name="reel_batch" id="editReelBatch" placeholder="6-2614" maxlength="6" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editQuantity" class="form-label">Quantità (Kg)</label>
+                        <input type="number" step="1" min="0" class="form-control" name="quantity" id="editQuantity" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editOperatorId" class="form-label">Operatore</label>
+                        <select class="form-select" name="operator_id" id="editOperatorId" required>
+                            <option value="" selected disabled></option>
+                            {% for employee in employees %}
+                            <option value="{{ employee.id }}">{{ employee.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Salva modifiche</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        const reelbatchInput = document.getElementById('reelBatch');
+
+        reelbatchInput.addEventListener('input', function() {
+            let value = this.value.replace(/\D/g, '').slice(0, 5);
+            
+            if (value.length > 1) {
+                value = value[0] + '-' + value.slice(1);
+            }
+            
+            this.value = value;
+        });
         document.querySelectorAll('.toast').forEach(toastEl => new bootstrap.Toast(toastEl).show());
-    });
 
-    const batchInput = document.getElementById('batchCode');
-    const reelbatchInput = document.getElementById('reelBatch');
+        document.querySelectorAll('.edit-theme-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault(); 
+                e.stopPropagation();
 
-    batchInput.addEventListener('input', function() {
-        let value = this.value.toUpperCase();
-        let digits = value.slice(0, 4).replace(/\D/g, '');
-        let letter = value.slice(4, 5).replace(/[^A-Z]/g, '');
-        this.value = digits + letter;
-    });
+                const form = document.getElementById('editThemeForm');
+                const inputName = document.getElementById('editThemeName');
+                const inputHidden = document.getElementById('editThemeHidden');
 
-    reelbatchInput.addEventListener('input', function() {
-        let value = this.value.replace(/\D/g, '').slice(0, 5);
-        
-        if (value.length > 1) {
-            value = value[0] + '-' + value.slice(1);
+                form.action = this.dataset.action;
+                inputName.value = this.dataset.name;
+                inputHidden.checked = this.dataset.hidden === 'true';
+            });
+        });
+
+        // Impedisce la navigazione quando si clicca sui bottoni o form di azione
+        document.querySelectorAll('.action-form, .edit-batch-btn').forEach(el => {
+            el.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+
+        document.querySelectorAll('.edit-batch-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const form = document.getElementById('editBatchForm');
+                form.action = this.dataset.action;
+                document.getElementById('editBatchCode').value = this.dataset.code;
+            });
+        });
+
+        document.querySelectorAll('.edit-production-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const form = document.getElementById('editProductionForm');
+                form.action = this.dataset.action;
+                document.getElementById('editProductionDate').value = this.dataset.date;
+                document.getElementById('editReelBatch').value = this.dataset.reel;
+                document.getElementById('editQuantity').value = this.dataset.quantity;
+                document.getElementById('editOperatorId').value = this.dataset.operator;
+            });
+        });
+
+        // Maschera per Lotto Bobina (edit)
+        const editReelBatchInput = document.getElementById('editReelBatch');
+        if(editReelBatchInput) {
+            editReelBatchInput.addEventListener('input', function() {
+                let value = this.value.replace(/\D/g, '').slice(0, 5);
+                if (value.length > 1) value = value[0] + '-' + value.slice(1);
+                this.value = value;
+            });
         }
-        
-        this.value = value;
     });
 </script>
 {% endblock %}

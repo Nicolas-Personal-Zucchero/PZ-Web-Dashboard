@@ -4,11 +4,19 @@ import sys
 
 from flask import Flask, session, request
 from extensions import db
+
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+from sqlite3 import Connection as SQLite3Connection
+
+# Necessari per la creazione delle tabelle nel database
 from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo
 from models.recensioni import Review
 from models.employees import Employee
 from models.sigep_tickets import Ticket, TicketAssignment
-from models.themes_production import Theme, Batch, Production
+from models.themes import Theme
+from models.batches import Batch
+from models.productions import Production
 
 from config.links import get_links
 
@@ -22,7 +30,7 @@ from pages.etichette_spedizioni.etichette_spedizioni import etichette_spedizioni
 from routes.fercam import fercam_bp
 from routes.preliminari import preliminari_bp
 from pages.produzione_generici.produzione_generici import produzione_generici_bp
-from pages.produzione_generici_team.produzione_generici_team import produzione_generici_team_bp
+from pages.produzione_generici_prod.produzione_generici_prod import produzione_generici_prod_bp
 
 from routes.amministrazione.asset import asset_bp
 from routes.amministrazione.asset_dettaglio import asset_dettaglio_bp
@@ -31,6 +39,14 @@ from routes.amministrazione import amministrazione_bp
 from routes.amministrazione.backups import backups_bp
 from routes.amministrazione.gestione_lotti import gestione_lotti_bp
 from routes.amministrazione.sigep_ticket_management import sigep_ticket_management_bp
+
+# Forza l'attivazione del pragma foreign_keys ad ogni nuova connessione al database
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    if isinstance(dbapi_connection, SQLite3Connection):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
 
 def setup_logging():
     # Rimuove eventuali handler predefiniti per evitare duplicati
@@ -77,7 +93,7 @@ def create_app():
     app.register_blueprint(fercam_bp)
     app.register_blueprint(preliminari_bp)
     app.register_blueprint(produzione_generici_bp)
-    app.register_blueprint(produzione_generici_team_bp)
+    app.register_blueprint(produzione_generici_prod_bp)
 
     amministrazione_bp.register_blueprint(gestione_lotti_bp)
     amministrazione_bp.register_blueprint(visualizza_impianti_bp)
