@@ -1,4 +1,5 @@
 import xmltodict
+import os
 from io import BytesIO
 from flask import Blueprint, redirect, render_template, flash, request, url_for, current_app, send_file
 
@@ -7,7 +8,8 @@ from config.secrets_manager import secrets_manager
 from config.constants import ITALY_TZ
 from services.spedizioni import SpedizioniPreliminariService
 
-preliminari_bp = Blueprint("preliminari", __name__, url_prefix="/preliminari")
+template_dir = os.path.abspath(os.path.dirname(__file__))
+preliminari_bp = Blueprint("preliminari", __name__, url_prefix="/preliminari", template_folder="")
 
 @preliminari_bp.route("/", methods=["GET"])
 def preliminari():
