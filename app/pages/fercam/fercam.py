@@ -1,3 +1,4 @@
+import os
 import json
 import copy
 from decimal import Decimal
@@ -15,7 +16,9 @@ from services.spedizioni import SpedizioniPreliminariService
 
 DAYS_TO_FETCH = 5
 mexal_cache = RedisMexalCache()
-fercam_bp = Blueprint("fercam", __name__, url_prefix="/fercam")
+
+template_dir = os.path.abspath(os.path.dirname(__file__))
+fercam_bp = Blueprint("fercam", __name__, url_prefix="/fercam", template_folder="")
 
 @fercam_bp.route("/", methods=["GET"])
 def fercam():

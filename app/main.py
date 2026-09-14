@@ -27,7 +27,7 @@ from routes.agents_map import agents_map_bp
 from routes.sigep_ticket import sigep_ticket_bp
 from routes.trattative_agenti import trattative_agenti_bp
 from pages.etichette_spedizioni.etichette_spedizioni import etichette_spedizioni_bp
-from routes.fercam import fercam_bp
+from pages.fercam.fercam import fercam_bp
 from pages.preliminari.preliminari import preliminari_bp
 from pages.produzione_generici.produzione_generici import produzione_generici_bp
 from pages.produzione_generici_prod.produzione_generici_prod import produzione_generici_prod_bp
