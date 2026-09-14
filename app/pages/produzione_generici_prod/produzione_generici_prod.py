@@ -45,6 +45,13 @@ def team_produzione():
         today=datetime.now().strftime("%Y-%m-%d"),
     )
 
+@produzione_generici_prod_bp.route("/successo", methods=["GET"])
+def successo():
+    theme_name = request.args.get("theme_name", "")
+    batch_code = request.args.get("batch_code", "")
+    theme_id = request.args.get("theme_id", type=int)
+    return render_template("successo_produzione.html", theme_name=theme_name, batch_code=batch_code, theme_id=theme_id)
+
 @produzione_generici_prod_bp.route("/produzioni", methods=["POST"])
 def crea_produzione_team():
     theme_id = request.form.get("theme_id", type=int)
@@ -88,5 +95,4 @@ def crea_produzione_team():
         flash(str(e), "error")
         return redirect(url_for("produzione_generici_prod.team_produzione", theme_id=theme.id))
 
-    flash(f"Produzione registrata.Procedere con la stampa delle etichette per il lotto {theme.name} {batch.code}", "success")
-    return redirect(url_for("produzione_generici_prod.team_produzione", theme_id=theme.id))
+    return redirect(url_for("produzione_generici_prod.successo", theme_name=theme.name, batch_code=batch.code, theme_id=theme.id))
