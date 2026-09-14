@@ -1,10 +1,9 @@
 import os
 import io
-from flask import Blueprint, render_template, request, redirect, flash, url_for, make_response
+from flask import Blueprint, render_template, request, redirect, flash, make_response
 from config.constants import ZEBRA_IP
 from utils.label_factory import generate_sugar_label
 from config.secrets_manager import secrets_manager
-from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 from datetime import datetime
 import base64
@@ -12,22 +11,23 @@ from flask import current_app
 from config.mail_config import EMAIL_TEMPLATES
 from utils.utils import send_to_zebra
 
-etichette_spedizioni_bp = Blueprint("etichette_spedizioni", __name__, url_prefix="/etichette_spedizioni")
+template_dir = os.path.abspath(os.path.dirname(__file__))
+etichette_spedizioni_bp = Blueprint("etichette_spedizioni", __name__, url_prefix="/etichette_spedizioni", template_folder="")
 
 @etichette_spedizioni_bp.route("/", methods=["GET", "POST"])
 def etichette_spedizioni():
-    customer = None
+    search_result = None
     if request.method == "POST":
         mexal_code = request.form.get("mexal_code", "").strip()
 
         if not mexal_code:
             flash("Codice Mexal mancante.", "warning")
-            return render_template("etichette_spedizioni.html", customer=customer)
+            return render_template("etichette_spedizioni.html", customer=search_result)
         
         mexal = secrets_manager.get_mexal()
         if not mexal:
             flash("Errore nelle credenziali Mexal.", "error")
-            return render_template("etichette_spedizioni.html", customer=customer)
+            return render_template("etichette_spedizioni.html", customer=search_result)
         
         customer = mexal.get_customer_by_mexal_code(
             mexal_code,
@@ -35,31 +35,43 @@ def etichette_spedizioni():
         )
 
         if customer:
-            flash(f"Cliente trovato: {customer.get('ragione_sociale', 'N/D')}", "success")
-        else:
-            #Permetto di cercare anche i contatti, non solo i clienti
-            contact = mexal.get_contact_by_mexal_code(
-                mexal_code,
-                ["codice", "descrizione", "email", "indirizzo", "cap", "localita", "provincia", "paese_iso", "telefono"]
-            )
-            if contact:
-                #I contatti hanno i nomi di alcuni campi diversi
-                customer = {
-                    "codice": contact.get("codice"),
-                    "ragione_sociale": contact.get("descrizione"),
-                    "email": contact.get("email"),
-                    "indirizzo": contact.get("indirizzo"),
-                    "cap": contact.get("cap"),
-                    "localita": contact.get("localita"),
-                    "provincia": contact.get("provincia"),
-                    "cod_paese": contact.get("paese_iso"),
-                    "telefono": contact.get("telefono")
-                }
-                flash(f"Contatto trovato: {customer.get('ragione_sociale', 'N/D')}", "success")
-            else:
-                flash("Nessun cliente o contatto trovato con il codice Mexal fornito.", "warning")
+            search_result = customer
+            flash(f"Cliente trovato: {search_result.get('ragione_sociale', 'N/D')}", "success")
+            return render_template("etichette_spedizioni.html", customer=search_result)
 
-    return render_template("etichette_spedizioni.html", customer=customer)
+        supplier = mexal.get_supplier_by_mexal_code(
+            mexal_code,
+            ["codice", "ragione_sociale", "email", "indirizzo", "cap", "localita", "provincia", "cod_paese", "telefono"]
+        )
+
+        if supplier:
+            current_app.logger.info(f"Fornitore trovato: {supplier}")
+            search_result = supplier
+            flash(f"Fornitore trovato: {search_result.get('ragione_sociale', 'N/D')}", "success")
+            return render_template("etichette_spedizioni.html", customer=search_result)
+
+        contact = mexal.get_contact_by_mexal_code(
+            mexal_code,
+            ["codice", "descrizione", "email", "indirizzo", "cap", "localita", "provincia", "paese_iso", "telefono"]
+        )
+
+        if contact:
+            search_result = {
+                "codice": contact.get("codice"),
+                "ragione_sociale": contact.get("descrizione"),
+                "email": contact.get("email"),
+                "indirizzo": contact.get("indirizzo"),
+                "cap": contact.get("cap"),
+                "localita": contact.get("localita"),
+                "provincia": contact.get("provincia"),
+                "cod_paese": contact.get("paese_iso"),
+                "telefono": contact.get("telefono")
+            }
+            flash(f"Contatto trovato: {search_result.get('ragione_sociale', 'N/D')}", "success")
+            return render_template("etichette_spedizioni.html", customer=search_result)
+
+        flash("Il Codice Mexal fornito non appartiene a nessun cliente, fornitore o contatto.", "warning")
+    return render_template("etichette_spedizioni.html", customer=search_result)
 
 @etichette_spedizioni_bp.route("/stampa", methods=["POST"])
 def stampa_etichetta():
