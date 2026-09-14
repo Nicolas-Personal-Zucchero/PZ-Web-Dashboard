@@ -1,13 +1,16 @@
 import xmltodict
+import os
 from io import BytesIO
 from flask import Blueprint, redirect, render_template, flash, request, url_for, current_app, send_file
 
 from datetime import datetime
+from models.spedizioni import StatoSpedizione
 from config.secrets_manager import secrets_manager
 from config.constants import ITALY_TZ
 from services.spedizioni import SpedizioniPreliminariService
 
-preliminari_bp = Blueprint("preliminari", __name__, url_prefix="/preliminari")
+template_dir = os.path.abspath(os.path.dirname(__file__))
+preliminari_bp = Blueprint("preliminari", __name__, url_prefix="/preliminari", template_folder="")
 
 @preliminari_bp.route("/", methods=["GET"])
 def preliminari():
@@ -130,10 +133,11 @@ def invia():
         flash("Nessuna spedizione preliminare selezionata.", "warning")
         return redirect(url_for("preliminari.preliminari"))
 
-    spedizioni = SpedizioniPreliminariService.get_by_ids(spedizioni_ids)
+    spedizioni_ready = SpedizioniPreliminariService.lock_and_set_sending(spedizioni_ids)
 
-    if not spedizioni:
-        flash("Spedizioni selezionate non trovate a database.", "danger")
+    if not spedizioni_ready:
+        # Rimosso per paura che possa arrivare questo messaggio nei casi in cui è andato tutto bene e è stato evitato di mandare un duplicato
+        # flash("Spedizioni selezionate non trovate nel database, in elaborazione o già inviate.", "danger")
         return redirect(url_for("preliminari.preliminari"))
 
     errori = []
@@ -141,7 +145,7 @@ def invia():
 
     try:
         with secrets_manager.get_fercam_sftp() as sftp:
-            for spedizione in spedizioni:
+            for spedizione in spedizioni_ready:
                 if not spedizione.xml:
                     error_msg = f"Campo XML mancante."
                     current_app.logger.warning(f"Spedizione {spedizione.id}: {error_msg}")
@@ -152,7 +156,7 @@ def invia():
                 
                 try:
                     sftp.send_content(spedizione.xml, filename)
-                    SpedizioniPreliminariService.mark_as_sent(spedizione, datetime.now(ITALY_TZ))
+                    SpedizioniPreliminariService.update_state(spedizione, StatoSpedizione.SENT, datetime.now(ITALY_TZ))
                     inviati += 1
                     current_app.logger.info(f"Spedizione {spedizione.id} inviata a Fercam e aggiornata sul database.")
                 except Exception as e:
@@ -169,5 +173,9 @@ def invia():
     except Exception as e:
         current_app.logger.error(f"Errore critico di connessione SFTP Fercam: {e}")
         flash("Errore critico durante l'integrazione con Fercam. Controllare i log di sistema.", "danger")
+        now = datetime.now(ITALY_TZ)
+        for spedizione in spedizioni_ready:
+            if spedizione.state == StatoSpedizione.SENDING:
+                SpedizioniPreliminariService.update_state(spedizione, StatoSpedizione.READY, now)
 
     return redirect(url_for("preliminari.preliminari"))

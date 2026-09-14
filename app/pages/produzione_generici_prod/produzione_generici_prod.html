@@ -58,10 +58,12 @@
          onclick="this.remove()">
         <div class="text-center px-4">
             {% for category, message in messages %}
-            <div class="mb-4 text-{{ 'danger' if category == 'error' else 'success' }}">
-                <i class="bi {{ 'bi-check-circle-fill' if category == 'success' else 'bi-exclamation-triangle-fill' }} display-1 d-block mb-3"></i>
+            {% if category == 'error' %}
+            <div class="mb-4 text-danger">
+                <i class="bi bi-exclamation-triangle-fill display-1 d-block mb-3"></i>
                 <div class="display-6 fw-bold">{{ message }}</div>
             </div>
+            {% endif %}
             {% endfor %}
             <div class="text-muted fs-5 mt-4">Clicca ovunque per chiudere</div>
         </div>
@@ -109,7 +111,7 @@
                 <div class="mb-4 text-center">
                     <div class="selected-theme fw-bold">
                         {{ selected_theme.name if selected_theme else '' }}
-                        /
+                        - Lotto nr. 
                         {{ selected_batch.code if selected_batch else '' }}
                     </div>
                 </div>

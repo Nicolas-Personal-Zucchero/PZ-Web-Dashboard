@@ -1,4 +1,10 @@
+import enum
 from extensions import db
+
+class StatoSpedizione(enum.Enum):
+    READY = "ready"
+    SENDING = "sending"
+    SENT = "sent"
 
 class SpedizionePreliminare(db.Model):
     __tablename__ = 'spedizioni_preliminari'
@@ -10,8 +16,12 @@ class SpedizionePreliminare(db.Model):
     cash_on_delivery = db.Column(db.Numeric(10, 2), default=None, nullable=True)
     speed = db.Column(db.Boolean, default=False, nullable=False)
     xml = db.Column(db.Text, nullable=False)
-    sent = db.Column(db.Boolean, default=False, nullable=False)
-    sent_at = db.Column(db.DateTime, nullable=True)
+    state = db.Column(
+        db.Enum(StatoSpedizione, native_enum=False, length=50), 
+        default=StatoSpedizione.READY, 
+        nullable=False
+    )
+    updated_state_at = db.Column(db.DateTime, nullable=True)
 
     # Relazione 1:N con eliminazione a cascata automatica dei dettagli
     identificativi_rel = db.relationship(
@@ -31,8 +41,8 @@ class SpedizionePreliminare(db.Model):
             "cash_on_delivery": self.cash_on_delivery,
             "speed": self.speed,
             "xml": self.xml,
-            "sent": self.sent,
-            "sent_at": self.sent_at
+            "state": self.state.value if self.state else None,
+            "updated_state_at": self.updated_state_at
         }
 
 class SpedizioneIdentificativo(db.Model):
