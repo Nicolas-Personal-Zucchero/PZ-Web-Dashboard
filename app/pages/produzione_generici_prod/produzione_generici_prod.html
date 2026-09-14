@@ -46,7 +46,7 @@
 </style>
 
 <div class="container-fluid py-4 production-page">
-    <div class="d-flex align-items-center mb-4">
+    <div class="d-flex align-items-center mb-1">
         <h1 class="h3 mb-0">Produzione</h1>
     </div>
 
@@ -72,14 +72,14 @@
     {% endwith %}
 
     <div class="row">
-        <div class="col-lg-8 mb-4">
-            <div class="card production-card p-4 mb-4">
-                <label for="themeSelect" class="form-label mb-2">Tema</label>
+        <div class="col-lg-8">
+            <div class="card production-card p-4 mb-2">
+                <label for="themeSelect" class="form-label">Tema</label>
 
                 {% if generici %}
                     <select
                         id="themeSelect"
-                        class="form-select theme-selector mb-3"
+                        class="form-select theme-selector mb-1"
                         aria-label="Seleziona tema"
                     >
                         <option value="">Seleziona un tema...</option>
@@ -108,7 +108,7 @@
                 class="card production-card p-4"
                 {% if not (selected_theme and selected_batch) %}style="display:none;"{% endif %}
             >
-                <div class="mb-4 text-center">
+                <div class="mb-2 text-center">
                     <div class="selected-theme fw-bold">
                         {{ selected_theme.name if selected_theme else '' }}
                         - Lotto nr. 
@@ -124,12 +124,12 @@
                 >
                     <input type="hidden" name="theme_id" value="{{ selected_theme.id if selected_theme else '' }}">
 
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label for="productionDate" class="form-label">Data</label>
                         <input type="date" class="form-control" name="date" id="productionDate" value="{{ today }}" required>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label for="reelBatch" class="form-label">Lotto Bobina</label>
                         <input
                             type="text"
@@ -147,12 +147,12 @@
                         >
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label for="quantity" class="form-label">Quantità (Kg)</label>
                         <input type="number" step="1" min="1" max="10000" class="form-control" name="quantity" id="quantity" inputmode="numeric" required>
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-2">
                         <label for="operatorId" class="form-label">Operatore</label>
                         <select class="form-select" name="operator_id" id="operatorId" required>
                             <option value="" selected disabled>Seleziona operatore...</option>
