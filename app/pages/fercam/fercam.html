@@ -51,6 +51,15 @@
             <div class="col-md-4">
                 <input type="text" class="form-control" id="searchInput" placeholder="Cerca identificativo o ragione sociale" maxlength="80">
             </div>
+            <div class="col-md-2">
+                <select class="form-select" id="daysToFetch" name="days_to_fetch" aria-label="Days to fetch">
+                    {% set current_days = request.args.get('days_to_fetch', '5') %}
+                    <option value="5" {% if current_days == '5' %}selected{% endif %}>Ultimi 5 Giorni</option>
+                    <option value="15" {% if current_days == '15' %}selected{% endif %}>Ultimi 15 Giorni</option>
+                    <option value="30" {% if current_days == '30' %}selected{% endif %}>Ultimi 30 Giorni</option>
+                    <option value="60" {% if current_days == '60' %}selected{% endif %}>Ultimi 60 Giorni</option>
+                </select>
+            </div>
         </div>
 
         <div style="max-height: 610px; overflow-y: auto;" class="mt-4 mb-3 border rounded">
@@ -175,6 +184,16 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll('.toast').forEach(toastEl => new bootstrap.Toast(toastEl).show());
+
+        const daysToFetchSelect = document.getElementById("daysToFetch");
+
+        if (daysToFetchSelect) {
+            daysToFetchSelect.addEventListener("change", function () {
+                const url = new URL(window.location.href);
+                url.searchParams.set("days_to_fetch", this.value);
+                window.location.href = url.toString();
+            });
+        }
 
         const MAX_SELECTIONS = 10;
 

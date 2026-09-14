@@ -1,3 +1,4 @@
+import os
 import json
 import copy
 from decimal import Decimal
@@ -13,12 +14,15 @@ from utils.RedisMexalCache import RedisMexalCache
 from config.constants import PACKING_TYPE_MAP, PACKING_TYPE_ICONS, LABEL_TYPE_MAP, ID_PAGAMENTI_ALLA_CONSEGNA
 from services.spedizioni import SpedizioniPreliminariService
 
-DAYS_TO_FETCH = 5
+DEFAULT_DAYS_TO_FETCH = 5
 mexal_cache = RedisMexalCache()
-fercam_bp = Blueprint("fercam", __name__, url_prefix="/fercam")
+
+template_dir = os.path.abspath(os.path.dirname(__file__))
+fercam_bp = Blueprint("fercam", __name__, url_prefix="/fercam", template_folder="")
 
 @fercam_bp.route("/", methods=["GET"])
 def fercam():
+    days_to_fetch = request.args.get("days_to_fetch", DEFAULT_DAYS_TO_FETCH)
     identificativi_sent, identificativi_non_sent = SpedizioniPreliminariService.get_identificativi_partitioned()
 
     mexal = secrets_manager.get_mexal()
@@ -26,7 +30,7 @@ def fercam():
         flash("Errore nelle credenziali Mexal.", "danger")
         return render_template("fercam.html", fatture=[])
 
-    starting_date_str = (datetime.now() - timedelta(days=DAYS_TO_FETCH)).strftime('%Y%m%d')
+    starting_date_str = (datetime.now() - timedelta(days=int(days_to_fetch))).strftime('%Y%m%d')
     filters = [
        ("data_documento", ">=", starting_date_str),
     #    ("nr_tracking", "<>", "SPEDITO"), #Replaced with local db check to avoid missing documents that have been sent but not yet marked as SPEDITO in Mexal
