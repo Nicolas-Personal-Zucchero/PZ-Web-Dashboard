@@ -1,8 +1,10 @@
 from datetime import timedelta
 import json
+import logging
 import redis
 from typing import Optional
-from flask import current_app
+
+logger = logging.getLogger(__name__)
 
 class RedisMexalCache:
     def __init__(self):
@@ -21,7 +23,7 @@ class RedisMexalCache:
         if cached_val:
             return cached_val
 
-        current_app.logger.warning(f"MX: Cache miss per aspetto codice: '{codice}'. Recupero da gestionale.")
+        logger.warning(f"MX: Cache miss per aspetto codice: '{codice}'. Recupero da gestionale.")
         tutti_gli_aspetti = mexal.get_all_aspetti_esteriori_beni()
 
         # Pipeline per inviare le scritture in un singolo round-trip di rete
@@ -54,7 +56,7 @@ class RedisMexalCache:
         if not codici_da_richiedere:
             return clienti
 
-        current_app.logger.warning("MX: Cache miss per clienti. Richiesta al gestionale.")
+        logger.warning("MX: Cache miss per clienti. Richiesta al gestionale.")
         nuovi_clienti = mexal.find_customers(
             properties=["codice", "ragione_sociale",
                         "indirizzo", "cap", "localita", "provincia", "cod_paese",

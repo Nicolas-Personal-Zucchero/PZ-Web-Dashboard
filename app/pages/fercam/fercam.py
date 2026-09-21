@@ -1,11 +1,13 @@
 import os
 import json
+from mexal_pz import MexalPZ
+from dachser_edi import SSCCGenerator
 import copy
+import logging
 from decimal import Decimal
-from flask import Blueprint, redirect, render_template, flash, request, url_for, current_app, jsonify
+from flask import Blueprint, redirect, render_template, flash, request, url_for, jsonify
 from config.constants import ITALY_TZ, ZEBRA_IP
 from utils.utils import send_to_zebra, sanitize_phone_data
-from config.secrets_manager import secrets_manager
 from datetime import datetime, timedelta
 from utils.label_factory import generate_dachser_label
 from dachser_edi import CountryCode, Product, MeasurementName, UnitCode, MeasurementType
@@ -17,6 +19,8 @@ from services.spedizioni import SpedizioniPreliminariService
 DEFAULT_DAYS_TO_FETCH = 5
 mexal_cache = RedisMexalCache()
 
+logger = logging.getLogger(__name__)
+
 template_dir = os.path.abspath(os.path.dirname(__file__))
 fercam_bp = Blueprint("fercam", __name__, url_prefix="/fercam", template_folder="")
 
@@ -25,7 +29,14 @@ def fercam():
     days_to_fetch = request.args.get("days_to_fetch", DEFAULT_DAYS_TO_FETCH)
     identificativi_sent, identificativi_non_sent = SpedizioniPreliminariService.get_identificativi_partitioned()
 
-    mexal = secrets_manager.get_mexal()
+    mexal = MexalPZ(
+        os.getenv("MEXAL_DOMAIN"),
+        os.getenv("MEXAL_USER"),
+        os.getenv("MEXAL_PASSWORD"),
+        os.getenv("MEXAL_COMPANY"),
+        os.getenv("MEXAL_YEAR"),
+        logger=logger
+    )
     if not mexal:
         flash("Errore nelle credenziali Mexal.", "danger")
         return render_template("fercam.html", fatture=[])
@@ -50,7 +61,7 @@ def fercam():
     ]
 
     #Ottengo i movimenti filtrati
-    current_app.logger.warning("MX: Recupero movimenti di magazzino.")
+    logger.warning("MX: Recupero movimenti di magazzino.")
     fatture = mexal.find_warehouse_movements(str(datetime.now().year), properties=properties, filters=filters)
     codici_conto = [f["cod_conto"] for f in fatture]
 
@@ -120,11 +131,18 @@ def invia():
     raggruppamenti = _safe_json_load(request.form.get("raggruppamenti", "{}"))
 
     try:
-        mexal = secrets_manager.get_mexal()
+        mexal = MexalPZ(
+            os.getenv("MEXAL_DOMAIN"),
+            os.getenv("MEXAL_USER"),
+            os.getenv("MEXAL_PASSWORD"),
+            os.getenv("MEXAL_COMPANY"),
+            os.getenv("MEXAL_YEAR"),
+            logger=logger
+        )
         if not mexal:
             raise ValueError("Errore nelle credenziali Mexal.")
 
-        sscc_generator = secrets_manager.get_sscc_generator()
+        sscc_generator = SSCCGenerator(os.getenv("SSCC_TOKEN"))
         if not sscc_generator:
             raise ValueError("Errore nelle credenziali per la generazione degli SSCC.")
 
@@ -147,7 +165,7 @@ def invia():
                 create_spedizione_preliminare(doc_id, fattura_unica, xml, identificativi)
                 elaborati += 1
             except Exception as e:
-                current_app.logger.error(f"Errore : {e}")
+                logger.error(f"Errore : {e}")
                 errors.append((f"", str(e)))
 
         for fattura_id, error_msg in errors:
@@ -157,7 +175,7 @@ def invia():
             flash(f"Fatture elaborate, etichette stampate e spedizioni preliminari create.", "success")
 
     except Exception as e:
-        current_app.logger.error(f"Errore critico durante l'integrazione con Fercam: {e}")
+        logger.error(f"Errore critico durante l'integrazione con Fercam: {e}")
         flash(f"Errore critico durante l'integrazione con Fercam: {e}", "danger")
 
     return redirect(url_for("fercam.fercam"))
@@ -171,7 +189,14 @@ def preview_invio():
         return jsonify({"message": "Nessun documento selezionato per l'anteprima."}), 400
 
     try:
-        mexal = secrets_manager.get_mexal()
+        mexal = MexalPZ(
+            os.getenv("MEXAL_DOMAIN"),
+            os.getenv("MEXAL_USER"),
+            os.getenv("MEXAL_PASSWORD"),
+            os.getenv("MEXAL_COMPANY"),
+            os.getenv("MEXAL_YEAR"),
+            logger=logger
+        )
         if not mexal:
             raise ValueError("Errore nelle credenziali Mexal.")
 
@@ -197,7 +222,7 @@ def preview_invio():
             })
         return jsonify({"items": preview})
     except Exception as e:
-        current_app.logger.error(f"Errore anteprima invio Fercam: {e}")
+        logger.error(f"Errore anteprima invio Fercam: {e}")
         return jsonify({"message": str(e)}), 400
 
 def print_label(ssccs, fattura):
@@ -226,7 +251,7 @@ def get_indirizzo_spedizione(mexal, fattura):
     '''
     indirizzo_spedizione = None
     if fattura["cod_anag_sped"]:
-        current_app.logger.warning("MX: Recupero indirizzo di spedizione.")
+        logger.warning("MX: Recupero indirizzo di spedizione.")
         indirizzo_spedizione = mexal.get_indirizzo_di_spedizione(fattura["cod_anag_sped"][0][1])
     else:
         cliente = fattura["cliente"]
@@ -266,10 +291,10 @@ def get_note(mexal, fattura: dict) -> dict | None:
     is_indirizzo = bool(cod_sped)
     
     if is_indirizzo:
-        current_app.logger.warning("MX: Recupero note indirizzo di spedizione.")
+        logger.warning("MX: Recupero note indirizzo di spedizione.")
         sorgente = mexal.get_note_indirizzi_spedizione_by_address_id(cod_sped[0][1])
     else:
-        current_app.logger.warning("MX: Recupero note di consegna cliente.")
+        logger.warning("MX: Recupero note di consegna cliente.")
         sorgente = mexal.get_note_consegna_by_customer_id(fattura.get("cod_conto"))
 
     if not sorgente:
@@ -305,7 +330,7 @@ def get_altre_note(mexal, cliente: dict) -> str:
     if not cliente:
         return None
 
-    current_app.logger.warning("MX: Recupero altre note cliente.")
+    logger.warning("MX: Recupero altre note cliente.")
     altre_note = mexal.get_altre_note_gestionali_by_customer_id(cliente.get("codice"))
     if not altre_note:
         return None
@@ -388,12 +413,12 @@ def parse_float_amount(value):
     try:
         return Decimal(normalized)
     except Exception:
-        current_app.logger.error(f"Importo float non valido: {value}")
+        logger.error(f"Importo float non valido: {value}")
         raise ValueError("Importo float non valido.")
 
 
 def load_fattura_for_send(mexal, sigla, serie, numero, cod_conto, parziale=False):
-    current_app.logger.warning("MX: Recupero dettaglio singolo movimenti di magazzino.")
+    logger.warning("MX: Recupero dettaglio singolo movimenti di magazzino.")
     fattura = mexal.get_single_warehouse_movement(str(datetime.now().year), sigla, serie, numero, cod_conto)
     if not fattura:
         raise Exception("Errore nel recupero dei dati della fattura.")

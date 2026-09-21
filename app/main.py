@@ -54,7 +54,7 @@ def setup_logging():
         logging.root.removeHandler(handler)
 
     # Configura il formato e il livello (es. INFO o DEBUG da variabili d'ambiente)
-    log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
+    log_level = os.getenv('LOG_LEVEL', 'INFO').upper()
     
     logging.basicConfig(
         level=log_level,
@@ -66,7 +66,7 @@ def setup_logging():
 
 def create_app():
     app = Flask(__name__)
-    app.secret_key = os.environ.get('SECRET_KEY') or os.urandom(24)
+    app.secret_key = os.getenv('SECRET_KEY') or os.urandom(24)
     
     # Limite massimo per il caricamento dei file (16MB)
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024

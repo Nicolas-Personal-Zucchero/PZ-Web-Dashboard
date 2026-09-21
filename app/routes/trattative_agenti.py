@@ -1,14 +1,14 @@
+import os
 from flask import Blueprint, render_template
 from config.constants import ITALY_TZ
-from config.secrets_manager import secrets_manager
 from datetime import datetime
+from hubspot_pz import HubspotPZ
 
 trattative_agenti_bp = Blueprint("trattative_agenti", __name__, url_prefix="/trattative_agenti")
 
 @trattative_agenti_bp.route("/", methods=["GET", "POST"])
 def index():
-    hubspot = secrets_manager.get_hubspot()
-
+    hubspot = HubspotPZ(os.getenv("HUBSPOT_AGENT_ASSIGNMENT_TOKEN"))
     #Prendo i nomi delle fasi della pipeline agenti
     pipeline_info = hubspot.getPipelineInfo("deals", hubspot._AGENT_PIPELINE_ID)
     stages_by_id = {stage["id"]: stage for stage in pipeline_info.get("stages", [])}
