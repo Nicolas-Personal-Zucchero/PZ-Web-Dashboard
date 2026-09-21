@@ -11,12 +11,6 @@ from mailer_pz import MailerPZ
 sigep_ticket_bp = Blueprint("sigep_ticket", __name__, url_prefix="/sigep-ticket")
 tickets_collection = db.collection("sigep_tickets")
 
-mailer = MailerPZ(
-    os.getenv("INFO_EMAIL_NAME"),
-    os.getenv("INFO_EMAIL_ADDRESS"),
-    os.getenv("INFO_EMAIL_PASSWORD")
-)
-
 @sigep_ticket_bp.route("/", methods=["GET"])
 def index():
     # --- OTTIMIZZAZIONE 1: Count ---
@@ -80,6 +74,11 @@ def send_tickets():
         assigned_codes = assign_tickets_transaction(transaction, count, email)
         
         # Send email
+        mailer = MailerPZ(
+            os.getenv("INFO_EMAIL_NAME"),
+            os.getenv("INFO_EMAIL_ADDRESS"),
+            os.getenv("INFO_EMAIL_PASSWORD")
+        )
         if mailer and assigned_codes:
             codes_str = "<br>".join([f"<b>{code}</b>" for code in assigned_codes])
             template_key = f"sigep_{language}"

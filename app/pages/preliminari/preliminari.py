@@ -16,18 +16,6 @@ logger = logging.getLogger(__name__)
 template_dir = os.path.abspath(os.path.dirname(__file__))
 preliminari_bp = Blueprint("preliminari", __name__, url_prefix="/preliminari", template_folder="")
 
-fercamSFTP = FercamSFTP(
-    os.getenv("SFTP_USERNAME"),
-    os.getenv("SFTP_PASSWORD"),
-    use_test_server=False,
-    auto_add_keys=True
-)
-mailer = MailerPZ(
-    os.getenv("INFO_EMAIL_NAME"),
-    os.getenv("INFO_EMAIL_ADDRESS"),
-    os.getenv("INFO_EMAIL_PASSWORD")
-)
-
 @preliminari_bp.route("/", methods=["GET"])
 def preliminari():
     search_data_invio_raw = request.args.get("sent_search_data_invio", "").strip()
@@ -121,6 +109,11 @@ def invio_numero_bancali():
         flash("Il numero di bancali deve essere un intero maggiore di zero.", "warning")
         return redirect(url_for("preliminari.preliminari"))
 
+    mailer = MailerPZ(
+        os.getenv("INFO_EMAIL_NAME"),
+        os.getenv("INFO_EMAIL_ADDRESS"),
+        os.getenv("INFO_EMAIL_PASSWORD")
+    )
     if not mailer:
         flash("Errore nella configurazione del mailer.", "danger")
         return redirect(url_for("preliminari.preliminari"))
@@ -159,6 +152,12 @@ def invia():
     inviati = 0
 
     try:
+        fercamSFTP = FercamSFTP(
+            os.getenv("SFTP_USERNAME"),
+            os.getenv("SFTP_PASSWORD"),
+            use_test_server=False,
+            auto_add_keys=True
+        )
         with fercamSFTP as sftp:
             for spedizione in spedizioni_ready:
                 if not spedizione.xml:

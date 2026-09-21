@@ -17,20 +17,6 @@ logger = logging.getLogger(__name__)
 template_dir = os.path.abspath(os.path.dirname(__file__))
 etichette_spedizioni_bp = Blueprint("etichette_spedizioni", __name__, url_prefix="/etichette_spedizioni", template_folder="")
 
-mexal = MexalPZ(
-    os.getenv("MEXAL_DOMAIN"),
-    os.getenv("MEXAL_USER"),
-    os.getenv("MEXAL_PASSWORD"),
-    os.getenv("MEXAL_COMPANY"),
-    os.getenv("MEXAL_YEAR"),
-    logger=logger
-)
-mailer = MailerPZ(
-    os.getenv("INFO_EMAIL_NAME"),
-    os.getenv("INFO_EMAIL_ADDRESS"),
-    os.getenv("INFO_EMAIL_PASSWORD")
-)
-
 @etichette_spedizioni_bp.route("/", methods=["GET", "POST"])
 def etichette_spedizioni():
     search_result = None
@@ -41,6 +27,14 @@ def etichette_spedizioni():
             flash("Codice Mexal mancante.", "warning")
             return render_template("etichette_spedizioni.html", customer=search_result)
 
+        mexal = MexalPZ(
+            os.getenv("MEXAL_DOMAIN"),
+            os.getenv("MEXAL_USER"),
+            os.getenv("MEXAL_PASSWORD"),
+            os.getenv("MEXAL_COMPANY"),
+            os.getenv("MEXAL_YEAR"),
+            logger=logger
+        )
         if not mexal:
             flash("Errore nelle credenziali Mexal.", "error")
             return render_template("etichette_spedizioni.html", customer=search_result)
@@ -156,6 +150,11 @@ def invia_tracking():
     email = request.form.get("email_cliente", "").strip().lower()
     tracking = request.form.get("codice_brt", "").strip().upper()
 
+    mailer = MailerPZ(
+        os.getenv("INFO_EMAIL_NAME"),
+        os.getenv("INFO_EMAIL_ADDRESS"),
+        os.getenv("INFO_EMAIL_PASSWORD")
+    )
     if mailer:
         mailer.invia_email_singola(
             recipients=[email],

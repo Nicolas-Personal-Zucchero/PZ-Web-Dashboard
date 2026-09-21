@@ -14,15 +14,9 @@ assegna_agente_bp = Blueprint("assegna_agente", __name__, url_prefix="/assegna-a
 
 assegnazione_contatti_agenti_collection = db.collection("assegnazione_contatti_agenti")
 
-hubspot = HubspotPZ(os.getenv("HUBSPOT_AGENT_ASSIGNMENT_TOKEN"))
-mailer = MailerPZ(
-    os.getenv("INFO_EMAIL_NAME"),
-    os.getenv("INFO_EMAIL_ADDRESS"),
-    os.getenv("INFO_EMAIL_PASSWORD")
-)
-
 @assegna_agente_bp.route("/get_contact")
 def get_contact():
+    hubspot = HubspotPZ(os.getenv("HUBSPOT_AGENT_ASSIGNMENT_TOKEN"))
     email = request.args.get("email")    
     contact, company = get_contact_and_its_company(hubspot, email or "")
 
@@ -41,6 +35,7 @@ def get_field(form, key):
 
 @assegna_agente_bp.route("/", methods=["GET", "POST"])
 def assegnaAgente():
+    hubspot = HubspotPZ(os.getenv("HUBSPOT_AGENT_ASSIGNMENT_TOKEN"))
     if not hubspot:
         flash("Errore: Token HubSpot mancante.", "danger")
         return render_template("assegna-agente.html", agents=[], contact_source_options=[])
@@ -89,6 +84,11 @@ def assegnaAgente():
     #Rimpiazzo il value della fonte con la label (più leggibile nella mail)
     updated_contact["fonte"] = contact_source_options_by_value.get(updated_contact.get("fonte"), updated_contact.get("fonte"))
 
+    mailer = MailerPZ(
+        os.getenv("INFO_EMAIL_NAME"),
+        os.getenv("INFO_EMAIL_ADDRESS"),
+        os.getenv("INFO_EMAIL_PASSWORD")
+    )
     if mailer:
         logo_streams = []
         if updated_company["logo"]:

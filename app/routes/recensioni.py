@@ -7,12 +7,6 @@ from mailer_pz import MailerPZ
 
 recensioni_bp = Blueprint("recensioni", __name__, url_prefix="/recensioni")
 
-mailer = MailerPZ(
-    os.getenv("INFO_EMAIL_NAME"),
-    os.getenv("INFO_EMAIL_ADDRESS"),
-    os.getenv("INFO_EMAIL_PASSWORD")
-)
-
 @recensioni_bp.route("/", methods=["GET", "POST"])
 def recensioni():
     if request.method == "POST":        
@@ -34,6 +28,11 @@ def recensioni():
             flash("Mittente selezionato non valido.", "danger")
             return redirect("/recensioni")
 
+        mailer = MailerPZ(
+            os.getenv("INFO_EMAIL_NAME"),
+            os.getenv("INFO_EMAIL_ADDRESS"),
+            os.getenv("INFO_EMAIL_PASSWORD")
+        )
         if not mailer:
             flash("Errore: Configurazione mailer mancante.", "danger")
             return redirect("/recensioni")

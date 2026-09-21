@@ -24,16 +24,6 @@ logger = logging.getLogger(__name__)
 template_dir = os.path.abspath(os.path.dirname(__file__))
 fercam_bp = Blueprint("fercam", __name__, url_prefix="/fercam", template_folder="")
 
-# sscc_generator = SSCCGenerator(os.getenv("SSCC_TOKEN"))
-# mexal = MexalPZ(
-#     os.getenv("MEXAL_DOMAIN"),
-#     os.getenv("MEXAL_USER"),
-#     os.getenv("MEXAL_PASSWORD"),
-#     os.getenv("MEXAL_COMPANY"),
-#     os.getenv("MEXAL_YEAR"),
-#     logger=logger
-# )
-
 @fercam_bp.route("/", methods=["GET"])
 def fercam():
     days_to_fetch = request.args.get("days_to_fetch", DEFAULT_DAYS_TO_FETCH)
