@@ -8,10 +8,9 @@ services:
       - ./data:/app/app/instance
       - ~/attachments/assets:/app/attachments/assets
     environment:
-      - LOG_LEVEL=${LOG_LEVEL}
-      - REDIS_URL=${REDIS_URL}
+      - LOG_LEVEL=INFO
+      - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=${SECRET_KEY}
-      - ASSET_ATTACHMENTS_DIR=${ASSET_ATTACHMENTS_DIR}
       - HUBSPOT_AGENT_ASSIGNMENT_TOKEN=${HUBSPOT_AGENT_ASSIGNMENT_TOKEN}
       - SSCC_TOKEN=${SSCC_TOKEN}
       - SFTP_USERNAME=${SFTP_USERNAME}
