@@ -14,16 +14,21 @@
 {% endblock %}
 
 {% block styles %}
+{{ super() }}
 <style>
+    .sidebar {
+        z-index: 2;
+    }
+
     /* Contenitore della mappa adattato alla sidebar */
     .map-container {
         position: fixed;
         top: 0;
-        left: 230px;
-        /* larghezza sidebar */
-        width: calc(100vw - 230px);
+        left: var(--sidebar-width);
+        width: calc(100vw - var(--sidebar-width));
         height: 100vh;
         overflow: hidden;
+        z-index: 1;
     }
 
     /* Iframe fullscreen */
@@ -37,7 +42,7 @@
     .btn-back {
         position: fixed;
         top: 40px;
-        left: 275px;
+        left: calc(var(--sidebar-width) + 45px);
         /* leggermente distanziato dalla sidebar */
         background-color: rgba(255, 255, 255, 0.9);
         color: #333;
