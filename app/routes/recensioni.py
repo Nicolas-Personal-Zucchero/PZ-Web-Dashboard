@@ -1,12 +1,17 @@
 import os
-from flask import Blueprint, current_app, render_template, request, redirect, flash
-from config.secrets_manager import secrets_manager
-from config.constants import ITALY_TZ
+from flask import Blueprint, render_template, request, redirect, flash
 from config.mail_config import EMAIL_TEMPLATES
 from services.recensioni import ReviewService
 from services.employees import EmployeeService
+from mailer_pz import MailerPZ
 
 recensioni_bp = Blueprint("recensioni", __name__, url_prefix="/recensioni")
+
+mailer = MailerPZ(
+    os.getenv("INFO_EMAIL_NAME"),
+    os.getenv("INFO_EMAIL_ADDRESS"),
+    os.getenv("INFO_EMAIL_PASSWORD")
+)
 
 @recensioni_bp.route("/", methods=["GET", "POST"])
 def recensioni():
@@ -29,7 +34,6 @@ def recensioni():
             flash("Mittente selezionato non valido.", "danger")
             return redirect("/recensioni")
 
-        mailer = secrets_manager.get_mailer()
         if not mailer:
             flash("Errore: Configurazione mailer mancante.", "danger")
             return redirect("/recensioni")

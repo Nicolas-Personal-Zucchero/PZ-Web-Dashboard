@@ -1,18 +1,35 @@
 import os
 import io
-from flask import Blueprint, render_template, request, redirect, flash, make_response
+import logging
+from flask import Blueprint, render_template, request, redirect, flash, make_response, current_app
 from config.constants import ZEBRA_IP
 from utils.label_factory import generate_sugar_label
-from config.secrets_manager import secrets_manager
 from weasyprint import HTML
 from datetime import datetime
 import base64
-from flask import current_app
 from config.mail_config import EMAIL_TEMPLATES
 from utils.utils import send_to_zebra
+from mexal_pz import MexalPZ
+from mailer_pz import MailerPZ
+
+logger = logging.getLogger(__name__)
 
 template_dir = os.path.abspath(os.path.dirname(__file__))
 etichette_spedizioni_bp = Blueprint("etichette_spedizioni", __name__, url_prefix="/etichette_spedizioni", template_folder="")
+
+mexal = MexalPZ(
+    os.getenv("MEXAL_DOMAIN"),
+    os.getenv("MEXAL_USER"),
+    os.getenv("MEXAL_PASSWORD"),
+    os.getenv("MEXAL_COMPANY"),
+    os.getenv("MEXAL_YEAR"),
+    logger=logger
+)
+mailer = MailerPZ(
+    os.getenv("INFO_EMAIL_NAME"),
+    os.getenv("INFO_EMAIL_ADDRESS"),
+    os.getenv("INFO_EMAIL_PASSWORD")
+)
 
 @etichette_spedizioni_bp.route("/", methods=["GET", "POST"])
 def etichette_spedizioni():
@@ -23,8 +40,7 @@ def etichette_spedizioni():
         if not mexal_code:
             flash("Codice Mexal mancante.", "warning")
             return render_template("etichette_spedizioni.html", customer=search_result)
-        
-        mexal = secrets_manager.get_mexal()
+
         if not mexal:
             flash("Errore nelle credenziali Mexal.", "error")
             return render_template("etichette_spedizioni.html", customer=search_result)
@@ -45,7 +61,7 @@ def etichette_spedizioni():
         )
 
         if supplier:
-            current_app.logger.info(f"Fornitore trovato: {supplier}")
+            logger.info(f"Fornitore trovato: {supplier}")
             search_result = supplier
             flash(f"Fornitore trovato: {search_result.get('ragione_sociale', 'N/D')}", "success")
             return render_template("etichette_spedizioni.html", customer=search_result)
@@ -137,8 +153,6 @@ def stampa_etichetta():
 
 @etichette_spedizioni_bp.route("/invia_tracking", methods=["POST"])
 def invia_tracking():
-    mailer = secrets_manager.get_mailer()
-
     email = request.form.get("email_cliente", "").strip().lower()
     tracking = request.form.get("codice_brt", "").strip().upper()
 

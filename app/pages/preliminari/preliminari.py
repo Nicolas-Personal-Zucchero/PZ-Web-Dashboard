@@ -1,16 +1,32 @@
 import xmltodict
 import os
+import logging
 from io import BytesIO
 from flask import Blueprint, redirect, render_template, flash, request, url_for, current_app, send_file
 
 from datetime import datetime
 from models.spedizioni import StatoSpedizione
-from config.secrets_manager import secrets_manager
 from config.constants import ITALY_TZ
 from services.spedizioni import SpedizioniPreliminariService
+from dachser_edi import FercamSFTP
+from mailer_pz import MailerPZ
+
+logger = logging.getLogger(__name__)
 
 template_dir = os.path.abspath(os.path.dirname(__file__))
 preliminari_bp = Blueprint("preliminari", __name__, url_prefix="/preliminari", template_folder="")
+
+fercamSFTP = FercamSFTP(
+    os.getenv("SFTP_USERNAME"),
+    os.getenv("SFTP_PASSWORD"),
+    use_test_server=False,
+    auto_add_keys=True
+)
+mailer = MailerPZ(
+    os.getenv("INFO_EMAIL_NAME"),
+    os.getenv("INFO_EMAIL_ADDRESS"),
+    os.getenv("INFO_EMAIL_PASSWORD")
+)
 
 @preliminari_bp.route("/", methods=["GET"])
 def preliminari():
@@ -52,7 +68,7 @@ def elimina(id):
         flash("Spedizione preliminare eliminata correttamente.", "success")
         
     except Exception as e:
-        current_app.logger.error(f"Errore durante l'eliminazione della spedizione {id}: {e}")
+        logger.error(f"Errore durante l'eliminazione della spedizione {id}: {e}")
         flash("Errore a database durante l'eliminazione della spedizione preliminare.", "danger")
 
     return redirect(url_for("preliminari.preliminari"))
@@ -105,7 +121,6 @@ def invio_numero_bancali():
         flash("Il numero di bancali deve essere un intero maggiore di zero.", "warning")
         return redirect(url_for("preliminari.preliminari"))
 
-    mailer = secrets_manager.get_mailer()
     if not mailer:
         flash("Errore nella configurazione del mailer.", "danger")
         return redirect(url_for("preliminari.preliminari"))
@@ -120,7 +135,7 @@ def invio_numero_bancali():
         )
         flash("Email inviata correttamente a Cesena.", "success")
     except Exception as e:
-        current_app.logger.error(f"Errore invio numero bancali a Cesena: {e}")
+        logger.error(f"Errore invio numero bancali a Cesena: {e}")
         flash("Errore durante l'invio dell'email a Cesena.", "danger")
 
     return redirect(url_for("preliminari.preliminari"))
@@ -144,11 +159,11 @@ def invia():
     inviati = 0
 
     try:
-        with secrets_manager.get_fercam_sftp() as sftp:
+        with fercamSFTP as sftp:
             for spedizione in spedizioni_ready:
                 if not spedizione.xml:
                     error_msg = f"Campo XML mancante."
-                    current_app.logger.warning(f"Spedizione {spedizione.id}: {error_msg}")
+                    logger.warning(f"Spedizione {spedizione.id}: {error_msg}")
                     errori.append((spedizione.id, error_msg))
                     continue
 
@@ -158,10 +173,10 @@ def invia():
                     sftp.send_content(spedizione.xml, filename)
                     SpedizioniPreliminariService.update_state(spedizione, StatoSpedizione.SENT, datetime.now(ITALY_TZ))
                     inviati += 1
-                    current_app.logger.info(f"Spedizione {spedizione.id} inviata a Fercam e aggiornata sul database.")
+                    logger.info(f"Spedizione {spedizione.id} inviata a Fercam e aggiornata sul database.")
                 except Exception as e:
                     error_msg = f"Errore nell'invio a Fercam: {e}"
-                    current_app.logger.error(f"Errore spedizione {spedizione.id} [{filename}]: {e}")
+                    logger.error(f"Errore spedizione {spedizione.id} [{filename}]: {e}")
                     errori.append((spedizione.id, error_msg))
 
         if inviati > 0:
@@ -171,7 +186,7 @@ def invia():
             flash(f"Errore spedizione {sp_id}: {error_msg}", "danger")
 
     except Exception as e:
-        current_app.logger.error(f"Errore critico di connessione SFTP Fercam: {e}")
+        logger.error(f"Errore critico di connessione SFTP Fercam: {e}")
         flash("Errore critico durante l'integrazione con Fercam. Controllare i log di sistema.", "danger")
         now = datetime.now(ITALY_TZ)
         for spedizione in spedizioni_ready:

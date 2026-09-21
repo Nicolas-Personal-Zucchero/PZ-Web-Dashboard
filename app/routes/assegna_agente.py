@@ -3,19 +3,26 @@ from flask import Blueprint, render_template, request, redirect, flash, jsonify
 
 from config.mail_config import EMAIL_TEMPLATES
 from config.constants import ITALY_TZ
-from config.secrets_manager import secrets_manager, MailerPZ
 
 from utils.firebase_client import db
 from utils.utils import extract_logo_id, download_file_stream
 from firebase_admin import firestore
+from hubspot_pz import HubspotPZ
+from mailer_pz import MailerPZ
 
 assegna_agente_bp = Blueprint("assegna_agente", __name__, url_prefix="/assegna-agente")
 
 assegnazione_contatti_agenti_collection = db.collection("assegnazione_contatti_agenti")
 
+hubspot = HubspotPZ(os.getenv("HUBSPOT_AGENT_ASSIGNMENT_TOKEN"))
+mailer = MailerPZ(
+    os.getenv("INFO_EMAIL_NAME"),
+    os.getenv("INFO_EMAIL_ADDRESS"),
+    os.getenv("INFO_EMAIL_PASSWORD")
+)
+
 @assegna_agente_bp.route("/get_contact")
 def get_contact():
-    hubspot = secrets_manager.get_hubspot()
     email = request.args.get("email")    
     contact, company = get_contact_and_its_company(hubspot, email or "")
 
@@ -34,9 +41,6 @@ def get_field(form, key):
 
 @assegna_agente_bp.route("/", methods=["GET", "POST"])
 def assegnaAgente():
-    hubspot = secrets_manager.get_hubspot()
-    mailer = secrets_manager.get_mailer()
-    
     if not hubspot:
         flash("Errore: Token HubSpot mancante.", "danger")
         return render_template("assegna-agente.html", agents=[], contact_source_options=[])

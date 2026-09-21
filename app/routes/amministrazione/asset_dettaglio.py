@@ -13,7 +13,7 @@ from utils.label_factory import generate_asset_qrcode_label
 
 asset_dettaglio_bp = Blueprint("asset_dettaglio", __name__, url_prefix="/asset")
 
-ATTACHMENTS_DIR = os.environ.get("ASSET_ATTACHMENTS_DIR", "/attachments/asset_interventi")
+ATTACHMENTS_DIR = os.getenv("ASSET_ATTACHMENTS_DIR", "/attachments/asset_interventi")
 
 def get_attachments_dir():
     os.makedirs(ATTACHMENTS_DIR, exist_ok=True)

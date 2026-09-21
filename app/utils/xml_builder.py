@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Optional
 from dachser_edi import *
-from flask import current_app
+import logging
+
+logger = logging.getLogger(__name__)
 
 def encode_base36(num: int, length: int = 5) -> str:
     """Codifica un intero in Base36 con padding fisso."""
@@ -197,5 +199,5 @@ def create_xml(nuova_spedizione):
         )
         return xml_output
     except Exception as e:
-        current_app.logger.error(f"Error creating XML: {e}")
+        logger.error(f"Error creating XML: {e}")
         return None

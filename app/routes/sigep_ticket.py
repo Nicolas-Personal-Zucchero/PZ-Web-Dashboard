@@ -1,14 +1,21 @@
 import csv
+import os
 import io
 from flask import Blueprint, render_template, request, redirect, flash
 from firebase_admin import firestore
 from utils.firebase_client import db
-from config.secrets_manager import secrets_manager
 from config.mail_config import EMAIL_TEMPLATES
+from mailer_pz import MailerPZ
 
 
 sigep_ticket_bp = Blueprint("sigep_ticket", __name__, url_prefix="/sigep-ticket")
 tickets_collection = db.collection("sigep_tickets")
+
+mailer = MailerPZ(
+    os.getenv("INFO_EMAIL_NAME"),
+    os.getenv("INFO_EMAIL_ADDRESS"),
+    os.getenv("INFO_EMAIL_PASSWORD")
+)
 
 @sigep_ticket_bp.route("/", methods=["GET"])
 def index():
@@ -73,7 +80,6 @@ def send_tickets():
         assigned_codes = assign_tickets_transaction(transaction, count, email)
         
         # Send email
-        mailer = secrets_manager.get_mailer()
         if mailer and assigned_codes:
             codes_str = "<br>".join([f"<b>{code}</b>" for code in assigned_codes])
             template_key = f"sigep_{language}"
