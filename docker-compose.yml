@@ -8,10 +8,10 @@ services:
       - ./data:/app/app/instance
       - ~/attachments/assets:/app/attachments/assets
     environment:
-      - LOG_LEVEL=INFO
-      - REDIS_URL=redis://redis:6379/0
-      - SECRET_KEY=?personalzucchero2026personalzucchero!
-      - ASSET_ATTACHMENTS_DIR=/app/attachments/assets
+      - LOG_LEVEL=${LOG_LEVEL}
+      - REDIS_URL=${REDIS_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - ASSET_ATTACHMENTS_DIR=${ASSET_ATTACHMENTS_DIR}
     depends_on:
       - redis
     restart: unless-stopped
@@ -39,7 +39,7 @@ services:
       - ./data:/app/app/instance
     command: sqlite_web -H 0.0.0.0 /app/app/instance/database.db
     environment:
-      - SQLITE_WEB_PASSWORD=tactile
+      - SQLITE_WEB_PASSWORD=${SQLITE_WEB_PASSWORD}
 
 networks:
   backend:
