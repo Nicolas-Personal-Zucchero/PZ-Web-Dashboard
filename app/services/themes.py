@@ -3,6 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from extensions import db
 from models.themes import Theme
 
+
 class ThemeService:
 
     @staticmethod
@@ -28,16 +29,18 @@ class ThemeService:
             return None
 
     @staticmethod
-    def update_theme(theme_id: int, name: str | None = None, hidden: bool | None = None) -> bool:
+    def update_theme(
+        theme_id: int, name: str | None = None, hidden: bool | None = None
+    ) -> bool:
         theme = db.session.get(Theme, theme_id)
         if not theme:
             return False
-        
+
         if name is not None:
             theme.name = name
         if hidden is not None:
             theme.hidden = hidden
-        
+
         try:
             db.session.commit()
             return True
@@ -50,7 +53,7 @@ class ThemeService:
         theme = db.session.get(Theme, theme_id)
         if not theme:
             return False
-            
+
         try:
             db.session.delete(theme)
             db.session.commit()

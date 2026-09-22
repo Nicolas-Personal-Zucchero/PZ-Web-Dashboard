@@ -7,9 +7,10 @@ from mailer_pz import MailerPZ
 
 recensioni_bp = Blueprint("recensioni", __name__, url_prefix="/recensioni")
 
+
 @recensioni_bp.route("/", methods=["GET", "POST"])
 def recensioni():
-    if request.method == "POST":        
+    if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         customer = request.form.get("nome_cliente", "").strip()
         sender_id = int(request.form.get("sender", "").strip())
@@ -20,10 +21,12 @@ def recensioni():
             return redirect("/recensioni")
 
         if ReviewService.does_review_exist(email):
-            flash("Hai già inviato una richiesta di recensione a questa email.", "warning")
+            flash(
+                "Hai già inviato una richiesta di recensione a questa email.", "warning"
+            )
             return redirect("/recensioni")
 
-        sender = EmployeeService.get_employee(sender_id) 
+        sender = EmployeeService.get_employee(sender_id)
         if not sender:
             flash("Mittente selezionato non valido.", "danger")
             return redirect("/recensioni")
@@ -31,27 +34,44 @@ def recensioni():
         mailer = MailerPZ(
             os.getenv("INFO_EMAIL_NAME"),
             os.getenv("INFO_EMAIL_ADDRESS"),
-            os.getenv("INFO_EMAIL_PASSWORD")
+            os.getenv("INFO_EMAIL_PASSWORD"),
         )
         if not mailer:
             flash("Errore: Configurazione mailer mancante.", "danger")
             return redirect("/recensioni")
-        
-        ReviewService.create(customer_name=customer, customer_email=email, language=language, sender_id=sender_id)
+
+        ReviewService.create(
+            customer_name=customer,
+            customer_email=email,
+            language=language,
+            sender_id=sender_id,
+        )
         mailer.invia_email_singola(
             recipients=[email],
             subject=EMAIL_TEMPLATES["review_" + language.lower()]["object"],
-            body=EMAIL_TEMPLATES["review_" + language.lower()]["body"].format(customer=customer, sender=f"{sender.name} - {sender.department}"),
-            hubspot_ccn=True
+            body=EMAIL_TEMPLATES["review_" + language.lower()]["body"].format(
+                customer=customer, sender=f"{sender.name} - {sender.department}"
+            ),
+            hubspot_ccn=True,
         )
         flash("Richiesta di recensione inviata con successo!", "success")
         return redirect("/recensioni")
 
     return render_template(
         "recensioni.html",
-        employees=EmployeeService.get_employees(departments=["Ufficio Grafico", "Ufficio Commerciale", "Ufficio Amministrativo", "Ufficio Ordini", "Direzione", ""]),
-        reviews=ReviewService.get_reviews(hidden=False)
+        employees=EmployeeService.get_employees(
+            departments=[
+                "Ufficio Grafico",
+                "Ufficio Commerciale",
+                "Ufficio Amministrativo",
+                "Ufficio Ordini",
+                "Direzione",
+                "",
+            ]
+        ),
+        reviews=ReviewService.get_reviews(hidden=False),
     )
+
 
 @recensioni_bp.route("/elimina", methods=["POST"])
 def elimina_recensione():
@@ -62,5 +82,5 @@ def elimina_recensione():
             flash("Recensione eliminata con successo.", "success")
         else:
             flash("Errore durante l'eliminazione della recensione.", "warning")
-        
+
     return redirect("/recensioni")

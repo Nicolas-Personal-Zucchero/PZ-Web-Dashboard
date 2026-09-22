@@ -1,8 +1,12 @@
 REVIEW_EMAIL_OBJECT_ITA = "Ci farebbe piacere la tua opinione! 🌟"
 REVIEW_EMAIL_OBJECT_ENG = "We’d love to hear your thoughts! 🌟"
 AGENT_EMAIL_OBJECT_ITA = "Nuovo contatto assegnato {info_cliente}"
-CONTACT_EMAIL_OBJECT_ITA = "Grazie per il Suo Interesse – Il Nostro Consulente Locale La Contatterà"
-CONTACT_EMAIL_OBJECT_ENG = "Thank You for Your Interest – Our Local Consultant Will Contact You"
+CONTACT_EMAIL_OBJECT_ITA = (
+    "Grazie per il Suo Interesse – Il Nostro Consulente Locale La Contatterà"
+)
+CONTACT_EMAIL_OBJECT_ENG = (
+    "Thank You for Your Interest – Our Local Consultant Will Contact You"
+)
 SIGEP_EMAIL_OBJECT_ITA = "Ecco i tuoi biglietti per il Sigep! 🎟️"
 SIGEP_EMAIL_OBJECT_ENG = "Here are your Sigep tickets! 🎟️"
 
@@ -254,5 +258,8 @@ EMAIL_TEMPLATES = {
     "contact_eng": {"object": CONTACT_EMAIL_OBJECT_ENG, "body": CONTACT_EMAIL_BODY_ENG},
     "sigep_ita": {"object": SIGEP_EMAIL_OBJECT_ITA, "body": SIGEP_EMAIL_BODY_ITA},
     "sigep_eng": {"object": SIGEP_EMAIL_OBJECT_ENG, "body": SIGEP_EMAIL_BODY_ENG},
-    "tracking_brt_ita": {"object": TRACKING_BRT_OBJECT_ITA, "body": TRACKING_BRT_BODY_ITA},
+    "tracking_brt_ita": {
+        "object": TRACKING_BRT_OBJECT_ITA,
+        "body": TRACKING_BRT_BODY_ITA,
+    },
 }

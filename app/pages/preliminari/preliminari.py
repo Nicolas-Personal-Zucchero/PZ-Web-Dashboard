@@ -2,7 +2,16 @@ import xmltodict
 import os
 import logging
 from io import BytesIO
-from flask import Blueprint, redirect, render_template, flash, request, url_for, current_app, send_file
+from flask import (
+    Blueprint,
+    redirect,
+    render_template,
+    flash,
+    request,
+    url_for,
+    current_app,
+    send_file,
+)
 
 from datetime import datetime
 from models.spedizioni import StatoSpedizione
@@ -14,12 +23,19 @@ from mailer_pz import MailerPZ
 logger = logging.getLogger(__name__)
 
 template_dir = os.path.abspath(os.path.dirname(__file__))
-preliminari_bp = Blueprint("preliminari", __name__, url_prefix="/preliminari", template_folder="")
+preliminari_bp = Blueprint(
+    "preliminari", __name__, url_prefix="/preliminari", template_folder=""
+)
+
 
 @preliminari_bp.route("/", methods=["GET"])
 def preliminari():
     search_data_invio_raw = request.args.get("sent_search_data_invio", "").strip()
-    search_data_invio = datetime.strptime(search_data_invio_raw, "%Y-%m-%d").date() if search_data_invio_raw else None
+    search_data_invio = (
+        datetime.strptime(search_data_invio_raw, "%Y-%m-%d").date()
+        if search_data_invio_raw
+        else None
+    )
     search_identificativo = request.args.get("sent_search_identificativo", "").strip()
     search_ragione_sociale = request.args.get("sent_search_ragione_sociale", "").strip()
 
@@ -29,37 +45,44 @@ def preliminari():
     inviate = SpedizioniPreliminariService.get_sent_filtered(
         data_invio=search_data_invio,
         ragione_sociale=search_ragione_sociale,
-        identificativo=search_identificativo
+        identificativo=search_identificativo,
     )
 
     return render_template(
-        "preliminari.html", 
-        spedizioni_preliminari=preliminari, 
+        "preliminari.html",
+        spedizioni_preliminari=preliminari,
         spedizioni_inviate=inviate,
         sent_search_data_invio=search_data_invio,
         sent_search_identificativo=search_identificativo,
         sent_search_ragione_sociale=search_ragione_sociale,
-        has_sent_search=bool(search_data_invio or search_identificativo or search_ragione_sociale)
+        has_sent_search=bool(
+            search_data_invio or search_identificativo or search_ragione_sociale
+        ),
     )
+
 
 @preliminari_bp.route("/elimina/<string:id>", methods=["POST"])
 def elimina(id):
     try:
         spedizione = SpedizioniPreliminariService.get_by_id(id)
-        
+
         if not spedizione:
             flash("Spedizione preliminare non trovata.", "warning")
             return redirect(url_for("preliminari.preliminari"))
 
         SpedizioniPreliminariService.delete(spedizione)
-        
+
         flash("Spedizione preliminare eliminata correttamente.", "success")
-        
+
     except Exception as e:
         logger.error(f"Errore durante l'eliminazione della spedizione {id}: {e}")
-        flash("Errore a database durante l'eliminazione della spedizione preliminare.", "danger")
+        flash(
+            "Errore a database durante l'eliminazione della spedizione preliminare.",
+            "danger",
+        )
 
     return redirect(url_for("preliminari.preliminari"))
+
 
 @preliminari_bp.route("/download-xml/<string:id>", methods=["GET"])
 def download_xml(id):
@@ -79,10 +102,11 @@ def download_xml(id):
         xml_bytes,
         as_attachment=True,
         download_name=filename,
-        mimetype="application/xml"
+        mimetype="application/xml",
     )
 
-@preliminari_bp.route('/spedizione/<string:id>')
+
+@preliminari_bp.route("/spedizione/<string:id>")
 def visualizza_spedizione(id):
     spedizione = SpedizioniPreliminariService.get_by_id(id)
     if not spedizione:
@@ -90,8 +114,9 @@ def visualizza_spedizione(id):
         return redirect(url_for("preliminari.preliminari"))
 
     parsed_xml = xmltodict.parse(spedizione.xml, dict_constructor=dict)
-    
-    return render_template('xml_viewer.html', data=parsed_xml, id_spedizione=id)
+
+    return render_template("xml_viewer.html", data=parsed_xml, id_spedizione=id)
+
 
 @preliminari_bp.route("/invio-numero-bancali", methods=["POST"])
 def invio_numero_bancali():
@@ -112,7 +137,7 @@ def invio_numero_bancali():
     mailer = MailerPZ(
         os.getenv("INFO_EMAIL_NAME"),
         os.getenv("INFO_EMAIL_ADDRESS"),
-        os.getenv("INFO_EMAIL_PASSWORD")
+        os.getenv("INFO_EMAIL_PASSWORD"),
     )
     if not mailer:
         flash("Errore nella configurazione del mailer.", "danger")
@@ -122,9 +147,13 @@ def invio_numero_bancali():
 
     try:
         mailer.invia_email_singola(
-            recipients=["cesena.ritiri-nv@dachser.fercam.it", "erika@personalzucchero.com", "marilena@personalzucchero.com"],
+            recipients=[
+                "cesena.ritiri-nv@dachser.fercam.it",
+                "erika@personalzucchero.com",
+                "marilena@personalzucchero.com",
+            ],
             subject=f"PERSONAL ZUCCHERO: RITIRO PER DATA {data_odierna}",
-            body=f"Salve,<br>Per il ritiro di oggi {data_odierna} sono previsti <b>{numero_bancali}</b> bancali."
+            body=f"Salve,<br>Per il ritiro di oggi {data_odierna} sono previsti <b>{numero_bancali}</b> bancali.",
         )
         flash("Email inviata correttamente a Cesena.", "success")
     except Exception as e:
@@ -132,6 +161,7 @@ def invio_numero_bancali():
         flash("Errore durante l'invio dell'email a Cesena.", "danger")
 
     return redirect(url_for("preliminari.preliminari"))
+
 
 @preliminari_bp.route("/invia", methods=["POST"])
 def invia():
@@ -156,7 +186,7 @@ def invia():
             os.getenv("SFTP_USERNAME"),
             os.getenv("SFTP_PASSWORD"),
             use_test_server=False,
-            auto_add_keys=True
+            auto_add_keys=True,
         )
         with fercamSFTP as sftp:
             for spedizione in spedizioni_ready:
@@ -167,12 +197,16 @@ def invia():
                     continue
 
                 filename = f"{spedizione.id}.xml"
-                
+
                 try:
                     sftp.send_content(spedizione.xml, filename)
-                    SpedizioniPreliminariService.update_state(spedizione, StatoSpedizione.SENT, datetime.now(ITALY_TZ))
+                    SpedizioniPreliminariService.update_state(
+                        spedizione, StatoSpedizione.SENT, datetime.now(ITALY_TZ)
+                    )
                     inviati += 1
-                    logger.info(f"Spedizione {spedizione.id} inviata a Fercam e aggiornata sul database.")
+                    logger.info(
+                        f"Spedizione {spedizione.id} inviata a Fercam e aggiornata sul database."
+                    )
                 except Exception as e:
                     error_msg = f"Errore nell'invio a Fercam: {e}"
                     logger.error(f"Errore spedizione {spedizione.id} [{filename}]: {e}")
@@ -180,16 +214,21 @@ def invia():
 
         if inviati > 0:
             flash(f"{inviati} documenti elaborati e inviati con successo.", "success")
-            
+
         for sp_id, error_msg in errori:
             flash(f"Errore spedizione {sp_id}: {error_msg}", "danger")
 
     except Exception as e:
         logger.error(f"Errore critico di connessione SFTP Fercam: {e}")
-        flash("Errore critico durante l'integrazione con Fercam. Controllare i log di sistema.", "danger")
+        flash(
+            "Errore critico durante l'integrazione con Fercam. Controllare i log di sistema.",
+            "danger",
+        )
         now = datetime.now(ITALY_TZ)
         for spedizione in spedizioni_ready:
             if spedizione.state == StatoSpedizione.SENDING:
-                SpedizioniPreliminariService.update_state(spedizione, StatoSpedizione.READY, now)
+                SpedizioniPreliminariService.update_state(
+                    spedizione, StatoSpedizione.READY, now
+                )
 
     return redirect(url_for("preliminari.preliminari"))

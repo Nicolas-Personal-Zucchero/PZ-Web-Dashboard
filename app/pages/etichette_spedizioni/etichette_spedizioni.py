@@ -1,7 +1,15 @@
 import os
 import io
 import logging
-from flask import Blueprint, render_template, request, redirect, flash, make_response, current_app
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    flash,
+    make_response,
+    current_app,
+)
 from config.constants import ZEBRA_IP
 from utils.label_factory import generate_sugar_label
 from weasyprint import HTML
@@ -15,7 +23,13 @@ from mailer_pz import MailerPZ
 logger = logging.getLogger(__name__)
 
 template_dir = os.path.abspath(os.path.dirname(__file__))
-etichette_spedizioni_bp = Blueprint("etichette_spedizioni", __name__, url_prefix="/etichette_spedizioni", template_folder="")
+etichette_spedizioni_bp = Blueprint(
+    "etichette_spedizioni",
+    __name__,
+    url_prefix="/etichette_spedizioni",
+    template_folder="",
+)
+
 
 @etichette_spedizioni_bp.route("/", methods=["GET", "POST"])
 def etichette_spedizioni():
@@ -33,36 +47,72 @@ def etichette_spedizioni():
             os.getenv("MEXAL_PASSWORD"),
             os.getenv("MEXAL_COMPANY"),
             os.getenv("MEXAL_YEAR"),
-            logger=logger
+            logger=logger,
         )
         if not mexal:
             flash("Errore nelle credenziali Mexal.", "error")
             return render_template("etichette_spedizioni.html", customer=search_result)
-        
+
         customer = mexal.get_customer_by_mexal_code(
             mexal_code,
-            ["codice", "ragione_sociale", "email", "indirizzo", "cap", "localita", "provincia", "cod_paese", "telefono"]
+            [
+                "codice",
+                "ragione_sociale",
+                "email",
+                "indirizzo",
+                "cap",
+                "localita",
+                "provincia",
+                "cod_paese",
+                "telefono",
+            ],
         )
 
         if customer:
             search_result = customer
-            flash(f"Cliente trovato: {search_result.get('ragione_sociale', 'N/D')}", "success")
+            flash(
+                f"Cliente trovato: {search_result.get('ragione_sociale', 'N/D')}",
+                "success",
+            )
             return render_template("etichette_spedizioni.html", customer=search_result)
 
         supplier = mexal.get_supplier_by_mexal_code(
             mexal_code,
-            ["codice", "ragione_sociale", "email", "indirizzo", "cap", "localita", "provincia", "cod_paese", "telefono"]
+            [
+                "codice",
+                "ragione_sociale",
+                "email",
+                "indirizzo",
+                "cap",
+                "localita",
+                "provincia",
+                "cod_paese",
+                "telefono",
+            ],
         )
 
         if supplier:
             logger.info(f"Fornitore trovato: {supplier}")
             search_result = supplier
-            flash(f"Fornitore trovato: {search_result.get('ragione_sociale', 'N/D')}", "success")
+            flash(
+                f"Fornitore trovato: {search_result.get('ragione_sociale', 'N/D')}",
+                "success",
+            )
             return render_template("etichette_spedizioni.html", customer=search_result)
 
         contact = mexal.get_contact_by_mexal_code(
             mexal_code,
-            ["codice", "descrizione", "email", "indirizzo", "cap", "localita", "provincia", "paese_iso", "telefono"]
+            [
+                "codice",
+                "descrizione",
+                "email",
+                "indirizzo",
+                "cap",
+                "localita",
+                "provincia",
+                "paese_iso",
+                "telefono",
+            ],
         )
 
         if contact:
@@ -75,13 +125,20 @@ def etichette_spedizioni():
                 "localita": contact.get("localita"),
                 "provincia": contact.get("provincia"),
                 "cod_paese": contact.get("paese_iso"),
-                "telefono": contact.get("telefono")
+                "telefono": contact.get("telefono"),
             }
-            flash(f"Contatto trovato: {search_result.get('ragione_sociale', 'N/D')}", "success")
+            flash(
+                f"Contatto trovato: {search_result.get('ragione_sociale', 'N/D')}",
+                "success",
+            )
             return render_template("etichette_spedizioni.html", customer=search_result)
 
-        flash("Il Codice Mexal fornito non appartiene a nessun cliente, fornitore o contatto.", "warning")
+        flash(
+            "Il Codice Mexal fornito non appartiene a nessun cliente, fornitore o contatto.",
+            "warning",
+        )
     return render_template("etichette_spedizioni.html", customer=search_result)
+
 
 @etichette_spedizioni_bp.route("/stampa", methods=["POST"])
 def stampa_etichetta():
@@ -91,7 +148,7 @@ def stampa_etichetta():
         "data": datetime.now().strftime("%d/%m/%Y"),
         "colli": request.form.get("colli", "N/D"),
         "peso": request.form.get("peso", "N/D"),
-        "natura_merce": request.form.get("natura_merce", "N/D")
+        "natura_merce": request.form.get("natura_merce", "N/D"),
     }
     dati_etichetta = {
         "ragione_sociale": request.form.get("ragione_sociale"),
@@ -102,33 +159,38 @@ def stampa_etichetta():
         "provincia": request.form.get("provincia"),
         "cod_paese": request.form.get("cod_paese"),
         "telefono": request.form.get("telefono") or "",
-        "note": request.form.get("note") or ""
+        "note": request.form.get("note") or "",
     }
-    
-    for _ in range(numero_etichette):
-        send_to_zebra(ZEBRA_IP, generate_sugar_label(
-            ragione_sociale=dati_etichetta["ragione_sociale"],
-            via=dati_etichetta["indirizzo"],
-            cap_citta_provincia=f"{dati_etichetta['cap']} {dati_etichetta['localita']} ({dati_etichetta['provincia']})",
-            stato=dati_etichetta["cod_paese"],
-            telefono=dati_etichetta["telefono"],
-            ca=dati_etichetta["cortese_attenzione"],
-            notes=dati_etichetta["note"]
-        ))
 
-    logo_path = os.path.join(current_app.root_path, 'static', 'img', 'brt_logo.png')
+    for _ in range(numero_etichette):
+        send_to_zebra(
+            ZEBRA_IP,
+            generate_sugar_label(
+                ragione_sociale=dati_etichetta["ragione_sociale"],
+                via=dati_etichetta["indirizzo"],
+                cap_citta_provincia=f"{dati_etichetta['cap']} {dati_etichetta['localita']} ({dati_etichetta['provincia']})",
+                stato=dati_etichetta["cod_paese"],
+                telefono=dati_etichetta["telefono"],
+                ca=dati_etichetta["cortese_attenzione"],
+                notes=dati_etichetta["note"],
+            ),
+        )
+
+    logo_path = os.path.join(current_app.root_path, "static", "img", "brt_logo.png")
     try:
         with open(logo_path, "rb") as f:
-            image_data = base64.b64encode(f.read()).decode('utf-8')
+            image_data = base64.b64encode(f.read()).decode("utf-8")
             brt_logo_base_64 = f"data:image/png;base64,{image_data}"
     except FileNotFoundError:
         brt_logo_base_64 = ""
 
     # 3. Generazione PDF in memoria (senza scrivere su disco)
-    rendered_html = render_template('pdf/bartolini_template.html', 
-                                    destinatario=dati_etichetta, 
-                                    spedizione=spedizione,
-                                    brt_logo=brt_logo_base_64)
+    rendered_html = render_template(
+        "pdf/bartolini_template.html",
+        destinatario=dati_etichetta,
+        spedizione=spedizione,
+        brt_logo=brt_logo_base_64,
+    )
 
     # Creazione del PDF
     pdf_io = io.BytesIO()
@@ -136,14 +198,15 @@ def stampa_etichetta():
     pdf_io.seek(0)
 
     response = make_response(pdf_io.read())
-    response.headers['Content-Type'] = 'application/pdf'
+    response.headers["Content-Type"] = "application/pdf"
     # 'inline' lo apre nel browser, 'attachment' lo scaricherebbe
-    response.headers['Content-Disposition'] = 'inline; filename=ritiro_brt.pdf'
+    response.headers["Content-Disposition"] = "inline; filename=ritiro_brt.pdf"
 
     return response
-    
+
     # flash("Richiesta di stampa inoltrata con successo.", "success")
     # return redirect(url_for('etichette_spedizioni.etichette_spedizioni'))
+
 
 @etichette_spedizioni_bp.route("/invia_tracking", methods=["POST"])
 def invia_tracking():
@@ -153,18 +216,18 @@ def invia_tracking():
     mailer = MailerPZ(
         os.getenv("INFO_EMAIL_NAME"),
         os.getenv("INFO_EMAIL_ADDRESS"),
-        os.getenv("INFO_EMAIL_PASSWORD")
+        os.getenv("INFO_EMAIL_PASSWORD"),
     )
     if mailer:
         mailer.invia_email_singola(
             recipients=[email],
             subject=EMAIL_TEMPLATES["tracking_brt_ita"]["object"],
             body=EMAIL_TEMPLATES["tracking_brt_ita"]["body"].format(tracking=tracking),
-            hubspot_ccn=True
+            hubspot_ccn=True,
         )
     else:
         flash("Errore: Configurazione mailer mancante.", "danger")
-    
+
     flash("Codice BRT inviato con successo!", "success")
 
     return redirect("/etichette_spedizioni")

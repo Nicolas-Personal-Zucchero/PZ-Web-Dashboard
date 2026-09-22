@@ -3,9 +3,12 @@ from utils.firebase_client import db
 from config.constants import ITALY_TZ
 from collections import defaultdict
 
-visualizza_impianti_bp = Blueprint("visualizza_impianti", __name__, url_prefix="/visualizza_impianti")
+visualizza_impianti_bp = Blueprint(
+    "visualizza_impianti", __name__, url_prefix="/visualizza_impianti"
+)
 
 lotti_zucchero_collection = db.collection("lotti_zucchero")
+
 
 @visualizza_impianti_bp.route("/", methods=["GET"])
 def index():
@@ -17,23 +20,23 @@ def index():
 
         for doc in docs:
             data = doc.to_dict()
-            lotto = data.get('lotto')
-            scansioni = data.get('scansioni_etichette', [])
+            lotto = data.get("lotto")
+            scansioni = data.get("scansioni_etichette", [])
 
             for scan in scansioni:
-                impianto = scan['impianto']
+                impianto = scan["impianto"]
                 if impianto == "Scansione Manuale":
                     continue
-                dt = scan['date'].astimezone(ITALY_TZ)
-                impianti[impianto].append({
-                    'date': dt,
-                    'lotto': lotto,
-                    'operatore': scan['operatore']
-                })
+                dt = scan["date"].astimezone(ITALY_TZ)
+                impianti[impianto].append(
+                    {"date": dt, "lotto": lotto, "operatore": scan["operatore"]}
+                )
 
         # Ordinamento semplice
         for impianto, scansioni in impianti.items():
-            scansioni.sort(key=lambda x: x['date'], reverse=True)
+            scansioni.sort(key=lambda x: x["date"], reverse=True)
             for scan in scansioni:
-                scan['date'] = scan['date'].strftime("%d/%m/%Y, %H:%M:%S")
-        return render_template('/amministrazione/visualizza-impianti.html', impianti=impianti)
+                scan["date"] = scan["date"].strftime("%d/%m/%Y, %H:%M:%S")
+        return render_template(
+            "/amministrazione/visualizza-impianti.html", impianti=impianti
+        )

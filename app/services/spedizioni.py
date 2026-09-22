@@ -8,7 +8,12 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import SQLAlchemyError
 
 from extensions import db
-from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo, StatoSpedizione
+from models.spedizioni import (
+    SpedizionePreliminare,
+    SpedizioneIdentificativo,
+    StatoSpedizione,
+)
+
 
 class SpedizioniPreliminariService:
     @staticmethod
@@ -51,36 +56,48 @@ class SpedizioniPreliminariService:
 
     @staticmethod
     def get_pending() -> List[SpedizionePreliminare]:
-        stmt = select(SpedizionePreliminare)\
-            .where(SpedizionePreliminare.state == StatoSpedizione.READY)\
+        stmt = (
+            select(SpedizionePreliminare)
+            .where(SpedizionePreliminare.state == StatoSpedizione.READY)
             .options(joinedload(SpedizionePreliminare.identificativi_rel))
-        
+        )
+
         return db.session.execute(stmt).scalars().unique().all()
 
     @staticmethod
     def get_sent_filtered(
-        data_invio: Optional[date] = None, 
-        ragione_sociale: Optional[str] = None, 
-        identificativo: Optional[str] = None
+        data_invio: Optional[date] = None,
+        ragione_sociale: Optional[str] = None,
+        identificativo: Optional[str] = None,
     ) -> List[SpedizionePreliminare]:
-        
-        stmt = select(SpedizionePreliminare)\
-            .where(SpedizionePreliminare.state == StatoSpedizione.SENT)\
+
+        stmt = (
+            select(SpedizionePreliminare)
+            .where(SpedizionePreliminare.state == StatoSpedizione.SENT)
             .options(joinedload(SpedizionePreliminare.identificativi_rel))
+        )
 
         if data_invio:
-            stmt = stmt.where(func.date(SpedizionePreliminare.updated_state_at) == data_invio)
+            stmt = stmt.where(
+                func.date(SpedizionePreliminare.updated_state_at) == data_invio
+            )
 
         if ragione_sociale:
-            stmt = stmt.where(SpedizionePreliminare.ragione_sociale_cliente.ilike(f"%{ragione_sociale}%"))
+            stmt = stmt.where(
+                SpedizionePreliminare.ragione_sociale_cliente.ilike(
+                    f"%{ragione_sociale}%"
+                )
+            )
 
         if identificativo:
             identificativo_pattern = f"%{identificativo}%"
             # Composizione espressione SQL per la ricerca testuale aggregata
             identificativo_expr = (
-                SpedizioneIdentificativo.sigla + " " +
-                SpedizioneIdentificativo.serie + "/" +
-                SpedizioneIdentificativo.numero
+                SpedizioneIdentificativo.sigla
+                + " "
+                + SpedizioneIdentificativo.serie
+                + "/"
+                + SpedizioneIdentificativo.numero
             )
             stmt = stmt.where(
                 SpedizionePreliminare.identificativi_rel.any(
@@ -88,14 +105,16 @@ class SpedizioniPreliminariService:
                         SpedizioneIdentificativo.sigla.ilike(identificativo_pattern),
                         SpedizioneIdentificativo.serie.ilike(identificativo_pattern),
                         SpedizioneIdentificativo.numero.ilike(identificativo_pattern),
-                        identificativo_expr.ilike(identificativo_pattern)
+                        identificativo_expr.ilike(identificativo_pattern),
                     )
                 )
             )
 
         result = db.session.execute(stmt).scalars().unique().all()
         for spedizione in result:
-            spedizione.updated_state_at = convert_datetime_to_italy_tz(spedizione.updated_state_at)
+            spedizione.updated_state_at = convert_datetime_to_italy_tz(
+                spedizione.updated_state_at
+            )
         return result
 
     @staticmethod
@@ -106,11 +125,13 @@ class SpedizioniPreliminariService:
     def get_by_ids(spedizioni_ids: List[str]) -> List[SpedizionePreliminare]:
         if not spedizioni_ids:
             return []
-            
-        stmt = select(SpedizionePreliminare)\
-            .where(SpedizionePreliminare.id.in_(spedizioni_ids))\
+
+        stmt = (
+            select(SpedizionePreliminare)
+            .where(SpedizionePreliminare.id.in_(spedizioni_ids))
             .options(joinedload(SpedizionePreliminare.identificativi_rel))
-            
+        )
+
         return db.session.execute(stmt).scalars().unique().all()
 
     @staticmethod
@@ -123,7 +144,11 @@ class SpedizioniPreliminariService:
             raise e
 
     @staticmethod
-    def update_state(spedizione: SpedizionePreliminare, nuovo_stato: StatoSpedizione, timestamp: datetime) -> None:
+    def update_state(
+        spedizione: SpedizionePreliminare,
+        nuovo_stato: StatoSpedizione,
+        timestamp: datetime,
+    ) -> None:
         try:
             spedizione.state = nuovo_stato
             spedizione.updated_state_at = timestamp
@@ -135,7 +160,7 @@ class SpedizioniPreliminariService:
     @staticmethod
     def lock_and_set_sending(spedizioni_ids: List[str]) -> List[SpedizionePreliminare]:
         now = datetime.now(ITALY_TZ)
-        
+
         stmt = (
             update(SpedizionePreliminare)
             .where(SpedizionePreliminare.id.in_(spedizioni_ids))
@@ -143,7 +168,7 @@ class SpedizioniPreliminariService:
             .values(state=StatoSpedizione.SENDING, updated_state_at=now)
             .returning(SpedizionePreliminare)
         )
-        
+
         try:
             result = db.session.execute(stmt).scalars().all()
             db.session.commit()
@@ -158,10 +183,10 @@ class SpedizioniPreliminariService:
             SpedizioneIdentificativo.sigla,
             SpedizioneIdentificativo.serie,
             SpedizioneIdentificativo.numero,
-            SpedizionePreliminare.state
+            SpedizionePreliminare.state,
         ).join(
-            SpedizionePreliminare, 
-            SpedizioneIdentificativo.spedizione_id == SpedizionePreliminare.id
+            SpedizionePreliminare,
+            SpedizioneIdentificativo.spedizione_id == SpedizionePreliminare.id,
         )
 
         result = db.session.execute(stmt).all()

@@ -1,6 +1,15 @@
 import os
 from pathlib import Path
-from flask import Blueprint, render_template, request, redirect, flash, send_from_directory, abort, make_response
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    flash,
+    send_from_directory,
+    abort,
+    make_response,
+)
 from datetime import datetime
 from config.constants import ITALY_TZ, TIPOLOGIE_ASSET
 import ulid
@@ -15,9 +24,11 @@ asset_dettaglio_bp = Blueprint("asset_dettaglio", __name__, url_prefix="/asset")
 
 ATTACHMENTS_DIR = "/app/attachments/assets"
 
+
 def get_attachments_dir():
     os.makedirs(ATTACHMENTS_DIR, exist_ok=True)
     return ATTACHMENTS_DIR
+
 
 def calcola_giorni(interventi, intervallo):
     """Calcola i giorni trascorsi e l'eventuale ritardo in base all'intervallo previsto."""
@@ -29,6 +40,7 @@ def calcola_giorni(interventi, intervallo):
     ritardo = max(0, giorni - intervallo)
     return giorni, ritardo
 
+
 @asset_dettaglio_bp.route("/<asset_id>")
 def asset_detail(asset_id):
     asset = AssetService.get(asset_id)
@@ -39,11 +51,19 @@ def asset_detail(asset_id):
 
     interventi = AssetService.get_interventi(asset_id)
 
-    controlli_periodici = [i for i in interventi if i.get("tipo") == "controllo_periodico"]
+    controlli_periodici = [
+        i for i in interventi if i.get("tipo") == "controllo_periodico"
+    ]
     pulizie = [i for i in interventi if i.get("tipo") == "pulizia"]
 
-    giorni_dal_controllo_periodico, giorni_ritardo_controllo_periodico = calcola_giorni(controlli_periodici, asset["intervallo_controllo_periodico"])
-    giorni_dalla_pulizia, giorni_ritardo_pulizia = calcola_giorni(pulizie, asset["intervallo_pulizia"]) if asset["intervallo_pulizia"] else (None, None)
+    giorni_dal_controllo_periodico, giorni_ritardo_controllo_periodico = calcola_giorni(
+        controlli_periodici, asset["intervallo_controllo_periodico"]
+    )
+    giorni_dalla_pulizia, giorni_ritardo_pulizia = (
+        calcola_giorni(pulizie, asset["intervallo_pulizia"])
+        if asset["intervallo_pulizia"]
+        else (None, None)
+    )
 
     for i in interventi:
         i["data"] = i["data"].astimezone(ITALY_TZ).strftime("%d/%m/%Y")
@@ -60,8 +80,9 @@ def asset_detail(asset_id):
         giorni_dalla_pulizia=giorni_dalla_pulizia,
         giorni_ritardo_controllo_periodico=giorni_ritardo_controllo_periodico,
         giorni_ritardo_pulizia=giorni_ritardo_pulizia,
-        datetime=datetime
+        datetime=datetime,
     )
+
 
 @asset_dettaglio_bp.route("/<asset_id>/add_intervento", methods=["POST"])
 def add_intervento(asset_id):
@@ -88,28 +109,27 @@ def add_intervento(asset_id):
 
             allegato.save(storage_path)
 
-            allegati.append({
-                "original_filename": original_filename,
-                "path": storage_name
-            })
+            allegati.append(
+                {"original_filename": original_filename, "path": storage_name}
+            )
 
     result = AssetService.add_intervento(
-        asset_id,
-        tipo,
-        data,
-        operatore,
-        operatore_esterno,
-        note,
-        allegati
+        asset_id, tipo, data, operatore, operatore_esterno, note, allegati
     )
     if not result:
         flash("Errore durante la registrazione dell'intervento.", "danger")
         return redirect(f"/amministrazione/asset/{asset_id}")
-    flash(f"Intervento di tipo {tipo.replace('_', ' ')} registrato con successo!", "success")
+    flash(
+        f"Intervento di tipo {tipo.replace('_', ' ')} registrato con successo!",
+        "success",
+    )
 
     return redirect(f"/amministrazione/asset/{asset_id}")
 
-@asset_dettaglio_bp.route("/<asset_id>/intervento/<intervento_id>/allegato/<allegato_path>")
+
+@asset_dettaglio_bp.route(
+    "/<asset_id>/intervento/<intervento_id>/allegato/<allegato_path>"
+)
 def download_intervento_allegato(asset_id, intervento_id, allegato_path):
     asset = AssetService.get(asset_id)
     if not asset:
@@ -141,6 +161,7 @@ def download_intervento_allegato(asset_id, intervento_id, allegato_path):
         download_name=download_name,
     )
 
+
 @asset_dettaglio_bp.route("/<asset_id>/pdf")
 def genera_pdf_riepilogo(asset_id):
     asset = AssetService.get(asset_id)
@@ -160,7 +181,7 @@ def genera_pdf_riepilogo(asset_id):
         "pdf/asset_riepilogo.html",
         asset=asset,
         interventi=interventi,
-        data_odierna=data_odierna
+        data_odierna=data_odierna,
     )
 
     # Generazione PDF in-memory
@@ -169,10 +190,13 @@ def genera_pdf_riepilogo(asset_id):
     pdf_io.seek(0)
 
     response = make_response(pdf_io.read())
-    response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = f'inline; filename=riepilogo_asset_{asset_id}.pdf'
-    
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = (
+        f"inline; filename=riepilogo_asset_{asset_id}.pdf"
+    )
+
     return response
+
 
 @asset_dettaglio_bp.route("/<asset_id>/label")
 def generate_label(asset_id):
@@ -180,12 +204,16 @@ def generate_label(asset_id):
     if not asset:
         return abort(404, description="Asset non trovato")
 
-    send_to_zebra(ZEBRA_IP, generate_asset_qrcode_label(
-        asset_id=asset.get("id"),
-        asset_name=asset.get("nome"),
-        asset_description=asset.get("modello")
-    ))
+    send_to_zebra(
+        ZEBRA_IP,
+        generate_asset_qrcode_label(
+            asset_id=asset.get("id"),
+            asset_name=asset.get("nome"),
+            asset_description=asset.get("modello"),
+        ),
+    )
     return redirect(f"/amministrazione/asset/{asset_id}")
+
 
 @asset_dettaglio_bp.route("/<asset_id>/update", methods=["POST"])
 def update_asset(asset_id):
@@ -196,10 +224,14 @@ def update_asset(asset_id):
             "tipologia": request.form.get("tipologia", "").strip(),
             "sede": request.form.get("sede", "").strip(),
             "posizione": request.form.get("posizione", "").strip(),
-            "intervallo_controllo_periodico": int(request.form.get("intervallo_controllo_periodico", 0)),
+            "intervallo_controllo_periodico": int(
+                request.form.get("intervallo_controllo_periodico", 0)
+            ),
         }
         int_pulizia_raw = request.form.get("intervallo_pulizia", "").strip()
-        payload["intervallo_pulizia"] = int(int_pulizia_raw) if int_pulizia_raw else None
+        payload["intervallo_pulizia"] = (
+            int(int_pulizia_raw) if int_pulizia_raw else None
+        )
 
         result = AssetService.update(asset_id, payload)
 
@@ -209,10 +241,13 @@ def update_asset(asset_id):
             flash("Errore durante l'aggiornamento dell'asset su database.", "danger")
     except ValueError:
         flash("Errore di validazione: intervalli non numerici.", "danger")
-        
+
     return redirect(f"/amministrazione/asset/{asset_id}")
 
-@asset_dettaglio_bp.route("/<asset_id>/intervento/<intervento_id>/update", methods=["POST"])
+
+@asset_dettaglio_bp.route(
+    "/<asset_id>/intervento/<intervento_id>/update", methods=["POST"]
+)
 def update_intervento(asset_id, intervento_id):
     tipo = request.form.get("tipo")
     operatore = request.form.get("operatore", "").strip()
@@ -229,21 +264,26 @@ def update_intervento(asset_id, intervento_id):
             flash("Formato data non valido.", "danger")
             return redirect(f"/amministrazione/asset/{asset_id}")
 
-    result = AssetService.update_intervento(asset_id, intervento_id, tipo, data, operatore, operatore_esterno, note)
-    
+    result = AssetService.update_intervento(
+        asset_id, intervento_id, tipo, data, operatore, operatore_esterno, note
+    )
+
     if result:
         flash("Intervento aggiornato con successo.", "success")
     else:
         flash("Errore durante l'aggiornamento dell'intervento.", "danger")
-        
+
     return redirect(f"/amministrazione/asset/{asset_id}")
 
-@asset_dettaglio_bp.route("/<asset_id>/intervento/<intervento_id>/delete", methods=["POST"])
+
+@asset_dettaglio_bp.route(
+    "/<asset_id>/intervento/<intervento_id>/delete", methods=["POST"]
+)
 def delete_intervento(asset_id, intervento_id):
     result = AssetService.delete_intervento(asset_id, intervento_id)
     if result:
         flash("Intervento eliminato.", "success")
     else:
         flash("Errore durante l'eliminazione dell'intervento.", "danger")
-        
+
     return redirect(f"/amministrazione/asset/{asset_id}")
