@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from extensions import db
 from models.sigep_tickets import Ticket, TicketAssignment
 
+
 class SigepTicketService:
 
     @staticmethod
@@ -16,7 +17,9 @@ class SigepTicketService:
             return ticket
         except IntegrityError as e:
             db.session.rollback()
-            raise ValueError(f"Errore di integrità: violazione vincolo PRIMARY KEY per il codice '{code}'") from e
+            raise ValueError(
+                f"Errore di integrità: violazione vincolo PRIMARY KEY per il codice '{code}'"
+            ) from e
 
     @staticmethod
     def get_available_tickets() -> list[Ticket]:

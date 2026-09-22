@@ -4,12 +4,15 @@ from config.constants import ITALY_TZ
 from datetime import datetime
 from hubspot_pz import HubspotPZ
 
-trattative_agenti_bp = Blueprint("trattative_agenti", __name__, url_prefix="/trattative_agenti")
+trattative_agenti_bp = Blueprint(
+    "trattative_agenti", __name__, url_prefix="/trattative_agenti"
+)
+
 
 @trattative_agenti_bp.route("/", methods=["GET", "POST"])
 def index():
     hubspot = HubspotPZ(os.getenv("HUBSPOT_AGENT_ASSIGNMENT_TOKEN"))
-    #Prendo i nomi delle fasi della pipeline agenti
+    # Prendo i nomi delle fasi della pipeline agenti
     pipeline_info = hubspot.getPipelineInfo("deals", hubspot._AGENT_PIPELINE_ID)
     stages_by_id = {stage["id"]: stage for stage in pipeline_info.get("stages", [])}
 
@@ -22,7 +25,11 @@ def index():
     # Prendo le trattative non chiuse
     temp = []
     for t in deals:
-        probability = float(stages_by_id.get(t.get("dealstage"), {}).get("metadata", {}).get("probability", 0.5))
+        probability = float(
+            stages_by_id.get(t.get("dealstage"), {})
+            .get("metadata", {})
+            .get("probability", 0.5)
+        )
         t["p"] = str(probability)
         if probability > 0.0 and probability < 1.0:
             temp.append(t)
@@ -35,7 +42,9 @@ def index():
     temp = []
     now = datetime.now(ITALY_TZ)
     for t in deals:
-        t["dealstage"] = stages_by_id.get(t.get("dealstage"), {}).get("label", t.get("dealstage"))
+        t["dealstage"] = stages_by_id.get(t.get("dealstage"), {}).get(
+            "label", t.get("dealstage")
+        )
         createdate = t.get("createdate")
         if createdate:
             createdate_dt = datetime.fromisoformat(createdate).astimezone(ITALY_TZ)
@@ -49,7 +58,7 @@ def index():
             temp.append(t)
     deals = temp
 
-    #Prendo tutti i contatti e le aziende associate
+    # Prendo tutti i contatti e le aziende associate
     contacts_ids = set()
     companies_ids = set()
     for deal in deals:
@@ -57,11 +66,11 @@ def index():
 
         contact_info = associations.get("contacts", {}).get("results", [])
         company_info = associations.get("companies", {}).get("results", [])
-        
+
         contact_ids = {c.get("id") for c in contact_info if c.get("id")}
         company_ids = {c.get("id") for c in company_info if c.get("id")}
 
         contacts_ids.update(contact_ids)
         companies_ids.update(company_ids)
-    
+
     return render_template("/trattative_agenti.html", trattative=deals)

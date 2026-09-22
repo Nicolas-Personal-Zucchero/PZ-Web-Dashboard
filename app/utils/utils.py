@@ -7,6 +7,7 @@ import socket
 import re
 from config.constants import ITALY_TZ
 
+
 def extract_logo_id(url_immagine: str) -> str | None:
     """
     Estrae l'ID del logo dal percorso di un URL di reindirizzamento firmato di HubSpot.
@@ -19,21 +20,24 @@ def extract_logo_id(url_immagine: str) -> str | None:
 
     parsed_url = urlparse(url_immagine)
     path = parsed_url.path
-    
+
     if MARKER in path:
         after_marker = path.split(MARKER)[1]
-        logo_id = after_marker.split('/')[0]
-        logo_id = logo_id.split('?')[0]
-        
+        logo_id = after_marker.split("/")[0]
+        logo_id = logo_id.split("?")[0]
+
         if logo_id.isdigit():
             return logo_id
 
     return None
 
-def download_file_stream(file_data: Dict[str, Any], file_name: str = "file") -> Optional[io.BytesIO]:
+
+def download_file_stream(
+    file_data: Dict[str, Any], file_name: str = "file"
+) -> Optional[io.BytesIO]:
     try:
-        url = file_data['url']
-        extension = file_data.get('extension', 'bin')
+        url = file_data["url"]
+        extension = file_data.get("extension", "bin")
         complete_name = f"{file_name}.{extension}"
         mime_type, _ = mimetypes.guess_type(complete_name)
 
@@ -42,7 +46,7 @@ def download_file_stream(file_data: Dict[str, Any], file_name: str = "file") -> 
 
         stream = io.BytesIO(response.content)
         stream.name = complete_name
-        stream.mime_type = mime_type if mime_type else 'application/octet-stream'
+        stream.mime_type = mime_type if mime_type else "application/octet-stream"
 
         return stream
     except KeyError as e:
@@ -51,17 +55,20 @@ def download_file_stream(file_data: Dict[str, Any], file_name: str = "file") -> 
     except requests.exceptions.RequestException as e:
         print(f"Errore durante il download di {complete_name}: {e}")
         return None
-    
+
+
 def send_to_zebra(printer_ip, zpl_string, port=9100):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.settimeout(3.0)
             s.connect((printer_ip, port))
-            s.sendall(zpl_string.encode('utf-8'))
+            s.sendall(zpl_string.encode("utf-8"))
     except socket.error as e:
         print(f"Errore connessione: {e}")
 
-_VALID_BLOCKS_PATTERN = re.compile(r'[0-9\.\-\+]+')
+
+_VALID_BLOCKS_PATTERN = re.compile(r"[0-9\.\-\+]+")
+
 
 def sanitize_phone_data(raw_input: str, separator: str = "/") -> str:
     if not raw_input or not isinstance(raw_input, str):
@@ -71,6 +78,7 @@ def sanitize_phone_data(raw_input: str, separator: str = "/") -> str:
     filtered_blocks = [block for block in blocks if block.strip() and len(block) >= 8]
 
     return separator.join(filtered_blocks)
+
 
 def convert_datetime_to_italy_tz(value):
     if value is None:

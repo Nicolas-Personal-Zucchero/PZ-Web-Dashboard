@@ -1,4 +1,12 @@
-from flask import Blueprint, render_template, request, send_file, flash, redirect, url_for
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    send_file,
+    flash,
+    redirect,
+    url_for,
+)
 from utils.firebase_client import db
 from firebase_admin import firestore
 from config.constants import ITALY_TZ
@@ -16,36 +24,40 @@ PRODUCT_MAP = {
     "Zucchero Canna Barbabietola": "07",
     "Zucchero BIO Golden": "08",
     "Zucchero BIO White": "09",
-    "Fruttosio": "10"
+    "Fruttosio": "10",
 }
 
 gestione_lotti_bp = Blueprint("gestione_lotti", __name__, url_prefix="/gestione_lotti")
 lotti_zucchero_collection = db.collection("lotti_zucchero")
 
+
 def get_lotto(tipologia):
     # Generazione del codice lotto
     prefix = PRODUCT_MAP.get(tipologia) + "-"
 
-    existing = lotti_zucchero_collection \
-        .where("lotto", ">=", prefix) \
-        .where("lotto", "<", prefix + "\uf8ff") \
+    existing = (
+        lotti_zucchero_collection.where("lotto", ">=", prefix)
+        .where("lotto", "<", prefix + "\uf8ff")
         .stream()
-    
+    )
+
     count = sum(1 for _ in existing)
     lotto = prefix + f"{count + 1:03d}"
-    return lotto  
+    return lotto
+
 
 @gestione_lotti_bp.route("/get_lotto", methods=["GET"])
 def get_lotto_route():
     tipologia = request.args.get("tipologia", "").strip()
     if not tipologia:
         return {"error": "Tipologia non fornita"}, 400
-    
+
     if tipologia not in PRODUCT_MAP:
         return {"error": f"Tipologia '{tipologia}' non valida"}, 400
 
     lotto = get_lotto(tipologia)
-    return {"lotto": lotto}, 200  
+    return {"lotto": lotto}, 200
+
 
 @gestione_lotti_bp.route("/", methods=["GET", "POST"])
 def index():
@@ -70,9 +82,12 @@ def index():
             if is_forced:
                 flash(f"Il lotto manuale {lotto} è già stato utilizzato.", "danger")
             else:
-                flash(f"Conflitto di salvataggio (il lotto {lotto} è appena stato occupato). Riprova.", "danger")
+                flash(
+                    f"Conflitto di salvataggio (il lotto {lotto} è appena stato occupato). Riprova.",
+                    "danger",
+                )
             return redirect("/amministrazione/gestione_lotti")
-        
+
         # Gestione della Data
         data_str = request.form.get("data", "").strip()
         if data_str:
@@ -80,7 +95,7 @@ def index():
             uploaded_at = ITALY_TZ.localize(uploaded_at)
         else:
             uploaded_at = datetime.now(ITALY_TZ)
-        
+
         fornitore = request.form.get("fornitore", "").strip()
         ddt = request.form.get("ddt", "").strip()
         origine = request.form.get("origine", "").strip()
@@ -93,20 +108,22 @@ def index():
             return redirect("/amministrazione/gestione_lotti")
 
         lotti_fornitore = request.form.getlist("lotti[]")
-        
-        doc_ref.set({
-            "lotto" : lotto,
-            "fornitore": fornitore,
-            "ddt": ddt,
-            "tipologia_zucchero": tipologia,
-            "lotti_fornitore": lotti_fornitore,
-            "origine": origine,
-            "numero_etichette": n_etichette,
-            "scansioni_etichette": [],
-            "note": note,
-            "uploaded_at": uploaded_at,
-            "is_chiuso_manualmente": False
-        })
+
+        doc_ref.set(
+            {
+                "lotto": lotto,
+                "fornitore": fornitore,
+                "ddt": ddt,
+                "tipologia_zucchero": tipologia,
+                "lotti_fornitore": lotti_fornitore,
+                "origine": origine,
+                "numero_etichette": n_etichette,
+                "scansioni_etichette": [],
+                "note": note,
+                "uploaded_at": uploaded_at,
+                "is_chiuso_manualmente": False,
+            }
+        )
 
         flash("Lotto caricato con successo!", "success")
         # Reindirizza con il parametro 'stampare' per aprire il PDF
@@ -122,31 +139,38 @@ def index():
     for doc in docs:
         data = doc.to_dict()
         data["id"] = doc.id
-        
+
         etichette_scansionate = len(data.get("scansioni_etichette", []))
         totale_etichette = data.get("numero_etichette", 0)
-        data["etichette"] = f"{etichette_scansionate}/{totale_etichette} ({totale_etichette - etichette_scansionate})"
-        
+        data["etichette"] = (
+            f"{etichette_scansionate}/{totale_etichette} ({totale_etichette - etichette_scansionate})"
+        )
+
         data["is_chiuso_manualmente"] = data.get("is_chiuso_manualmente", False)
 
         # Formatta la data in ora locale italiana
         uploaded_at = data.get("uploaded_at")
         if uploaded_at:
-            data["formatted_time"] = uploaded_at.astimezone(ITALY_TZ).strftime("%d/%m/%Y")
+            data["formatted_time"] = uploaded_at.astimezone(ITALY_TZ).strftime(
+                "%d/%m/%Y"
+            )
         else:
             data["formatted_time"] = "N/A"
 
         for scansione in data.get("scansioni_etichette", []):
             date = scansione.get("date")
             if date:
-                scansione["date"] = date.astimezone(ITALY_TZ).strftime("%d/%m/%Y, %H:%M:%S")
+                scansione["date"] = date.astimezone(ITALY_TZ).strftime(
+                    "%d/%m/%Y, %H:%M:%S"
+                )
             else:
                 scansione["date"] = "N/A"
 
         lotti.append(data)
-    
+
     # Restituisce il nuovo template unificato
     return render_template("/amministrazione/gestione-lotti.html", lotti=lotti)
+
 
 @gestione_lotti_bp.route("/etichetta", methods=["GET", "POST"])
 def etichetta():
@@ -164,7 +188,7 @@ def etichetta():
     if not doc.exists:
         flash("Lotto non trovato.", "danger")
         return redirect(url_for(".index"))
-    
+
     data = doc.to_dict()
 
     uploaded_at = data.get("uploaded_at")
@@ -174,8 +198,20 @@ def etichetta():
     else:
         uploaded_at_str = ""
     filename = f"etichetta_{data.get('lotto', '')}.pdf"
-    pdf = generate_pdf(filename, data.get("lotto", ""), data.get("fornitore", ""), data.get("ddt", ""), data.get("tipologia_zucchero", ""), uploaded_at_str, data.get("note", ""), data.get("lotti_fornitore", ""))
-    return send_file(pdf, as_attachment=False, download_name=filename, mimetype="application/pdf")
+    pdf = generate_pdf(
+        filename,
+        data.get("lotto", ""),
+        data.get("fornitore", ""),
+        data.get("ddt", ""),
+        data.get("tipologia_zucchero", ""),
+        uploaded_at_str,
+        data.get("note", ""),
+        data.get("lotti_fornitore", ""),
+    )
+    return send_file(
+        pdf, as_attachment=False, download_name=filename, mimetype="application/pdf"
+    )
+
 
 @gestione_lotti_bp.route("/aggiungi_scansione", methods=["POST"])
 def aggiungi_scansione():
@@ -191,23 +227,21 @@ def aggiungi_scansione():
         # Verifica dell'esistenza del documento
         doc_ref = lotti_zucchero_collection.document(lotto_id)
         if not doc_ref.get().exists:
-            return {"success": False, "error": f"Lotto con ID {lotto_id} non trovato"}, 404
-        
-        now = datetime.now(ITALY_TZ)
-        nuova_scansione = {
-            "impianto": impianto,
-            "operatore": operatore,
-            "date": now
-        }
+            return {
+                "success": False,
+                "error": f"Lotto con ID {lotto_id} non trovato",
+            }, 404
 
-        doc_ref.update({
-            "scansioni_etichette": firestore.ArrayUnion([nuova_scansione])
-        })
+        now = datetime.now(ITALY_TZ)
+        nuova_scansione = {"impianto": impianto, "operatore": operatore, "date": now}
+
+        doc_ref.update({"scansioni_etichette": firestore.ArrayUnion([nuova_scansione])})
 
         return {"success": True, "message": "Scansione aggiunta"}, 200
 
     except Exception as e:
         return {"success": False, "error": str(e)}, 500
+
 
 @gestione_lotti_bp.route("/modifica_lotto", methods=["POST"])
 def modifica_lotto():
@@ -216,11 +250,11 @@ def modifica_lotto():
         lotto_id = data.get("id_lotto")
 
         if not lotto_id:
-             return {"success": False, "error": "ID Lotto mancante"}, 400
+            return {"success": False, "error": "ID Lotto mancante"}, 400
 
         doc_ref = lotti_zucchero_collection.document(lotto_id)
         if not doc_ref.get().exists:
-             return {"success": False, "error": "Lotto non trovato"}, 404
+            return {"success": False, "error": "Lotto non trovato"}, 404
 
         updates = {}
         if "ddt" in data:
@@ -231,7 +265,7 @@ def modifica_lotto():
             try:
                 updates["numero_etichette"] = int(data["n_etichette"])
             except ValueError:
-                 return {"success": False, "error": "Numero etichette non valido"}, 400
+                return {"success": False, "error": "Numero etichette non valido"}, 400
         if "note" in data:
             updates["note"] = data["note"]
         if "is_chiuso_manualmente" in data:
@@ -246,6 +280,7 @@ def modifica_lotto():
     except Exception as e:
         return {"success": False, "error": str(e)}, 500
 
+
 @gestione_lotti_bp.route("/elimina_lotto", methods=["POST"])
 def elimina_lotto():
     try:
@@ -253,11 +288,11 @@ def elimina_lotto():
         lotto_id = data.get("id_lotto")
 
         if not lotto_id:
-             return {"success": False, "error": "ID Lotto mancante"}, 400
+            return {"success": False, "error": "ID Lotto mancante"}, 400
 
         doc_ref = lotti_zucchero_collection.document(lotto_id)
         if not doc_ref.get().exists:
-             return {"success": False, "error": "Lotto non trovato"}, 404
+            return {"success": False, "error": "Lotto non trovato"}, 404
 
         doc_ref.delete()
 

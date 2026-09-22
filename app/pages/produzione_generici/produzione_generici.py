@@ -7,7 +7,13 @@ from services.batches import BatchService
 from services.productions import ProductionService
 
 template_dir = os.path.abspath(os.path.dirname(__file__))
-produzione_generici_bp = Blueprint("produzione_generici", __name__, url_prefix="/produzione_generici", template_folder="")
+produzione_generici_bp = Blueprint(
+    "produzione_generici",
+    __name__,
+    url_prefix="/produzione_generici",
+    template_folder="",
+)
+
 
 def _redirect_to_index(theme_id=None, batch_id=None):
     params = {}
@@ -16,6 +22,7 @@ def _redirect_to_index(theme_id=None, batch_id=None):
     if batch_id is not None:
         params["batch_id"] = batch_id
     return redirect(url_for("produzione_generici.produzione_generici", **params))
+
 
 @produzione_generici_bp.route("/", methods=["GET"])
 def produzione_generici():
@@ -36,7 +43,10 @@ def produzione_generici():
 
     if selected_theme is not None and batch_id is not None:
         candidate_batch = BatchService.get_batch_by_id(batch_id)
-        if candidate_batch is not None and candidate_batch.theme_id == selected_theme.id:
+        if (
+            candidate_batch is not None
+            and candidate_batch.theme_id == selected_theme.id
+        ):
             selected_batch = candidate_batch
             productions = ProductionService.get_productions_by_batch(batch_id)
         else:
@@ -54,6 +64,7 @@ def produzione_generici():
         today=datetime.now().strftime("%Y-%m-%d"),
     )
 
+
 @produzione_generici_bp.route("/temi", methods=["POST"])
 def create_theme():
     name = request.form.get("name", "").strip()
@@ -63,11 +74,15 @@ def create_theme():
 
     theme = ThemeService.create_theme(name)
     if not theme:
-        flash("Errore durante la creazione del tema. Verificare che il nome non sia già presente.", "error")
+        flash(
+            "Errore durante la creazione del tema. Verificare che il nome non sia già presente.",
+            "error",
+        )
         return _redirect_to_index()
 
     flash("Tema creato con successo.", "success")
     return _redirect_to_index(theme_id=theme.id)
+
 
 @produzione_generici_bp.route("/modifica_tema/<int:theme_id>", methods=["POST"])
 def edit_theme(theme_id):
@@ -80,11 +95,15 @@ def edit_theme(theme_id):
 
     result = ThemeService.update_theme(theme_id, name, hidden)
     if not result:
-        flash("Errore durante l'aggiornamento del tema. Verificare che il nome non sia già presente.", "error")
+        flash(
+            "Errore durante l'aggiornamento del tema. Verificare che il nome non sia già presente.",
+            "error",
+        )
         return _redirect_to_index(theme_id=theme_id)
 
     flash("Tema modificato con successo.", "success")
     return _redirect_to_index(theme_id=theme_id)
+
 
 @produzione_generici_bp.route("/lotti", methods=["POST"])
 def crea_lotto():
@@ -107,6 +126,7 @@ def crea_lotto():
 
     flash("Lotto creato con successo.", "success")
     return _redirect_to_index(theme_id=theme_id, batch_id=batch.id)
+
 
 @produzione_generici_bp.route("/produzioni", methods=["POST"])
 def crea_produzione():
@@ -134,13 +154,16 @@ def crea_produzione():
         return _redirect_to_index(theme_id=theme_id, batch_id=batch_id)
 
     try:
-        ProductionService.create_production(batch_id, date, reel_batch, quantity, operator_id)
+        ProductionService.create_production(
+            batch_id, date, reel_batch, quantity, operator_id
+        )
     except ValueError as e:
         flash(str(e), "error")
         return _redirect_to_index(theme_id=theme_id, batch_id=batch_id)
 
     flash("Produzione registrata con successo.", "success")
     return _redirect_to_index(theme_id=theme_id, batch_id=batch_id)
+
 
 @produzione_generici_bp.route("/elimina_tema/<int:theme_id>", methods=["POST"])
 def delete_theme(theme_id):
@@ -150,16 +173,18 @@ def delete_theme(theme_id):
         flash("Errore durante l'eliminazione del tema.", "error")
     return _redirect_to_index()
 
+
 @produzione_generici_bp.route("/modifica_lotto/<int:batch_id>", methods=["POST"])
 def edit_batch(batch_id):
     theme_id = request.form.get("theme_id", type=int)
     code = request.form.get("code", "").strip()
-    
+
     if BatchService.update_batch(batch_id, code=code):
         flash("Lotto modificato con successo.", "success")
     else:
         flash("Errore durante la modifica del lotto.", "error")
     return _redirect_to_index(theme_id=theme_id, batch_id=batch_id)
+
 
 @produzione_generici_bp.route("/elimina_lotto/<int:batch_id>", methods=["POST"])
 def delete_batch(batch_id):
@@ -167,15 +192,18 @@ def delete_batch(batch_id):
     if BatchService.delete_batch(batch_id):
         flash("Lotto eliminato con successo.", "success")
         return _redirect_to_index(theme_id=theme_id)
-    
+
     flash("Errore durante l'eliminazione del lotto.", "error")
     return _redirect_to_index(theme_id=theme_id, batch_id=batch_id)
 
-@produzione_generici_bp.route("/modifica_produzione/<int:production_id>", methods=["POST"])
+
+@produzione_generici_bp.route(
+    "/modifica_produzione/<int:production_id>", methods=["POST"]
+)
 def edit_production(production_id):
     theme_id = request.form.get("theme_id", type=int)
     batch_id = request.form.get("batch_id", type=int)
-    
+
     try:
         date = datetime.strptime(request.form.get("date", "").strip(), "%Y-%m-%d")
         quantity = int(request.form.get("quantity", "").strip())
@@ -186,17 +214,26 @@ def edit_production(production_id):
     reel_batch = request.form.get("reel_batch", "").strip()
     operator_id = request.form.get("operator_id", type=int)
 
-    if ProductionService.update_production(production_id, date=date, reel_batch=reel_batch, quantity=quantity, operator_id=operator_id):
+    if ProductionService.update_production(
+        production_id,
+        date=date,
+        reel_batch=reel_batch,
+        quantity=quantity,
+        operator_id=operator_id,
+    ):
         flash("Produzione modificata con successo.", "success")
     else:
         flash("Errore durante la modifica della produzione.", "error")
     return _redirect_to_index(theme_id=theme_id, batch_id=batch_id)
 
-@produzione_generici_bp.route("/elimina_produzione/<int:production_id>", methods=["POST"])
+
+@produzione_generici_bp.route(
+    "/elimina_produzione/<int:production_id>", methods=["POST"]
+)
 def delete_production(production_id):
     theme_id = request.form.get("theme_id", type=int)
     batch_id = request.form.get("batch_id", type=int)
-    
+
     if ProductionService.delete_production(production_id):
         flash("Produzione eliminata con successo.", "success")
     else:

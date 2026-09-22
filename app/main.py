@@ -30,7 +30,9 @@ from pages.etichette_spedizioni.etichette_spedizioni import etichette_spedizioni
 from pages.fercam.fercam import fercam_bp
 from pages.preliminari.preliminari import preliminari_bp
 from pages.produzione_generici.produzione_generici import produzione_generici_bp
-from pages.produzione_generici_prod.produzione_generici_prod import produzione_generici_prod_bp
+from pages.produzione_generici_prod.produzione_generici_prod import (
+    produzione_generici_prod_bp,
+)
 
 from routes.amministrazione.asset import asset_bp
 from routes.amministrazione.asset_dettaglio import asset_dettaglio_bp
@@ -40,6 +42,7 @@ from routes.amministrazione.backups import backups_bp
 from routes.amministrazione.gestione_lotti import gestione_lotti_bp
 from routes.amministrazione.sigep_ticket_management import sigep_ticket_management_bp
 
+
 # Forza l'attivazione del pragma foreign_keys ad ogni nuova connessione al database
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
@@ -48,34 +51,46 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
 
+
 def setup_logging():
     # Rimuove eventuali handler predefiniti per evitare duplicati
     for handler in logging.root.handlers[:]:
         logging.root.removeHandler(handler)
 
     # Configura il formato e il livello (es. INFO o DEBUG da variabili d'ambiente)
-    log_level = os.getenv('LOG_LEVEL', 'INFO').upper()
-    
+    log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+
     logging.basicConfig(
         level=log_level,
-        format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
-        handlers=[
-            logging.StreamHandler(sys.stdout)
-        ]
+        format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s",
+        handlers=[logging.StreamHandler(sys.stdout)],
     )
+
 
 def create_app():
     app = Flask(__name__)
-    app.secret_key = os.getenv('SECRET_KEY') or os.urandom(24)
-    
-    # Limite massimo per il caricamento dei file (16MB)
-    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+    app.secret_key = os.getenv("SECRET_KEY") or os.urandom(24)
 
-    # Database
+    # Limite massimo per il caricamento dei file (16MB)
+    app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
+
+    # PostgreSQL Database setup
+    postgres_user = os.getenv("POSTGRES_USER")
+    postgres_password = os.getenv("POSTGRES_PASSWORD")
+    postgres_host = os.getenv("POSTGRES_HOST")
+    postgres_port = os.getenv("POSTGRES_PORT")
+    postgres_db = os.getenv("POSTGRES_DB")
+    postgres_uri = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_db}"
+
+    # SQLite Database setup
     db_dir = os.path.join(app.instance_path)
     os.makedirs(db_dir, exist_ok=True)
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(db_dir, 'database.db')}"
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    sqlite_uri = f"sqlite:///{os.path.join(db_dir, 'database.db')}"
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = postgres_uri
+    app.config["SQLALCHEMY_BINDS"] = {"old_sqlite": sqlite_uri}
+
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
 
@@ -109,33 +124,28 @@ def create_app():
 
         # Mappatura path/section a tuple (args get_links..., home_link)
         sections = {
-            'home': (['home'], '/'),
-            'admin': (['home', 'amministrazione'], '/amministrazione'),
+            "home": (["home"], "/"),
+            "admin": (["home", "amministrazione"], "/amministrazione"),
         }
 
         # Determina la sezione corrente
         if path == "/":
-            section = 'home'
+            section = "home"
         elif path.startswith("/amministrazione"):
-            section = 'admin'
+            section = "admin"
         else:
-            section = session.get('section', 'home')
+            section = session.get("section", "home")
 
-        session['section'] = section
-        args, home_link = sections.get(section, (['home'], '/'))
+        session["section"] = section
+        args, home_link = sections.get(section, (["home"], "/"))
 
-        return {
-            'linkGroups': get_links(*args),
-            'home_link': home_link
-        }
+        return {"linkGroups": get_links(*args), "home_link": home_link}
 
     return app
+
 
 setup_logging()
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(
-        host="0.0.0.0",
-        port=5000
-    )
+    app.run(host="0.0.0.0", port=5000)

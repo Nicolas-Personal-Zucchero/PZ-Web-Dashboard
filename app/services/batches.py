@@ -3,6 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from extensions import db
 from models.batches import Batch
 
+
 class BatchService:
 
     @staticmethod
@@ -30,10 +31,10 @@ class BatchService:
         batch = db.session.get(Batch, batch_id)
         if not batch:
             return False
-        
+
         if code is not None:
             batch.code = code
-            
+
         try:
             db.session.commit()
             return True
@@ -46,7 +47,7 @@ class BatchService:
         batch = db.session.get(Batch, batch_id)
         if not batch:
             return False
-            
+
         try:
             db.session.delete(batch)
             db.session.commit()

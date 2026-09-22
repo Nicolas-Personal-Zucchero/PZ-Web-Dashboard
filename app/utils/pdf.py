@@ -4,7 +4,17 @@ from reportlab.lib.units import mm
 import qrcode
 from reportlab.lib.utils import ImageReader
 
-def generate_pdf(filename, lotto_personal_zucchero, fornitore, ddt, tipologia_zucchero, data, note, lotti_fornitore):
+
+def generate_pdf(
+    filename,
+    lotto_personal_zucchero,
+    fornitore,
+    ddt,
+    tipologia_zucchero,
+    data,
+    note,
+    lotti_fornitore,
+):
     """
     Genera un PDF di dimensioni 100x150 mm (verticale) con il contenuto ruotato di 90°:
     - tutti i lotti elencati
@@ -74,7 +84,14 @@ def generate_pdf(filename, lotto_personal_zucchero, fornitore, ddt, tipologia_zu
 
     # Rettangolo nero dietro il testo
     c.setFillColorRGB(0, 0, 0)  # nero
-    c.rect(text_x - 0 * mm - 2, lotto_y - 4, text_width + 4, text_height - 10, fill=True, stroke=False)
+    c.rect(
+        text_x - 0 * mm - 2,
+        lotto_y - 4,
+        text_width + 4,
+        text_height - 10,
+        fill=True,
+        stroke=False,
+    )
 
     # Testo bianco sopra il rettangolo
     c.setFillColorRGB(1, 1, 1)  # bianco
@@ -91,7 +108,9 @@ def generate_pdf(filename, lotto_personal_zucchero, fornitore, ddt, tipologia_zu
     c.drawString(text_x, lotto_y - SPACING_DATA, f"{data}")
 
     c.setFont(*FONT_ZUCCHERO)
-    c.drawString(text_x, lotto_y - SPACING_TIPOLOGIA_ZUCCHERO, f"{tipologia_zucchero.upper()}")
+    c.drawString(
+        text_x, lotto_y - SPACING_TIPOLOGIA_ZUCCHERO, f"{tipologia_zucchero.upper()}"
+    )
 
     # Lotti fornitore
     c.setFont(*FONT_LOTTI_TITLE)
@@ -107,12 +126,14 @@ def generate_pdf(filename, lotto_personal_zucchero, fornitore, ddt, tipologia_zu
 
     # QR Code
     # qr_data = f"https://nicolas-personal-zucchero.github.io/lotto/scan/?id={lotto_personal_zucchero}" #Old github pages version
-    qr_data = f"https://personal-zucchero.vercel.app/lotto/scan/?id={lotto_personal_zucchero}"
+    qr_data = (
+        f"https://personal-zucchero.vercel.app/lotto/scan/?id={lotto_personal_zucchero}"
+    )
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_H,
         box_size=10,
-        border=0
+        border=0,
     )
     qr.add_data(qr_data)
     qr.make(fit=True)

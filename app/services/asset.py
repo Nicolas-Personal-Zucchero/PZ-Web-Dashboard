@@ -4,13 +4,17 @@ from firebase_admin import firestore
 import re
 from typing import Optional
 
+
 class AssetService:
     _BATCH_SIZE = 400
     _collection = db.collection("asset")
 
     def _natural_key(s):
         """Crea una chiave per l'ordinamento naturale: divide numeri e lettere"""
-        return [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', s)]
+        return [
+            int(text) if text.isdigit() else text.lower()
+            for text in re.split(r"(\d+)", s)
+        ]
 
     @staticmethod
     def get_all() -> list[dict]:
@@ -27,7 +31,15 @@ class AssetService:
         return {"id": doc.id, **doc.to_dict()}
 
     @staticmethod
-    def create(nome: str, modello: str, tipologia: str, sede: str, posizione: str, intervallo_controllo_periodico: int, intervallo_pulizia: Optional[int]) -> str:
+    def create(
+        nome: str,
+        modello: str,
+        tipologia: str,
+        sede: str,
+        posizione: str,
+        intervallo_controllo_periodico: int,
+        intervallo_pulizia: Optional[int],
+    ) -> str:
         payload = {
             "nome": nome,
             "modello": modello,
@@ -36,16 +48,16 @@ class AssetService:
             "posizione": posizione,
             "intervallo_controllo_periodico": intervallo_controllo_periodico,
             "intervallo_pulizia": intervallo_pulizia,
-            "created_at": firestore.SERVER_TIMESTAMP
+            "created_at": firestore.SERVER_TIMESTAMP,
         }
-        
+
         _, doc_ref = AssetService._collection.add(payload)
         return doc_ref.id
 
     @staticmethod
     def update(asset_id: str, data: dict) -> bool:
         payload = data.copy()
-        payload.pop("id", None) 
+        payload.pop("id", None)
         doc_ref = AssetService._collection.document(asset_id)
         try:
             doc_ref.update(payload)
@@ -79,8 +91,12 @@ class AssetService:
 
     @staticmethod
     def get_intervento(asset_id: str, intervento_id: str) -> dict | None:
-        doc_ref = AssetService._collection.document(asset_id).collection("interventi").document(intervento_id)
-        
+        doc_ref = (
+            AssetService._collection.document(asset_id)
+            .collection("interventi")
+            .document(intervento_id)
+        )
+
         try:
             snapshot = doc_ref.get()
             if not snapshot.exists:
@@ -88,32 +104,59 @@ class AssetService:
             return {"id": snapshot.id, **snapshot.to_dict()}
         except Exception:
             return None
-        
+
     @staticmethod
     def get_interventi(asset_id: str) -> list[dict]:
-        docs = AssetService._collection.document(asset_id).collection("interventi").order_by("data", direction=firestore.Query.DESCENDING).stream()
+        docs = (
+            AssetService._collection.document(asset_id)
+            .collection("interventi")
+            .order_by("data", direction=firestore.Query.DESCENDING)
+            .stream()
+        )
         entries = [{"id": doc.id, **doc.to_dict()} for doc in docs]
         entries.sort(key=lambda x: x.get("data", ""), reverse=True)
         return entries
 
     @staticmethod
-    def add_intervento(asset_id: str, tipo: str, data: datetime, operatore: str, operatore_esterno: Optional[str], note: str, allegati: list[dict[str, str]]) -> bool:
+    def add_intervento(
+        asset_id: str,
+        tipo: str,
+        data: datetime,
+        operatore: str,
+        operatore_esterno: Optional[str],
+        note: str,
+        allegati: list[dict[str, str]],
+    ) -> bool:
         try:
-            AssetService._collection.document(asset_id).collection("interventi").add({
-                "tipo": tipo,
-                "data": data,
-                "operatore": operatore,
-                "operatore_esterno": operatore_esterno,
-                "note": note,
-                "allegati": allegati
-            })
+            AssetService._collection.document(asset_id).collection("interventi").add(
+                {
+                    "tipo": tipo,
+                    "data": data,
+                    "operatore": operatore,
+                    "operatore_esterno": operatore_esterno,
+                    "note": note,
+                    "allegati": allegati,
+                }
+            )
             return True
         except Exception:
             return False
 
     @staticmethod
-    def update_intervento(asset_id: str, intervento_id: str, tipo: Optional[str], data: Optional[datetime], operatore: Optional[str], operatore_esterno: Optional[str], note: Optional[str]) -> bool:
-        doc_ref = AssetService._collection.document(asset_id).collection("interventi").document(intervento_id)
+    def update_intervento(
+        asset_id: str,
+        intervento_id: str,
+        tipo: Optional[str],
+        data: Optional[datetime],
+        operatore: Optional[str],
+        operatore_esterno: Optional[str],
+        note: Optional[str],
+    ) -> bool:
+        doc_ref = (
+            AssetService._collection.document(asset_id)
+            .collection("interventi")
+            .document(intervento_id)
+        )
         try:
             update_data = {}
             if tipo is not None:
@@ -133,7 +176,11 @@ class AssetService:
 
     @staticmethod
     def delete_intervento(asset_id: str, intervento_id: str) -> bool:
-        doc_ref = AssetService._collection.document(asset_id).collection("interventi").document(intervento_id)
+        doc_ref = (
+            AssetService._collection.document(asset_id)
+            .collection("interventi")
+            .document(intervento_id)
+        )
         try:
             doc_ref.delete()
             return True

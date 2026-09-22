@@ -1,6 +1,7 @@
 from extensions import db
 from models.employees import Employee
 
+
 class EmployeeService:
     @staticmethod
     def get_employees(departments: list[str] = []) -> list:

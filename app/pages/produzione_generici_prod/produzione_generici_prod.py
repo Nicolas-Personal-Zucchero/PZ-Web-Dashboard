@@ -7,7 +7,13 @@ from services.batches import BatchService
 from services.productions import ProductionService
 
 template_dir = os.path.abspath(os.path.dirname(__file__))
-produzione_generici_prod_bp = Blueprint("produzione_generici_prod", __name__, url_prefix="/produzione_generici_prod", template_folder="")
+produzione_generici_prod_bp = Blueprint(
+    "produzione_generici_prod",
+    __name__,
+    url_prefix="/produzione_generici_prod",
+    template_folder="",
+)
+
 
 @produzione_generici_prod_bp.route("/", methods=["GET"])
 def team_produzione():
@@ -32,7 +38,9 @@ def team_produzione():
         if selected_theme is not None:
             selected_batch = latest_batches.get(selected_theme.id)
             if selected_batch is not None:
-                productions = ProductionService.get_productions_by_batch(selected_batch.id)
+                productions = ProductionService.get_productions_by_batch(
+                    selected_batch.id
+                )
 
     return render_template(
         "produzione_generici_prod.html",
@@ -45,12 +53,19 @@ def team_produzione():
         today=datetime.now().strftime("%Y-%m-%d"),
     )
 
+
 @produzione_generici_prod_bp.route("/successo", methods=["GET"])
 def successo():
     theme_name = request.args.get("theme_name", "")
     batch_code = request.args.get("batch_code", "")
     theme_id = request.args.get("theme_id", type=int)
-    return render_template("successo_produzione.html", theme_name=theme_name, batch_code=batch_code, theme_id=theme_id)
+    return render_template(
+        "successo_produzione.html",
+        theme_name=theme_name,
+        batch_code=batch_code,
+        theme_id=theme_id,
+    )
+
 
 @produzione_generici_prod_bp.route("/produzioni", methods=["POST"])
 def crea_produzione_team():
@@ -74,18 +89,24 @@ def crea_produzione_team():
 
     if batch is None:
         flash("Il tema selezionato non ha ancora un lotto disponibile.", "error")
-        return redirect(url_for("produzione_generici_prod.team_produzione", theme_id=theme.id))
+        return redirect(
+            url_for("produzione_generici_prod.team_produzione", theme_id=theme.id)
+        )
 
     if not reel_batch or not date_str or operator_id is None:
         flash("Tutti i campi sono obbligatori.", "error")
-        return redirect(url_for("produzione_generici_prod.team_produzione", theme_id=theme.id))
+        return redirect(
+            url_for("produzione_generici_prod.team_produzione", theme_id=theme.id)
+        )
 
     try:
         date = datetime.strptime(date_str, "%Y-%m-%d")
         quantity = int(quantity_str)
     except ValueError:
         flash("Data o quantità non valide.", "error")
-        return redirect(url_for("produzione_generici_prod.team_produzione", theme_id=theme.id))
+        return redirect(
+            url_for("produzione_generici_prod.team_produzione", theme_id=theme.id)
+        )
 
     try:
         ProductionService.create_production(
@@ -93,6 +114,15 @@ def crea_produzione_team():
         )
     except ValueError as e:
         flash(str(e), "error")
-        return redirect(url_for("produzione_generici_prod.team_produzione", theme_id=theme.id))
+        return redirect(
+            url_for("produzione_generici_prod.team_produzione", theme_id=theme.id)
+        )
 
-    return redirect(url_for("produzione_generici_prod.successo", theme_name=theme.name, batch_code=batch.code, theme_id=theme.id))
+    return redirect(
+        url_for(
+            "produzione_generici_prod.successo",
+            theme_name=theme.name,
+            batch_code=batch.code,
+            theme_id=theme.id,
+        )
+    )
