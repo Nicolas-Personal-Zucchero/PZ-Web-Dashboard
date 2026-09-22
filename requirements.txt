@@ -15,6 +15,7 @@ cachetools
 redis
 xmltodict
 ulid-py
+psycopg2-binary
 
 git+https://github.com/Nicolas-Personal-Zucchero/HubspotPZ.git@086133e0f8584bcc9a043aff20ba8e8ee0df861b
 git+https://github.com/Nicolas-Personal-Zucchero/MexalPZ.git@431e90a4718a0e67e6146f5cbf09eb8595da9ea8
