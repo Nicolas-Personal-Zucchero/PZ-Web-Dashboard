@@ -29,6 +29,7 @@ services:
     networks:
       - backend
       - proxy_net
+      - db_net
 
   redis:
     image: redis:7-alpine
@@ -51,6 +52,8 @@ services:
     command: sqlite_web -H 0.0.0.0 /app/app/instance/database.db
     environment:
       - SQLITE_WEB_PASSWORD=${SQLITE_WEB_PASSWORD}
+    networks:
+      - proxy_net
 
 networks:
   backend:
