@@ -2,7 +2,6 @@ import logging
 import os
 import sys
 
-import app
 from flask import Flask, session, request
 from extensions import db
 
