@@ -6,6 +6,7 @@ from extensions import db
 
 class Ticket(db.Model):
     __tablename__ = "tickets"
+    __bind_key__ = "old_sqlite"
 
     code = db.Column(db.String(100), primary_key=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now(), nullable=False)
@@ -33,6 +34,7 @@ class Ticket(db.Model):
 
 class TicketAssignment(db.Model):
     __tablename__ = "tickets_assignments"
+    __bind_key__ = "old_sqlite"
 
     ticket_code = db.Column(
         db.String(100),

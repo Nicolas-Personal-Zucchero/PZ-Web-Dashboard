@@ -5,6 +5,7 @@ from . import TimezoneMixin
 
 class Theme(db.Model, TimezoneMixin):
     __tablename__ = "themes"
+    __bind_key__ = "old_sqlite"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), unique=True, nullable=False)

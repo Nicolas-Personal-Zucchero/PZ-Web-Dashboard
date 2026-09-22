@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 
+import app
 from flask import Flask, session, request
 from extensions import db
 
@@ -74,12 +75,22 @@ def create_app():
     # Limite massimo per il caricamento dei file (16MB)
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
 
-    # Database
+    # PostgreSQL Database setup
+    postgres_user = os.getenv("POSTGRES_USER")
+    postgres_password = os.getenv("POSTGRES_PASSWORD")
+    postgres_host = os.getenv("POSTGRES_HOST")
+    postgres_port = os.getenv("POSTGRES_PORT")
+    postgres_db = os.getenv("POSTGRES_DB")
+    postgres_uri = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_db}"
+
+    # SQLite Database setup
     db_dir = os.path.join(app.instance_path)
     os.makedirs(db_dir, exist_ok=True)
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        f"sqlite:///{os.path.join(db_dir, 'database.db')}"
-    )
+    sqlite_uri = f"sqlite:///{os.path.join(db_dir, 'database.db')}"
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = postgres_uri
+    app.config["SQLALCHEMY_BINDS"] = {"old_sqlite": sqlite_uri}
+
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)

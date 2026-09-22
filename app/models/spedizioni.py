@@ -10,6 +10,7 @@ class StatoSpedizione(enum.Enum):
 
 class SpedizionePreliminare(db.Model):
     __tablename__ = "spedizioni_preliminari"
+    __bind_key__ = "old_sqlite"
 
     id = db.Column(db.String(100), primary_key=True, nullable=False)
     ragione_sociale_cliente = db.Column(db.String(255), nullable=False)
@@ -52,6 +53,7 @@ class SpedizionePreliminare(db.Model):
 
 class SpedizioneIdentificativo(db.Model):
     __tablename__ = "spedizione_identificativi"
+    __bind_key__ = "old_sqlite"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     spedizione_id = db.Column(

@@ -5,6 +5,7 @@ from extensions import db
 
 class Review(db.Model):
     __tablename__ = "reviews"
+    __bind_key__ = "old_sqlite"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     customer_name = db.Column(db.String(255), nullable=False)

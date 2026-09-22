@@ -3,6 +3,7 @@ from extensions import db
 
 class Employee(db.Model):
     __tablename__ = "employees"
+    __bind_key__ = "old_sqlite"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)

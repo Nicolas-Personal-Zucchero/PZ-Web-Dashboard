@@ -5,6 +5,7 @@ from . import TimezoneMixin
 
 class Batch(db.Model, TimezoneMixin):
     __tablename__ = "batches"
+    __bind_key__ = "old_sqlite"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     code = db.Column(db.String(255), nullable=False)
