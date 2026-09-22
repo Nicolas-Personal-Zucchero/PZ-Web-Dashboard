@@ -60,6 +60,8 @@ networks:
     name: shared_backend
   proxy_net:
     external: true
+  db_net:
+    external: true
 
 volumes:
   redis_data:
