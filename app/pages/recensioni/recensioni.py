@@ -5,7 +5,13 @@ from services.recensioni import ReviewService
 from services.employees import EmployeeService
 from mailer_pz import MailerPZ
 
-recensioni_bp = Blueprint("recensioni", __name__, url_prefix="/recensioni")
+template_dir = os.path.abspath(os.path.dirname(__file__))
+recensioni_bp = Blueprint(
+    "recensioni",
+    __name__,
+    url_prefix="/recensioni",
+    template_folder="",
+)
 
 
 @recensioni_bp.route("/", methods=["GET", "POST"])
