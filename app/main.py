@@ -23,7 +23,7 @@ from config.links import get_links
 from pages.home import home_bp
 from pages.recensioni import recensioni_bp
 from pages.assegna_agente import assegna_agente_bp
-from routes.agents_map import agents_map_bp
+from pages.agents_map import agents_map_bp
 from routes.sigep_ticket import sigep_ticket_bp
 from routes.trattative_agenti import trattative_agenti_bp
 from pages.etichette_spedizioni import etichette_spedizioni_bp
