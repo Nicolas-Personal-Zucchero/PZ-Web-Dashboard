@@ -4,8 +4,9 @@ from config.constants import ITALY_TZ
 from datetime import datetime
 from hubspot_pz import HubspotPZ
 
+template_dir = os.path.abspath(os.path.dirname(__file__))
 trattative_agenti_bp = Blueprint(
-    "trattative_agenti", __name__, url_prefix="/trattative_agenti"
+    "trattative_agenti", __name__, url_prefix="/trattative_agenti", template_folder=""
 )
 
 
@@ -73,4 +74,4 @@ def index():
         contacts_ids.update(contact_ids)
         companies_ids.update(company_ids)
 
-    return render_template("/trattative_agenti.html", trattative=deals)
+    return render_template("trattative_agenti.html", trattative=deals)
