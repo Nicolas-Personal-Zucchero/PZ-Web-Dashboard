@@ -1,7 +1,5 @@
-from flask import Blueprint, render_template
 from config.links import register_links
-
-home_bp = Blueprint("home", __name__)
+from .home import home_bp
 
 register_links(
     "home",
@@ -82,8 +80,3 @@ register_links(
         },
     ],
 )
-
-
-@home_bp.route("/")
-def home():
-    return render_template("index.html")

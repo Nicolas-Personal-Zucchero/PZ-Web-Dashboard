@@ -20,7 +20,7 @@ from models.productions import Production
 
 from config.links import get_links
 
-from routes import home_bp
+from pages.home import home_bp
 from pages.recensioni import recensioni_bp
 from routes.assegna_agente import assegna_agente_bp
 from routes.agents_map import agents_map_bp
