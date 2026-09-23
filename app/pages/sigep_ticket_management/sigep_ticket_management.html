@@ -61,16 +61,16 @@
                             </button>
                         </form>
                         <hr>
-                        <h6 class="font-weight-bold text-danger">Zona Pericolo</h6>
+                        <h6 class="font-weight-bold text-danger">Archiviazione Biglietti</h6>
                         <p class="small text-muted">
-                            Questa azione eliminerà <strong>tutti</strong> i biglietti presenti nel
-                            database (assegnati e non). L'azione è irreversibile.
+                            Questa azione archivia <strong>tutti</strong> i biglietti presenti nel
+                            database (assegnati e non) e non saranno più assegnabili in futuro. Usa questa funzione quando è il momento di caricare i nuovi biglietti Sigep.
                         </p>
                         <form action="{{ url_for("amministrazione.sigep_ticket_management.clear_collection") }}"
                               method="post"
-                              onsubmit="return confirm('Sei sicuro di voler eliminare TUTTI i biglietti? Questa azione non può essere annullata.');">
+                              onsubmit="return confirm('Sei sicuro di voler archiviare TUTTI i biglietti?');">
                             <button type="submit" class="btn btn-danger w-100">
-                                <i class="bi bi-trash-fill me-2"></i>Svuota Collezione Biglietti
+                                <i class="bi bi-archive-fill me-2"></i>Archivia Tutti i Biglietti
                             </button>
                         </form>
                     </div>

@@ -13,7 +13,7 @@ from sqlite3 import Connection as SQLite3Connection
 from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo
 from models.recensioni import Review
 from models.employees import Employee
-from models.sigep_tickets import Ticket, TicketAssignment
+from models.sigep_tickets import Ticket
 from models.themes import Theme
 from models.batches import Batch
 from models.productions import Production

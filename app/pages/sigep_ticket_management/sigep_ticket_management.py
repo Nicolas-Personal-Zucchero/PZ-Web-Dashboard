@@ -1,8 +1,8 @@
 import csv
 import io
-from flask import Blueprint, render_template, request, redirect, flash
-from firebase_admin import firestore
-from utils.firebase_client import db
+from flask import Blueprint, flash, redirect, render_template, request
+
+from services.sigep_tickets import SigepTicketService
 
 sigep_ticket_management_bp = Blueprint(
     "sigep_ticket_management",
@@ -10,7 +10,6 @@ sigep_ticket_management_bp = Blueprint(
     url_prefix="/sigep-ticket-management",
     template_folder="",
 )
-tickets_collection = db.collection("sigep_tickets")
 
 
 @sigep_ticket_management_bp.route("/", methods=["GET"])
@@ -43,33 +42,18 @@ def upload():
             stream.seek(0)
             csv_input = csv.DictReader(stream)
 
-        if column_name not in csv_input.fieldnames:
+        if not csv_input.fieldnames or column_name not in csv_input.fieldnames:
             flash(f"Colonna '{column_name}' non trovata nel CSV", "danger")
             return redirect("/sigep-ticket")
 
-        batch = db.batch()
-        count = 0
-        for row in csv_input:
-            code = row[column_name].strip()
-            if code:
-                doc_ref = tickets_collection.document()
-                batch.set(
-                    doc_ref,
-                    {
-                        "code": code,
-                        "assigned": False,
-                        "created_at": firestore.SERVER_TIMESTAMP,
-                    },
-                )
-                count += 1
-                if count % 400 == 0:
-                    batch.commit()
-                    batch = db.batch()
+        codes = [
+            row[column_name].strip()
+            for row in csv_input
+            if row.get(column_name) and row[column_name].strip()
+        ]
 
-        if count % 400 != 0:
-            batch.commit()
-
-        flash(f"Caricati {count} biglietti con successo", "success")
+        inserted_count = SigepTicketService.bulk_create_tickets(codes)
+        flash(f"Caricati {inserted_count} nuovi biglietti con successo", "success")
 
     except Exception as e:
         flash(f"Errore durante il caricamento: {str(e)}", "danger")
@@ -80,27 +64,8 @@ def upload():
 @sigep_ticket_management_bp.route("/clear", methods=["POST"])
 def clear_collection():
     try:
-        # Delete all documents in batches
-        docs = tickets_collection.limit(100).stream()
-        deleted = 0
-        for doc in docs:
-            doc.reference.delete()
-            deleted += 1
-
-        # If we deleted 100, there might be more.
-        # For a simple implementation, we can just ask the user to click again or loop here.
-        # Let's loop a few times to be safe, but avoid infinite loops.
-        while deleted > 0 and deleted % 100 == 0:
-            batch_docs = tickets_collection.limit(100).stream()
-            batch_deleted = 0
-            for doc in batch_docs:
-                doc.reference.delete()
-                batch_deleted += 1
-            deleted += batch_deleted
-            if batch_deleted == 0:
-                break
-
-        flash("Collezione biglietti svuotata (o parzialmente svuotata)", "success")
+        deleted_count = SigepTicketService.clear_all_tickets()
+        flash(f"Cancellati {deleted_count} biglietti con successo", "success")
     except Exception as e:
         flash(f"Errore durante la cancellazione: {str(e)}", "danger")
 
