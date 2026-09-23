@@ -7,7 +7,6 @@ from utils.firebase_client import db
 from config.mail_config import EMAIL_TEMPLATES
 from mailer_pz import MailerPZ
 
-template_dir = os.path.abspath(os.path.dirname(__file__))
 sigep_ticket_bp = Blueprint(
     "sigep_ticket", __name__, url_prefix="/sigep-ticket", template_folder=""
 )

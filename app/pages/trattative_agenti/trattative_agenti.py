@@ -4,7 +4,6 @@ from config.constants import ITALY_TZ
 from datetime import datetime
 from hubspot_pz import HubspotPZ
 
-template_dir = os.path.abspath(os.path.dirname(__file__))
 trattative_agenti_bp = Blueprint(
     "trattative_agenti", __name__, url_prefix="/trattative_agenti", template_folder=""
 )

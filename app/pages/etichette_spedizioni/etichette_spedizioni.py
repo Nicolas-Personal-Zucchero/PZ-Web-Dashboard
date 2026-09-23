@@ -22,7 +22,6 @@ from mailer_pz import MailerPZ
 
 logger = logging.getLogger(__name__)
 
-template_dir = os.path.abspath(os.path.dirname(__file__))
 etichette_spedizioni_bp = Blueprint(
     "etichette_spedizioni",
     __name__,

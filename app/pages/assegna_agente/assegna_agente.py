@@ -10,7 +10,6 @@ from firebase_admin import firestore
 from hubspot_pz import HubspotPZ
 from mailer_pz import MailerPZ
 
-template_dir = os.path.abspath(os.path.dirname(__file__))
 assegna_agente_bp = Blueprint(
     "assegna_agente", __name__, url_prefix="/assegna-agente", template_folder=""
 )

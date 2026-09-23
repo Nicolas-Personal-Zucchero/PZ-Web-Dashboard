@@ -5,7 +5,6 @@ from services.recensioni import ReviewService
 from services.employees import EmployeeService
 from mailer_pz import MailerPZ
 
-template_dir = os.path.abspath(os.path.dirname(__file__))
 recensioni_bp = Blueprint(
     "recensioni",
     __name__,
