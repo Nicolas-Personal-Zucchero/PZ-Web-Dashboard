@@ -1,0 +1,1 @@
+from .etichette_spedizioni import etichette_spedizioni_bp

@@ -1,0 +1,1 @@
+from .produzione_generici_prod import produzione_generici_prod_bp
