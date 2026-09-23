@@ -1,24 +1,21 @@
 {% extends "layout_fluid.html" %}
-
 {% block title %}Produzione Registrata{% endblock %}
-
 {% block content %}
-<div class="container-fluid vh-100 d-flex flex-column justify-content-center align-items-center text-center pb-5">
-    
-    <div class="mb-4">
-        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-    </div>
-    
-    <h1 class="h3 text-muted mb-1">Produzione Registrata</h1>
-    <h2 class="h1 mb-4 fw-normal">{{ theme_name }}</h2>
-    
-    <div class="card shadow-lg border-0 rounded-4 p-5 mb-5 w-100" style="max-width: 700px; background-color: #f8f9fa;">
-        <div class="text-muted text-uppercase fw-bold mb-3 tracking-wide">
-            Procedere con la stampa etichette
+    <div class="container-fluid vh-100 d-flex flex-column justify-content-center align-items-center text-center pb-5">
+        <div class="mb-4">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
         </div>
-        <div class="fw-bolder text-dark" style="font-size: 9rem; line-height: 1; letter-spacing: -3px; word-break: break-all;">
-            {{ batch_code }}
+        <h1 class="h3 text-muted mb-1">Produzione Registrata</h1>
+        <h2 class="h1 mb-4 fw-normal">{{ theme_name }}</h2>
+        <div class="card shadow-lg border-0 rounded-4 p-5 mb-5 w-100"
+             style="max-width: 700px;
+                    background-color: #f8f9fa">
+            <div class="text-muted text-uppercase fw-bold mb-3 tracking-wide">Procedere con la stampa etichette</div>
+            <div class="fw-bolder text-dark"
+                 style="font-size: 9rem;
+                        line-height: 1;
+                        letter-spacing: -3px;
+                        word-break: break-all">{{ batch_code }}</div>
         </div>
     </div>
-</div>
 {% endblock %}

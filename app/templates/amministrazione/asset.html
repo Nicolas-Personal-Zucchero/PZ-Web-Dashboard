@@ -1,177 +1,201 @@
 {% extends "layout_sidebar.html" %}
 {% block title %}Asset{% endblock %}
-
 {% block content %}
-<div class="p-4">
-    <a href="{{ home_link }}" class="btn btn-light mb-3">
-        <i class="bi bi-arrow-left"></i> Torna indietro
-    </a>
-
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-        <h1 class="mb-0">Elenco Asset</h1>
-
-        <!-- Pulsante apertura modal -->
-        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#assetModal">
-            <i class="bi bi-plus-circle"></i> Aggiungi asset
-        </button>
-    </div>
-
-    <!-- Modal per aggiunta asset -->
-    <div class="modal fade" id="assetModal" tabindex="-1" aria-labelledby="assetModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="assetModalLabel">Aggiungi asset</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form method="POST">
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="nome" class="form-label">Nome</label>
-                                <input type="text" class="form-control" name="nome" id="nome"
-                                    placeholder="Es: Macchina Zucchero 1" required>
+    <div class="p-4">
+        <a href="{{ home_link }}" class="btn btn-light mb-3">
+            <i class="bi bi-arrow-left"></i> Torna indietro
+        </a>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <h1 class="mb-0">Elenco Asset</h1>
+            <!-- Pulsante apertura modal -->
+            <button class="btn btn-primary"
+                    type="button"
+                    data-bs-toggle="modal"
+                    data-bs-target="#assetModal">
+                <i class="bi bi-plus-circle"></i> Aggiungi asset
+            </button>
+        </div>
+        <!-- Modal per aggiunta asset -->
+        <div class="modal fade"
+             id="assetModal"
+             tabindex="-1"
+             aria-labelledby="assetModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="assetModalLabel">Aggiungi asset</h5>
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="nome" class="form-label">Nome</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           name="nome"
+                                           id="nome"
+                                           placeholder="Es: Macchina Zucchero 1"
+                                           required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="modello" class="form-label">Modello</label>
+                                    <input type="text" class="form-control" name="modello" id="modello" required>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label for="modello" class="form-label">Modello</label>
-                                <input type="text" class="form-control" name="modello" id="modello" required>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="selectTipologia" class="form-label">Tipologia</label>
+                                    <select class="form-select" name="tipologia" id="selectTipologia" required>
+                                        <option value="" selected></option>
+                                        {% for t in tipologie_asset %}
+                                            <option value="{{ t }}">{{ t }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="selectSede" class="form-label">Sede</label>
+                                    <select class="form-select" name="sede" id="selectSede" required>
+                                        <option value="" disabled selected></option>
+                                        {% for key, value in sedi.items() %}
+                                            <option value="{{ key }} - {{ value }}">{{ key }} - {{ value }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-5">
+                                    <label for="posizione" class="form-label">Posizione</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           name="posizione"
+                                           id="posizione"
+                                           placeholder="Es: Reparto produzione">
+                                </div>
                             </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <label for="selectTipologia" class="form-label">Tipologia</label>
-                                <select class="form-select" name="tipologia" id="selectTipologia" required>
-                                    <option value="" selected></option>
-                                    {% for t in tipologie_asset %}
-                                        <option value="{{ t }}">{{ t }}</option>
-                                    {% endfor %}
-                                </select>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="intervallo_controllo_periodico"
+                                           class="form-label">Intervallo Controllo Periodico (giorni)</label>
+                                    <input type="number"
+                                           class="form-control"
+                                           name="intervallo_controllo_periodico"
+                                           id="intervallo_controllo_periodico"
+                                           placeholder="Es: 365"
+                                           min="0"
+                                           required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="intervallo_pulizia"
+                                           class="form-label">Intervallo Pulizia (giorni)</label>
+                                    <input type="number"
+                                           class="form-control"
+                                           name="intervallo_pulizia"
+                                           id="intervallo_pulizia"
+                                           placeholder="Es: 30"
+                                           min="0">
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <label for="selectSede" class="form-label">Sede</label>
-                                <select class="form-select" name="sede" id="selectSede" required>
-                                    <option value="" disabled selected></option>
-                                    {% for key, value in sedi.items() %}
-                                        <option value="{{ key }} - {{ value }}">{{ key }} - {{ value }}</option>
-                                    {% endfor %}
-                                </select>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                                <button type="submit" class="btn btn-primary">Registra asset</button>
                             </div>
-                            <div class="col-md-5">
-                                <label for="posizione" class="form-label">Posizione</label>
-                                <input type="text" class="form-control" name="posizione" id="posizione" placeholder="Es: Reparto produzione">
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="intervallo_controllo_periodico" class="form-label">Intervallo Controllo Periodico (giorni)</label>
-                                <input type="number" class="form-control" name="intervallo_controllo_periodico" id="intervallo_controllo_periodico" placeholder="Es: 365" min="0" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="intervallo_pulizia" class="form-label">Intervallo Pulizia (giorni)</label>
-                                <input type="number" class="form-control" name="intervallo_pulizia" id="intervallo_pulizia"
-                                    placeholder="Es: 30" min="0">
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-end gap-2">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                            <button type="submit" class="btn btn-primary">Registra asset</button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Flash messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
-    {% endfor %}
-    {% endwith %}
-    <hr>
-
-    <!-- Filtro ricerca e tipologia -->
-    {% if entries %}
-
-    <div class="mb-3 row g-2">
-        <div class="col-md-6">
-            <input type="text" class="form-control" id="searchInput" placeholder="Cerca asset">
-        </div>
-        <div class="col-md-2">
-            <select class="form-select" id="tipologiaFilter">
-                <option value="">Tutte le tipologie</option>
-                {% for t in entries|map(attribute='tipologia')|unique|sort if t and t|trim %}
-                <option value="{{ t }}">{{ t }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-2">
-            <select class="form-select" id="sedeFilter">
-                <option value="">Tutte le sedi</option>
-                {% for t in entries|map(attribute='sede')|unique|sort if t and t|trim %}
-                <option value="{{ t }}">{{ t }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-2">
-            <select class="form-select" id="posizioneFilter">
-                <option value="">Tutte le posizioni</option>
-                {% for t in entries|map(attribute='posizione')|unique|sort if t and t|trim %}
-                <option value="{{ t }}">{{ t }}</option>
-                {% endfor %}
-            </select>
-        </div>
-    </div>
-
-    <div style="max-height: 625px; overflow-y: auto;">
-        <ul class="list-group styled-table" id="assetList">
-            <!-- Header -->
-            <li class="list-group-item static-header">
-                <div class="asset-custom-grid">
-                    <div>Nome</div>
-                    <div>Modello</div>
-                    <div>Tipologia</div>
-                    <div>Sede</div>
-                    <div>Posizione</div>
-                    <div title="Intervallo Controllo Periodico">C. Period.</div>
-                    <div title="Intervallo Pulizia">Pulizia</div>
-                    <div class="text-end">Azioni</div>
-                </div>
-            </li>
-
-            <!-- Asset entries -->
-            {% for e in entries %}
-            <li class="list-group-item asset-row"
-                data-name="{{ e.nome|lower }}" 
-                data-model="{{ e.modello|lower }}" 
-                data-type="{{ e.tipologia|lower }}" 
-                data-site="{{ e.sede|lower }}" 
-                data-position="{{ e.posizione|lower }}">
-                <div class="asset-custom-grid">
-                    <div><strong>{{ e.nome }}</strong></div>
-                    <div>{{ e.modello }}</div>
-                    <div>{{ e.tipologia }}</div>
-                    <div>{{ e.sede }}</div>
-                    <div>{{ e.posizione }}</div>
-                    <div>{{ e.intervallo_controllo_periodico }}</div>
-                    <div>{{ e.intervallo_pulizia if e.intervallo_pulizia is not none else '' }}</div>
-                    <div class="text-end">
-                        <a href="/amministrazione/asset/{{ e.id }}" class="btn btn-outline-primary btn-sm" title="Apri dettaglio asset">
-                            <i class="bi bi-box-arrow-up-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </li>
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
             {% endfor %}
-        </ul>
+        {% endwith %}
+        <hr>
+        <!-- Filtro ricerca e tipologia -->
+        {% if entries %}
+            <div class="mb-3 row g-2">
+                <div class="col-md-6">
+                    <input type="text"
+                           class="form-control"
+                           id="searchInput"
+                           placeholder="Cerca asset">
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" id="tipologiaFilter">
+                        <option value="">Tutte le tipologie</option>
+                        {% for t in entries|map(attribute='tipologia')|unique|sort if t and t|trim %}
+                            <option value="{{ t }}">{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" id="sedeFilter">
+                        <option value="">Tutte le sedi</option>
+                        {% for t in entries|map(attribute='sede')|unique|sort if t and t|trim %}
+                            <option value="{{ t }}">{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" id="posizioneFilter">
+                        <option value="">Tutte le posizioni</option>
+                        {% for t in entries|map(attribute='posizione')|unique|sort if t and t|trim %}
+                            <option value="{{ t }}">{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div style="max-height: 625px; overflow-y: auto;">
+                <ul class="list-group styled-table" id="assetList">
+                    <!-- Header -->
+                    <li class="list-group-item static-header">
+                        <div class="asset-custom-grid">
+                            <div>Nome</div>
+                            <div>Modello</div>
+                            <div>Tipologia</div>
+                            <div>Sede</div>
+                            <div>Posizione</div>
+                            <div title="Intervallo Controllo Periodico">C. Period.</div>
+                            <div title="Intervallo Pulizia">Pulizia</div>
+                            <div class="text-end">Azioni</div>
+                        </div>
+                    </li>
+                    <!-- Asset entries -->
+                    {% for e in entries %}
+                        <li class="list-group-item asset-row"
+                            data-name="{{ e.nome|lower }}"
+                            data-model="{{ e.modello|lower }}"
+                            data-type="{{ e.tipologia|lower }}"
+                            data-site="{{ e.sede|lower }}"
+                            data-position="{{ e.posizione|lower }}">
+                            <div class="asset-custom-grid">
+                                <div><strong>{{ e.nome }}</strong></div>
+                                <div>{{ e.modello }}</div>
+                                <div>{{ e.tipologia }}</div>
+                                <div>{{ e.sede }}</div>
+                                <div>{{ e.posizione }}</div>
+                                <div>{{ e.intervallo_controllo_periodico }}</div>
+                                <div>{{ e.intervallo_pulizia if e.intervallo_pulizia is not none else '' }}</div>
+                                <div class="text-end">
+                                    <a href="/amministrazione/asset/{{ e.id }}"
+                                       class="btn btn-outline-primary btn-sm"
+                                       title="Apri dettaglio asset">
+                                        <i class="bi bi-box-arrow-up-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% else %}
+            <p class="text-muted">Nessun asset registrato.</p>
+        {% endif %}
     </div>
-
-    {% else %}
-    <p class="text-muted">Nessun asset registrato.</p>
-    {% endif %}
-</div>
-
-<script>
+    <script>
     document.addEventListener("DOMContentLoaded", function () {
         const searchInput = document.getElementById('searchInput');
         const tipologiaFilter = document.getElementById('tipologiaFilter');
@@ -204,9 +228,8 @@
         if (posizioneFilter) posizioneFilter.addEventListener('change', filterAssets);
 
     });
-</script>
-
-<style>
+    </script>
+    <style>
     /* Layout mobile a singola colonna di default, come farebbe Bootstrap */
     .asset-custom-grid {
         display: grid;
@@ -223,5 +246,5 @@
             gap: 1rem;
         }
     }
-</style>
+    </style>
 {% endblock %}
