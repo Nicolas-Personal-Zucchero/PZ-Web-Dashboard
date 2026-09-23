@@ -40,7 +40,7 @@ from routes.amministrazione.visualizza_impianti import visualizza_impianti_bp
 from routes.amministrazione import amministrazione_bp
 from routes.amministrazione.backups import backups_bp
 from routes.amministrazione.gestione_lotti import gestione_lotti_bp
-from routes.amministrazione.sigep_ticket_management import sigep_ticket_management_bp
+from pages.sigep_ticket_management import sigep_ticket_management_bp
 
 
 # Forza l'attivazione del pragma foreign_keys ad ogni nuova connessione al database

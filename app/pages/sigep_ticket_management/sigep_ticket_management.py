@@ -5,14 +5,17 @@ from firebase_admin import firestore
 from utils.firebase_client import db
 
 sigep_ticket_management_bp = Blueprint(
-    "sigep_ticket_management", __name__, url_prefix="/sigep-ticket-management"
+    "sigep_ticket_management",
+    __name__,
+    url_prefix="/sigep-ticket-management",
+    template_folder="",
 )
 tickets_collection = db.collection("sigep_tickets")
 
 
 @sigep_ticket_management_bp.route("/", methods=["GET"])
 def index():
-    return render_template("/amministrazione/sigep_ticket_management.html")
+    return render_template("sigep_ticket_management.html")
 
 
 @sigep_ticket_management_bp.route("/upload", methods=["POST"])
