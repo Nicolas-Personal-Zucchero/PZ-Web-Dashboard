@@ -1,0 +1,1 @@
+from .trattative_agenti import trattative_agenti_bp

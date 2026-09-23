@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <style>
         @page {
             size: A4;
             margin: 15mm;
@@ -55,91 +55,92 @@
             text-align: center;
             float: right;
         }
-    </style>
-</head>
-<body>
-    <h1>Documento di ritiro</h1>
-    <table class="header-table">
-        <tr>
-            <td style="width: 50%;">
-                {% if brt_logo %}
-                    <img src="{{ brt_logo }}" alt="Logo BRT" style="max-width: 150px; height: auto;">
-                {% else %}
-                    <div style="font-weight: bold; font-size: 18pt; color: #e30613;">BRT</div>
-                {% endif %}
-                <div style="font-size: 13pt; margin-top: 5px;">
-                    <strong>Mittente:</strong><br>
-                    Personal Zucchero SRL<br>
-                    Piazza Allende 1<br>
-                    47824 Poggio Torriana (RN)<br>
-                    Italia
-                </div>
-            </td>
-            <td style="width: 50%;">
-                <div class="barcode-placeholder">
-                    SPAZIO PER ETICHETTA BARCODE
-                </div>
-            </td>
-        </tr>
-    </table>
-
-    <div class="section-title">DESTINATARIO</div>
-    <table class="data-table">
-        <tr>
-            <td class="label">Ragione Sociale</td>
-            <td>{{ destinatario.ragione_sociale }}</td>
-        </tr>
-        <tr>
-            <td class="label">Indirizzo</td>
-            <td>{{ destinatario.indirizzo }}</td>
-        </tr>
-        <tr>
-            <td class="label">Località</td>
-            <td>{{ destinatario.cap }} - {{ destinatario.localita }} ({{ destinatario.provincia }})</td>
-        </tr>
-        <tr>
-            <td class="label">Stato</td>
-            <td>{{ destinatario.cod_paese }}</td>
-        </tr>
-        <tr>
-            <td class="label">Telefono</td>
-            <td>{{ destinatario.telefono }}</td>
-        </tr>
-        <tr>
-            <td class="label">Cortese Attenzione</td>
-            <td>{{ destinatario.cortese_attenzione }}</td>
-        </tr>
-        <tr>
-            <td class="label">Note</td>
-            <td>{{ destinatario.note }}</td>
-        </tr>
-    </table>
-
-    <div class="section-title">DETTAGLI SPEDIZIONE</div>
-    <table class="data-table">
-        <tr>
-            <td class="label">Data Documento</td>
-            <td>{{ spedizione.data }}</td>
-            <td class="label">Resa</td>
-            <td>FRANCO</td>
-        </tr>
-        <tr>
-            <td class="label">Natura della Merce</td>
-            <td colspan="3">{{ spedizione.natura_merce }}</td>
-        </tr>
-        <tr>
-            <td class="label">Numero Colli</td>
-            <td>{{ spedizione.colli }}</td>
-            <td class="label">Peso Totale (Kg)</td>
-            <td>{{ spedizione.peso }}</td>
-        </tr>
-    </table>
-
-    <div style="margin-top: 40px;">
-        <div class="signature-box">
-            <p>Firma mittente</p>
+        </style>
+    </head>
+    <body>
+        <h1>Documento di ritiro</h1>
+        <table class="header-table">
+            <tr>
+                <td style="width: 50%;">
+                    {% if brt_logo %}
+                        <img src="{{ brt_logo }}"
+                             alt="Logo BRT"
+                             style="max-width: 150px;
+                                    height: auto">
+                    {% else %}
+                        <div style="font-weight: bold; font-size: 18pt; color: #e30613;">BRT</div>
+                    {% endif %}
+                    <div style="font-size: 13pt; margin-top: 5px;">
+                        <strong>Mittente:</strong>
+                        <br>
+                        Personal Zucchero SRL
+                        <br>
+                        Piazza Allende 1
+                        <br>
+                        47824 Poggio Torriana (RN)
+                        <br>
+                        Italia
+                    </div>
+                </td>
+                <td style="width: 50%;">
+                    <div class="barcode-placeholder">SPAZIO PER ETICHETTA BARCODE</div>
+                </td>
+            </tr>
+        </table>
+        <div class="section-title">DESTINATARIO</div>
+        <table class="data-table">
+            <tr>
+                <td class="label">Ragione Sociale</td>
+                <td>{{ destinatario.ragione_sociale }}</td>
+            </tr>
+            <tr>
+                <td class="label">Indirizzo</td>
+                <td>{{ destinatario.indirizzo }}</td>
+            </tr>
+            <tr>
+                <td class="label">Località</td>
+                <td>{{ destinatario.cap }} - {{ destinatario.localita }} ({{ destinatario.provincia }})</td>
+            </tr>
+            <tr>
+                <td class="label">Stato</td>
+                <td>{{ destinatario.cod_paese }}</td>
+            </tr>
+            <tr>
+                <td class="label">Telefono</td>
+                <td>{{ destinatario.telefono }}</td>
+            </tr>
+            <tr>
+                <td class="label">Cortese Attenzione</td>
+                <td>{{ destinatario.cortese_attenzione }}</td>
+            </tr>
+            <tr>
+                <td class="label">Note</td>
+                <td>{{ destinatario.note }}</td>
+            </tr>
+        </table>
+        <div class="section-title">DETTAGLI SPEDIZIONE</div>
+        <table class="data-table">
+            <tr>
+                <td class="label">Data Documento</td>
+                <td>{{ spedizione.data }}</td>
+                <td class="label">Resa</td>
+                <td>FRANCO</td>
+            </tr>
+            <tr>
+                <td class="label">Natura della Merce</td>
+                <td colspan="3">{{ spedizione.natura_merce }}</td>
+            </tr>
+            <tr>
+                <td class="label">Numero Colli</td>
+                <td>{{ spedizione.colli }}</td>
+                <td class="label">Peso Totale (Kg)</td>
+                <td>{{ spedizione.peso }}</td>
+            </tr>
+        </table>
+        <div style="margin-top: 40px;">
+            <div class="signature-box">
+                <p>Firma mittente</p>
+            </div>
         </div>
-    </div>
-
-</body>
+    </body>
 </html>

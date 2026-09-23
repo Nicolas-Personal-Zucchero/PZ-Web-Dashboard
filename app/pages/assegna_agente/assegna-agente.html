@@ -1,0 +1,465 @@
+{% extends "layout_sidebar.html" %}
+{% block title %}Assegna agente{% endblock %}
+{% block content %}
+    <div class="p-4">
+        <div class="d-flex align-items-center mb-3">
+            <a href="{{ home_link }}" class="btn btn-light">
+                <i class="bi bi-arrow-left"></i> Torna indietro
+            </a>
+            <h1 class="h3 mb-0 ms-3">Assegnamento contatto ad agente</h1>
+        </div>
+        <div class="mb-3">
+            <textarea class="form-control" rows="5" readonly>
+Dopo aver cliccato sul pulsante:
+- Viene inviata una mail al contatto con il ringraziamento e le informazioni dell'agente.
+- Viene inviata una mail all'agente con le info del contatto.
+- Il contatto viene associato all'agente su HubSpot.
+- Viene creata una trattativa per l'agente.</textarea>
+        </div>
+        <form method="post">
+            <div class="mb-3">
+                <label for="selectMittente" class="form-label">Mittente</label>
+                <select class="form-select" name="nome_mittente" id="selectMittente" required>
+                    <option value="" disabled selected>Seleziona il mittente</option>
+                    <option>Arianna Bazzocchi - Ufficio Grafico</option>
+                    <option>Arianna Riceputi - Ufficio Commerciale</option>
+                    <option>Barbara Cinarelli - Ufficio Amministrativo</option>
+                    <option>Denis Severini - Direzione</option>
+                    <option>Elena Sama - Ufficio Commerciale</option>
+                    <option>Elisa Cappa - Ufficio Amministrativo</option>
+                    <option>Erika Lionetti - Ufficio Ordini</option>
+                    <option>Marco Paolini - Ufficio Grafico</option>
+                    <option>Marilena Barile - Ufficio Ordini</option>
+                    <option>Mauro Amadori - Direzione</option>
+                    <option>Nazzareno Balducci - Ufficio Amministrativo</option>
+                    <option>Nicolas Amadori</option>
+                    <option>Sabrina Cappa - Ufficio Ordini</option>
+                    <option>Silvia Cinarelli - Ufficio Commerciale</option>
+                    <option>Staff Personal Zucchero</option>
+                </select>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">Agente</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <select class="form-select" name="id_agente" id="selectAgente" required>
+                                    <option value="" disabled selected>Selezionare un agente</option>
+                                    {% for a in agents %}
+                                        <option value="{{ a.id }}">{{ a.lastname or '' }} {{ a.firstname or '' }} ({{ a.email }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <textarea class="form-control"
+                                          rows="3"
+                                          name="note_agente"
+                                          id="note_agente"
+                                          placeholder="Note per l'agente"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="card" id="contactCard">
+                        <div class="card-header">Contatto</div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col col-md-6">
+                                    <label for="email" class="form-label">Email del cliente*</label>
+                                    <input type="email" class="form-control" name="email" id="email" required>
+                                </div>
+                                <div class="col col-md-4">
+                                    <label for="fonte" class="form-label">Fonte*</label>
+                                    <select class="form-select" name="fonte" id="fonte" required>
+                                        <option value="" disabled selected></option>
+                                        {% for source in contact_source_options %}
+                                            <option value="{{ source.value }}">{{ source.label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col col-md-2">
+                                    <label for="lingua_email" class="form-label">Lingua cliente*</label>
+                                    <select class="form-select"
+                                            id="lingua_email"
+                                            name="lingua_email"
+                                            id="selectLingua"
+                                            required>
+                                        <option value="ITA" selected>Italiano</option>
+                                        <option value="ENG">Inglese</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label for="nome_cliente" class="form-label">Nome cliente</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           name="nome_cliente"
+                                           id="nome_cliente">
+                                </div>
+                                <div class="col">
+                                    <label for="cognome_cliente" class="form-label">Cognome cliente</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           name="cognome_cliente"
+                                           id="cognome_cliente">
+                                </div>
+                                <div class="col">
+                                    <label for="telefono" class="form-label">Telefono</label>
+                                    <input type="tel" class="form-control" name="telefono" id="telefono">
+                                </div>
+                            </div>
+                            <hr class="my-4">
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label for="societa" class="form-label">Nome società</label>
+                                    <input type="text" class="form-control" name="societa" id="societa">
+                                </div>
+                                <div class="col">
+                                    <label for="partita_iva" class="form-label">Partita IVA</label>
+                                    <input type="text" class="form-control" name="partita_iva" id="partita_iva">
+                                </div>
+                                <div class="col">
+                                    <label for="categoria_mexal" class="form-label">Categoria</label>
+                                    <select class="form-select" name="categoria_mexal" id="categoria_mexal">
+                                        <option value="" disabled selected></option>
+                                        <option value="BAR / PAST">Bar / Pasticceria</option>
+                                        <option value="RIST / PIZZ">Ristorante / Pizzeria</option>
+                                        <option value="FAST FOOD">Fast Food</option>
+                                        <option value="GROSS CATERING">Catering</option>
+                                        <option value="HOTEL">Hotel</option>
+                                        <option value="GELATERIA">Gelateria</option>
+                                        <option value="SALE DA GIOCO">Sala da gioco</option>
+                                        <option value="AVIS-AIDO-FRATRES">Avis / Aido / Fratres</option>
+                                        <option value="ASSOC. SPORTIVE">Associazioni sportive</option>
+                                        <option value="ASSOCIAZIONI VARIE">Associazioni varie</option>
+                                        <option value="COLLEZIONISTA">Collezionista</option>
+                                        <option value="PRIVATO">Privato</option>
+                                        <option value="ALTRO B2C">ALTRO</option>
+                                        <option value="ALTRO - HORECA">Altro HORECA</option>
+                                        <option value="GROSS HORECA">Rivendita HORECA</option>
+                                        <option value="GROSS TORREFAZIONE">Torrefazione</option>
+                                        <option value="RIVENDITA CAFFE">Rivendita caffè</option>
+                                        <option value="ALTRO B2B">Rivendita altro</option>
+                                        <option value="AG.PUBBLICITARIA">Agenzia Pubblicitaria</option>
+                                        <option value="WEDDING PLANNER">Wedding planner</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-5">
+                                    <label for="citta" class="form-label">Città</label>
+                                    <input type="text" class="form-control" name="citta" id="citta">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="provincia" class="form-label">Provincia</label>
+                                    <input type="text" class="form-control" name="provincia" id="provincia">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="prodotto_di_interesse" class="form-label">Prodotto di interesse</label>
+                                    <select class="form-select"
+                                            name="prodotto_di_interesse"
+                                            id="prodotto_di_interesse">
+                                        <option value="" disabled selected></option>
+                                        <option value="Zucchero">Zucchero</option>
+                                        <option value="Dolcificante">Dolcificante</option>
+                                        <option value="Zucchero e Dolcificante">Zucchero e Dolcificante</option>
+                                        <option value="Tovagliette">Tovagliette</option>
+                                        <option value="Buste portaposate">Buste portaposate</option>
+                                        <option value="Salviette profumate">Salviette profumate</option>
+                                        <option value="Caramelle">Caramelle</option>
+                                        <option value="Bicchieri">Bicchieri</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="logo" class="form-label">Anteprima Logo</label>
+                                <div class="d-inline-block">
+                                    <img alt="Logo Aziendale" style="max-height: 150px; max-width: 200px;" id="logo">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="informazioni_logo" class="form-label">Informazioni Logo</label>
+                                <textarea class="form-control" rows="3" name="informazioni_logo" id="informazioni_logo"
+                                placeholder="Informazioni logo"></textarea>
+                            </div>
+                        </div> -->
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <div class="d-inline-block mt-2">
+                                        <img alt="Logo Aziendale"
+                                             style="max-height: 150px;
+                                                    max-width: 100%"
+                                             id="logo">
+                                    </div>
+                                </div>
+                                <div class="col-md-9">
+                                    <label for="informazioni_logo" class="form-label">Informazioni Logo</label>
+                                    <textarea class="form-control"
+                                              rows="4"
+                                              name="informazioni_logo"
+                                              id="informazioni_logo"
+                                              readonly></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mb-3">Assegna contatto all'agente</button>
+        </form>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+        <hr>
+        {% if agents %}
+            <div style="max-height: 500px; overflow-y: auto;">
+                <ul class="list-group styled-table" id="listaAgenti">
+                    <li class="list-group-item static-header">
+                        <div class="row">
+                            <div class="col-md-2">Agente</div>
+                            <div class="col-md-3">Email</div>
+                            <div class="col-md-2">Telefono</div>
+                            <div class="col-md-2">Cellulare</div>
+                            <div class="col-md-1"></div>
+                            <div class="col-md-1 text-end"></div>
+                            <div class="col-md-1 text-end"></div>
+                        </div>
+                    </li>
+                    {% for a in agents %}
+                        <li class="list-group-item">
+                            <div class="row">
+                                <div class="col-md-2"><strong>{{ a.lastname or '' }} {{ a.firstname or '' }}</strong></div>
+                                <div class="col-md-3">{{ a.email }}</div>
+                                <div class="col-md-2">{{ a.phone or '' }}</div>
+                                <div class="col-md-2">{{ a.mobilephone or '' }}</div>
+                                <div class="col-md-1"></div>
+                                <div class="col-md-1 text-end">
+                                    <button type="button"
+                                            class="btn btn-sm btn-info"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#contactsModal"
+                                            data-agent="{{ a.id }}"
+                                            data-contacts='{{ a.associated_contacts|tojson }}'
+                                            {% if a.associated_contacts|length==0 %}disabled{% endif %}>
+                                        {{ a.associated_contacts|length }} contatti
+                                    </button>
+                                </div>
+                                <div class="col-md-1 text-end">
+                                    <a href="https://app-eu1.hubspot.com/contacts/25378285/record/0-1/{{ a.id }}"
+                                       target="_blank"
+                                       class="btn btn-sm"
+                                       style="background-color: #FF7A59;
+                                              border-color: #FF7A59;
+                                              color: white"
+                                       title="Apri in HubSpot">
+                                        <i class="bi bi-box-arrow-up-right"></i> HubSpot
+                                    </a>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+    <!-- Modale per i contatti -->
+    <div class="modal fade"
+         id="contactsModal"
+         tabindex="-1"
+         aria-labelledby="contactsModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="contactsModalLabel">Contatti associati</h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Chiudi"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group styled-table">
+                        <li class="list-group-item static-header">
+                            <div class="row">
+                                <div class="col-md-3">Nome</div>
+                                <div class="col-md-3">Email</div>
+                                <div class="col-md-3">Operatore</div>
+                                <div class="col-md-2">Assegnato il</div>
+                                <div class="col-md-1"></div>
+                            </div>
+                        </li>
+                        <div id="contactsList"></div>
+                    </ul>
+                </div>
+                <!-- <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+      </div> -->
+            </div>
+        </div>
+    </div>
+    <style>
+    .form-control.filled,
+    .form-select.filled {
+        border-color: #198754;
+        /* verde per evidenziare */
+        background-color: #e6f4ea;
+        /* leggero sfondo verde */
+    }
+
+    /* Campi obbligatori vuoti */
+    .form-control:required:invalid,
+    .form-select:required:invalid {
+        border-color: #dc3545 !important;
+        /* rosso bootstrap */
+        background-color: #fff5f5;
+    }
+    </style>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const contactsModal = document.getElementById('contactsModal');
+        contactsModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget; // bottone cliccato
+            const agentName = button.closest('li').querySelector('strong').innerText;
+            const contacts = JSON.parse(button.getAttribute('data-contacts'));
+            const modalTitle = contactsModal.querySelector('.modal-title');
+            const contactsList = contactsModal.querySelector('#contactsList');
+
+            modalTitle.textContent = `Contatti associati a ${agentName}`;
+            contactsList.innerHTML = '';
+
+            if (contacts.length === 0) {
+                contactsList.innerHTML = '<li class="list-group-item">Nessun contatto associato</li>';
+            } else {
+                contacts.forEach(c => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    li.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-3"><strong>${c.firstname || ''} ${c.lastname || ''}</strong></div>
+                            <div class="col-md-3">${c.email || 'N/A'}</div>
+                            <div class="col-md-3">${c.operatore || ''}</div>
+                            <div class="col-md-2">${c.assigned_at || ''}</div>
+                            <div class="col-md-1">
+                                <a href="https://app-eu1.hubspot.com/contacts/25378285/record/0-1/${c.id || ''}"
+                                target="_blank"
+                                class="btn btn-sm"
+                                style="background-color: #FF7A59; border-color: #FF7A59; color: white;"
+                                title="Apri in HubSpot">
+                                    <i class="bi bi-box-arrow-up-right"></i> HubSpot
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    contactsList.appendChild(li);
+                });
+            }
+        });
+    });
+    </script>
+    <script>
+    const selectMittente = document.getElementById("selectMittente");
+    const savedMittente = localStorage.getItem("mittente");
+    const emailInput = document.getElementById('email');
+
+    if (savedMittente) {
+        selectMittente.value = savedMittente;
+    }
+
+    // Salva valore ogni volta che cambia
+    selectMittente.addEventListener("change", function () {
+        localStorage.setItem("mittente", selectMittente.value);
+    });
+
+    // Funzione per evidenziare i campi valorizzati
+    function highlightFilledFields() {
+        document.querySelectorAll('#contactCard .form-control, #contactCard .form-select').forEach(el => {
+            if (el.value && el.value.trim() !== "") {
+                el.classList.add('filled');
+            } else {
+                el.classList.remove('filled');
+            }
+        });
+    }
+
+    // Esegui al caricamento pagina
+    highlightFilledFields();
+
+    // Aggiorna dinamicamente quando l'utente digita o seleziona
+    document.querySelectorAll('#contactCard .form-control, #contactCard .form-select').forEach(el => {
+        el.addEventListener('input', highlightFilledFields);
+        el.addEventListener('change', highlightFilledFields);
+    });
+
+    // Funzione debounce
+    function debounce(fn, delay) {
+        let timeoutId;
+        return function (...args) {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => fn.apply(this, args), delay);
+        };
+    }
+
+    // Funzione da eseguire al termine del debounce
+    function fetchContact() {
+        const email = emailInput.value.trim();
+
+        fetch(`/assegna-agente/get_contact?email=${encodeURIComponent(email)}`)
+            .then(response => response.json())
+            .then(data => {
+                const contactFields = {
+                    nome_cliente: data.contact?.firstname,
+                    cognome_cliente: data.contact?.lastname,
+                    telefono: data.contact?.phone,
+                    fonte: data.contact?.fonte
+                };
+
+                const companyFields = {
+                    societa: data.company?.name,
+                    partita_iva: data.company?.partita_iva,
+                    categoria_mexal: data.company?.categoria_mexal,
+                    citta: data.company?.city,
+                    provincia: data.company?.provincia,
+                    prodotto_di_interesse: data.company?.prodotto_di_interesse,
+                    logo: data.company?.logo,
+                    informazioni_logo: data.company?.informazioni_logo
+                };
+
+                const updateFields = (fields) => {
+                    for (const [id, value] of Object.entries(fields)) {
+                        const el = document.getElementById(id);
+                        if (!el) continue;
+                        // Correzione: Gestisci l'elemento immagine con id="logo"
+                        if (id === "logo") {
+                            el.src = value || "";
+                            el.style.display = (value && value.trim() !== "") ? 'inline-block' : 'none'; // Opzionale: nascondi se non c'è URL
+                        }
+                        else {
+                            el.value = value || "";
+                        }
+                        el.dispatchEvent(new Event('input'));
+                        el.dispatchEvent(new Event('change'));
+                    }
+                };
+
+                updateFields(contactFields);
+                updateFields(companyFields);
+            })
+            .catch(err => console.error(err));
+    }
+
+    // Applica debounce alla funzione di fetch
+    const debouncedFetch = debounce(fetchContact, 300); // 500ms di ritardo
+
+    // Trigger su input invece che su blur
+    emailInput.addEventListener('input', debouncedFetch);
+
+    </script>
+{% endblock %}

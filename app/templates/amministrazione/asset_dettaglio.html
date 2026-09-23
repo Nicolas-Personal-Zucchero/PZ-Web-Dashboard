@@ -1,364 +1,378 @@
 {% extends "layout_sidebar.html" %}
 {% block title %}Dettaglio Asset{% endblock %}
-
 {% block content %}
-<div class="container mt-4">
-
-    <a href="/amministrazione/asset" class="btn btn-outline-secondary mb-3">← Torna agli asset</a>
-
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
-        <h2 class="mb-0">{{ asset.nome }}</h2>
-        <div class="d-flex gap-2">
-            <a href="/amministrazione/asset/{{ asset.id }}/label" class="btn btn-outline-info">
-                <i class="bi bi-qr-code-scan"></i> Genera Etichetta
-            </a>
-            <a href="/amministrazione/asset/{{ asset.id }}/pdf" target="_blank" class="btn btn-outline-info">
-                <i class="bi bi-file-pdf"></i> Genera PDF
-            </a>
-            
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalIntervento">
-                + Registra Intervento
-            </button>
-            <form method="POST" action="/amministrazione/asset/elimina"
-                onsubmit="return confirm('Sei sicuro di voler eliminare questo asset?');" class="mb-0">
-                <input type="hidden" name="asset_id" value="{{ asset.id }}">
-                <button type="submit" class="btn btn-outline-danger">Elimina asset</button>
-            </form>
-        </div>
-    </div>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-    
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="card-title mb-0">Informazioni generali</h5>
-                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalModificaAsset">
-                    Modifica asset
-                </button>
-            </div>
-            <div class="row g-3">
-                <div class="col-md-2">
-                    <p class="mb-1"><strong>Tipologia:</strong></p>
-                    <p class="mb-0">{{ asset.tipologia }}</p>
-                </div>
-                <div class="col-md-2">
-                    <p class="mb-1"><strong>Sede:</strong></p>
-                    <p class="mb-0">{{ asset.sede }}</p>
-                </div>
-                <div class="col-md-2">
-                    <p class="mb-1"><strong>Posizione:</strong></p>
-                    <p class="mb-0">{{ asset.posizione }}</p>
-                </div>
-                <div class="col-md-3">
-                    <p class="mb-1"><strong>Intervallo Controllo Periodico:</strong></p>
-                    <p class="mb-0">{{ asset.intervallo_controllo_periodico }} giorni</p>
-                </div>
-                <div class="col-md-3">
-                    <p class="mb-1"><strong>Intervallo Pulizia:</strong></p>
-                    {% if asset.intervallo_pulizia is not none %}
-                        <p class="mb-0">{{ asset.intervallo_pulizia }} giorni</p>
-                    {% else %}
-                        <p class="mb-0">Non impostato</p>
-                    {% endif %}
-                </div>
-            </div>
-
-            <hr>
-
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <p class="mb-1"><strong>Stato Controllo Periodico</strong></p>
-                    {% if giorni_dal_controllo_periodico is none %}
-                        <p class="text-muted small mb-0">Nessun controllo periodico registrato</p>
-                    {% else %}
-                        {% if giorni_ritardo_controllo_periodico %}
-                            <p class="text-danger fw-semibold mb-0">
-                                Ultima: {{ giorni_dal_controllo_periodico }} giorni fa (RITARDO di {{ giorni_ritardo_controllo_periodico }} giorni)
-                            </p>
-                        {% else %}
-                            <p class="text-muted small mb-0">Ultima: {{ giorni_dal_controllo_periodico }} giorni fa</p>
-                        {% endif %}
-                    {% endif %}
-                </div>
-                <div class="col-md-6">
-                    <p class="mb-1"><strong>Stato Pulizia</strong></p>
-                    {% if asset.intervallo_pulizia is none %}
-                        <p class="text-muted small mb-0">Intervallo pulizia non impostato</p>
-                    {% elif giorni_dalla_pulizia is none %}
-                        <p class="text-muted small mb-0">Nessuna pulizia registrata</p>
-                    {% else %}
-                        {% if giorni_ritardo_pulizia %}
-                            <p class="text-danger fw-semibold mb-0">
-                                Ultima: {{ giorni_dalla_pulizia }} giorni fa (RITARDO di {{ giorni_ritardo_pulizia }} giorni)
-                            </p>
-                        {% else %}
-                            <p class="text-muted small mb-0">Ultima: {{ giorni_dalla_pulizia }} giorni fa</p>
-                        {% endif %}
-                    {% endif %}
-                </div>
+    <div class="container mt-4">
+        <a href="/amministrazione/asset" class="btn btn-outline-secondary mb-3">← Torna agli asset</a>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+            <h2 class="mb-0">{{ asset.nome }}</h2>
+            <div class="d-flex gap-2">
+                <a href="/amministrazione/asset/{{ asset.id }}/label"
+                   class="btn btn-outline-info">
+                    <i class="bi bi-qr-code-scan"></i> Genera Etichetta
+                </a>
+                <a href="/amministrazione/asset/{{ asset.id }}/pdf"
+                   target="_blank"
+                   class="btn btn-outline-info">
+                    <i class="bi bi-file-pdf"></i> Genera PDF
+                </a>
+                <button class="btn btn-primary"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalIntervento">+ Registra Intervento</button>
+                <form method="post"
+                      action="/amministrazione/asset/elimina"
+                      onsubmit="return confirm('Sei sicuro di voler eliminare questo asset?');"
+                      class="mb-0">
+                    <input type="hidden" name="asset_id" value="{{ asset.id }}">
+                    <button type="submit" class="btn btn-outline-danger">Elimina asset</button>
+                </form>
             </div>
         </div>
-    </div>
-
-    <div class="row g-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="mb-0">Interventi</h4>
-                <div class="w-25">
-                    <select class="form-select" id="filtroTipoIntervento" onchange="filtraInterventi()">
-                        <option value="tutti">Tutti i tipi</option>
-                        {% for key, value in tipologie_interventi.items() %}
-                            <option value="{{ key }}">{{ value }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-
-            {% if interventi %}
-            <div style="max-height: 500px; overflow-y: auto;" class="border rounded">
-                <ul class="list-group list-group-flush styled-table" id="listaInterventi">
-                    <li class="list-group-item static-header sticky-top bg-light">
-                        <div class="row fw-bold">
-                            <div class="col-md-1">Data</div>
-                            <div class="col-md-2">Tipo</div>
-                            <div class="col-md-2">Operatore</div>
-                            <div class="col-md-2">Operatore Esterno</div>
-                            <div class="col-md-2">Note</div>
-                            <div class="col-md-1">Allegati</div>
-                            <div class="col-md-2 text-end">Azioni</div>
-                        </div>
-                    </li>
-
-                    {% for i in interventi %}
-                    <li class="list-group-item intervento-item" data-tipo="{{ i.tipo }}">
-                        <div class="row align-items-center">
-                            <div class="col-md-1">{{ i.data }}</div>
-                            <div class="col-md-2 text-capitalize">{{ i.tipo | capitalize | replace('_', ' ') }}</div>
-                            <div class="col-md-2">{{ i.operatore }}</div>
-                            <div class="col-md-2">{{ i.operatore_esterno if i.operatore_esterno else '' }}</div>
-                            <div class="col-md-2" title="{{ i.note }}">{{ i.note }}</div>
-                            <div class="col-md-1">
-                                {% if i.allegati %}
-                                    {% for a in i.allegati %}
-                                    <a href="/amministrazione/asset/{{ asset.id }}/intervento/{{ i.id }}/allegato/{{ a.path }}"
-                                        class="btn btn-outline-primary btn-sm d-inline-block text-truncate w-100 text-start" 
-                                        title="{{ a.original_filename | default('Scarica allegato') }}">
-                                        <i class="bi bi-download me-1"></i>
-                                        {{ a.original_filename | default('Allegato') }}
-                                    </a>
-                                    {% endfor %}
-                                {% endif %}
-                            </div>
-                            <div class="col-md-2 text-end">
-                                <button type="button" class="btn btn-sm btn-outline-secondary btn-modifica-intervento" 
-                                        data-id="{{ i.id }}" 
-                                        data-tipo="{{ i.tipo }}" 
-                                        data-data="{{ i.data }}" 
-                                        data-operatore="{{ i.operatore }}"
-                                        data-operatore_esterno="{{ i.operatore_esterno }}" 
-                                        data-note="{{ i.note }}">
-                                    Modifica
-                                </button>
-                                <form method="POST" action="/amministrazione/asset/{{ asset.id }}/intervento/{{ i.id }}/delete" class="d-inline" onsubmit="return confirm('Procedere con l\'eliminazione definitiva di questo intervento?');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        Elimina
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% else %}
-            <p class="text-muted">Nessun intervento registrato.</p>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+                {% endfor %}
             {% endif %}
+        {% endwith %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Informazioni generali</h5>
+                    <button class="btn btn-sm btn-outline-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalModificaAsset">Modifica asset</button>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <p class="mb-1"><strong>Tipologia:</strong></p>
+                        <p class="mb-0">{{ asset.tipologia }}</p>
+                    </div>
+                    <div class="col-md-2">
+                        <p class="mb-1"><strong>Sede:</strong></p>
+                        <p class="mb-0">{{ asset.sede }}</p>
+                    </div>
+                    <div class="col-md-2">
+                        <p class="mb-1"><strong>Posizione:</strong></p>
+                        <p class="mb-0">{{ asset.posizione }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <p class="mb-1"><strong>Intervallo Controllo Periodico:</strong></p>
+                        <p class="mb-0">{{ asset.intervallo_controllo_periodico }} giorni</p>
+                    </div>
+                    <div class="col-md-3">
+                        <p class="mb-1"><strong>Intervallo Pulizia:</strong></p>
+                        {% if asset.intervallo_pulizia is not none %}
+                            <p class="mb-0">{{ asset.intervallo_pulizia }} giorni</p>
+                        {% else %}
+                            <p class="mb-0">Non impostato</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <hr>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Stato Controllo Periodico</strong></p>
+                        {% if giorni_dal_controllo_periodico is none %}
+                            <p class="text-muted small mb-0">Nessun controllo periodico registrato</p>
+                        {% else %}
+                            {% if giorni_ritardo_controllo_periodico %}
+                                <p class="text-danger fw-semibold mb-0">
+                                    Ultima: {{ giorni_dal_controllo_periodico }} giorni fa (RITARDO di {{ giorni_ritardo_controllo_periodico }} giorni)
+                                </p>
+                            {% else %}
+                                <p class="text-muted small mb-0">Ultima: {{ giorni_dal_controllo_periodico }} giorni fa</p>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Stato Pulizia</strong></p>
+                        {% if asset.intervallo_pulizia is none %}
+                            <p class="text-muted small mb-0">Intervallo pulizia non impostato</p>
+                        {% elif giorni_dalla_pulizia is none %}
+                            <p class="text-muted small mb-0">Nessuna pulizia registrata</p>
+                        {% else %}
+                            {% if giorni_ritardo_pulizia %}
+                                <p class="text-danger fw-semibold mb-0">
+                                    Ultima: {{ giorni_dalla_pulizia }} giorni fa (RITARDO di {{ giorni_ritardo_pulizia }} giorni)
+                                </p>
+                            {% else %}
+                                <p class="text-muted small mb-0">Ultima: {{ giorni_dalla_pulizia }} giorni fa</p>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-
-<!-- Modal Modifica Asset -->
-<div class="modal fade" id="modalModificaAsset" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <form method="POST" action="/amministrazione/asset/{{ asset.id }}/update">
-                <div class="modal-header">
-                    <h5 class="modal-title">Modifica Asset</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Nome</label>
-                            <input type="text" class="form-control" name="nome" value="{{ asset.nome }}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Modello</label>
-                            <input type="text" class="form-control" name="modello" value="{{ asset.modello }}" required>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Tipologia</label>
-                            <select class="form-select" name="tipologia" required>
-                                {% for t in tipologie_asset %}
-                                    <option value="{{ t }}" {% if asset.tipologia == t %}selected{% endif %}>{{ t }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Sede</label>
-                            <select class="form-select" name="sede" required>
-                                {% for key, value in sedi.items() %}
-                                    <option value="{{ key }} - {{ value }}" {% if asset.sede == key ~ ' - ' ~ value %}selected{% endif %}>{{ key }} - {{ value }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Posizione</label>
-                            <input type="text" class="form-control" name="posizione" value="{{ asset.posizione }}">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Intervallo controllo periodico (giorni)</label>
-                            <input type="number" class="form-control" name="intervallo_controllo_periodico" value="{{ asset.intervallo_controllo_periodico }}" required min="0">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Intervallo Pulizia (giorni)</label>
-                            <input type="number" class="form-control" name="intervallo_pulizia" value="{{ asset.intervallo_pulizia }}" min="0">
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                    <button type="submit" class="btn btn-primary">Salva modifiche</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Aggiungi Intervento -->
-<div class="modal fade" id="modalIntervento" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form method="POST" action="/amministrazione/asset/{{ asset.id }}/add_intervento" enctype="multipart/form-data">
-                <div class="modal-header">
-                    <h5 class="modal-title">Registra Intervento</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-
-                <div class="modal-body">
-
-                    <div class="mb-3">
-                        <label class="form-label">Tipo Intervento</label>
-                        <select class="form-select" name="tipo" required>
-                            <option value="" selected></option>
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">Interventi</h4>
+                    <div class="w-25">
+                        <select class="form-select"
+                                id="filtroTipoIntervento"
+                                onchange="filtraInterventi()">
+                            <option value="tutti">Tutti i tipi</option>
                             {% for key, value in tipologie_interventi.items() %}
                                 <option value="{{ key }}">{{ value }}</option>
                             {% endfor %}
                         </select>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Data</label>
-                        <input type="date" class="form-control" name="data" id="data"
-                            value="{{ datetime.now().strftime('%Y-%m-%d') }}" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Operatore</label>
-                        <select class="form-select" name="operatore" required>
-                            <option value="" selected></option>
-                            {% for operatore in operatori %}
-                                <option value="{{ operatore }}">{{ operatore }}</option>
+                </div>
+                {% if interventi %}
+                    <div style="max-height: 500px; overflow-y: auto;" class="border rounded">
+                        <ul class="list-group list-group-flush styled-table" id="listaInterventi">
+                            <li class="list-group-item static-header sticky-top bg-light">
+                                <div class="row fw-bold">
+                                    <div class="col-md-1">Data</div>
+                                    <div class="col-md-2">Tipo</div>
+                                    <div class="col-md-2">Operatore</div>
+                                    <div class="col-md-2">Operatore Esterno</div>
+                                    <div class="col-md-2">Note</div>
+                                    <div class="col-md-1">Allegati</div>
+                                    <div class="col-md-2 text-end">Azioni</div>
+                                </div>
+                            </li>
+                            {% for i in interventi %}
+                                <li class="list-group-item intervento-item" data-tipo="{{ i.tipo }}">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-1">{{ i.data }}</div>
+                                        <div class="col-md-2 text-capitalize">{{ i.tipo | capitalize | replace('_', ' ') }}</div>
+                                        <div class="col-md-2">{{ i.operatore }}</div>
+                                        <div class="col-md-2">{{ i.operatore_esterno if i.operatore_esterno else '' }}</div>
+                                        <div class="col-md-2" title="{{ i.note }}">{{ i.note }}</div>
+                                        <div class="col-md-1">
+                                            {% if i.allegati %}
+                                                {% for a in i.allegati %}
+                                                    <a href="/amministrazione/asset/{{ asset.id }}/intervento/{{ i.id }}/allegato/{{ a.path }}"
+                                                       class="btn btn-outline-primary btn-sm d-inline-block text-truncate w-100 text-start"
+                                                       title="{{ a.original_filename | default("Scarica allegato") }}">
+                                                        <i class="bi bi-download me-1"></i>
+                                                        {{ a.original_filename | default("Allegato") }}
+                                                    </a>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-2 text-end">
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-secondary btn-modifica-intervento"
+                                                    data-id="{{ i.id }}"
+                                                    data-tipo="{{ i.tipo }}"
+                                                    data-data="{{ i.data }}"
+                                                    data-operatore="{{ i.operatore }}"
+                                                    data-operatore_esterno="{{ i.operatore_esterno }}"
+                                                    data-note="{{ i.note }}">Modifica</button>
+                                            <form method="post"
+                                                  action="/amministrazione/asset/{{ asset.id }}/intervento/{{ i.id }}/delete"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('Procedere con l\'eliminazione definitiva di questo intervento?');">
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-outline-danger">Elimina</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </li>
                             {% endfor %}
-                        </select>
+                        </ul>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Operatore Esterno</label>
-                        <input type="text" class="form-control" name="operatore_esterno">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Note</label>
-                        <textarea class="form-control" name="note"></textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Allegati</label>
-                        <input type="file" class="form-control" name="allegati" multiple>
-                    </div>
-
-                </div>
-
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Salva</button>
-                </div>
-
-            </form>
+                {% else %}
+                    <p class="text-muted">Nessun intervento registrato.</p>
+                {% endif %}
+            </div>
         </div>
     </div>
-</div>
-
-<!-- Modal Modifica Intervento -->
-<div class="modal fade" id="modalModificaIntervento" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="formModificaIntervento" method="POST" action="">
-                <div class="modal-header">
-                    <h5 class="modal-title">Modifica Intervento</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Tipo Intervento</label>
-                        <select class="form-select" name="tipo" id="edit_tipo" required>
-                            {% for key, value in tipologie_interventi.items() %}
-                                <option value="{{ key }}">{{ value }}</option>
-                            {% endfor %}
-                        </select>
+    <!-- Modal Modifica Asset -->
+    <div class="modal fade" id="modalModificaAsset" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form method="post" action="/amministrazione/asset/{{ asset.id }}/update">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Modifica Asset</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Data</label>
-                        <input type="date" class="form-control" name="data" id="edit_data" required>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nome</label>
+                                <input type="text"
+                                       class="form-control"
+                                       name="nome"
+                                       value="{{ asset.nome }}"
+                                       required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Modello</label>
+                                <input type="text"
+                                       class="form-control"
+                                       name="modello"
+                                       value="{{ asset.modello }}"
+                                       required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Tipologia</label>
+                                <select class="form-select" name="tipologia" required>
+                                    {% for t in tipologie_asset %}
+                                        <option value="{{ t }}"
+                                                {% if asset.tipologia == t %}selected{% endif %}>{{ t }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Sede</label>
+                                <select class="form-select" name="sede" required>
+                                    {% for key, value in sedi.items() %}
+                                        <option value="{{ key }} - {{ value }}"
+                                                {% if asset.sede == key ~ ' - ' ~ value %}selected{% endif %}>{{ key }} - {{ value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Posizione</label>
+                                <input type="text"
+                                       class="form-control"
+                                       name="posizione"
+                                       value="{{ asset.posizione }}">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Intervallo controllo periodico (giorni)</label>
+                                <input type="number"
+                                       class="form-control"
+                                       name="intervallo_controllo_periodico"
+                                       value="{{ asset.intervallo_controllo_periodico }}"
+                                       required
+                                       min="0">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Intervallo Pulizia (giorni)</label>
+                                <input type="number"
+                                       class="form-control"
+                                       name="intervallo_pulizia"
+                                       value="{{ asset.intervallo_pulizia }}"
+                                       min="0">
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Operatore</label>
-                        <select class="form-select" name="operatore" id="edit_operatore" required>
-                            <option value="" disabled selected>Seleziona un operatore</option>
-                            {% for operatore in operatori %}
-                                <option value="{{ operatore }}">{{ operatore }}</option>
-                            {% endfor %}
-                        </select>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                        <button type="submit" class="btn btn-primary">Salva modifiche</button>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Operatore Esterno</label>
-                        <input type="text" class="form-control" name="operatore_esterno" id="edit_operatore_esterno">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Note</label>
-                        <textarea class="form-control" name="note" id="edit_note"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Salva modifiche</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
-</div>
-
-<script>
+    <!-- Modal Aggiungi Intervento -->
+    <div class="modal fade" id="modalIntervento" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post"
+                      action="/amministrazione/asset/{{ asset.id }}/add_intervento"
+                      enctype="multipart/form-data">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Registra Intervento</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Tipo Intervento</label>
+                            <select class="form-select" name="tipo" required>
+                                <option value="" selected></option>
+                                {% for key, value in tipologie_interventi.items() %}
+                                    <option value="{{ key }}">{{ value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Data</label>
+                            <input type="date"
+                                   class="form-control"
+                                   name="data"
+                                   id="data"
+                                   value="{{ datetime.now().strftime('%Y-%m-%d') }}"
+                                   required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Operatore</label>
+                            <select class="form-select" name="operatore" required>
+                                <option value="" selected></option>
+                                {% for operatore in operatori %}
+                                    <option value="{{ operatore }}">{{ operatore }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Operatore Esterno</label>
+                            <input type="text" class="form-control" name="operatore_esterno">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Note</label>
+                            <textarea class="form-control" name="note"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Allegati</label>
+                            <input type="file" class="form-control" name="allegati" multiple>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Salva</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Modal Modifica Intervento -->
+    <div class="modal fade" id="modalModificaIntervento" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="formModificaIntervento" method="post" action="">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Modifica Intervento</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Tipo Intervento</label>
+                            <select class="form-select" name="tipo" id="edit_tipo" required>
+                                {% for key, value in tipologie_interventi.items() %}
+                                    <option value="{{ key }}">{{ value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Data</label>
+                            <input type="date" class="form-control" name="data" id="edit_data" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Operatore</label>
+                            <select class="form-select" name="operatore" id="edit_operatore" required>
+                                <option value="" disabled selected>Seleziona un operatore</option>
+                                {% for operatore in operatori %}
+                                    <option value="{{ operatore }}">{{ operatore }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Operatore Esterno</label>
+                            <input type="text"
+                                   class="form-control"
+                                   name="operatore_esterno"
+                                   id="edit_operatore_esterno">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Note</label>
+                            <textarea class="form-control" name="note" id="edit_note"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Salva modifiche</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
 function filtraInterventi() {
     const filter = document.getElementById('filtroTipoIntervento').value;
     const items = document.querySelectorAll('.intervento-item');
@@ -396,6 +410,5 @@ document.addEventListener('click', function(event) {
     const modal = new bootstrap.Modal(document.getElementById('modalModificaIntervento'));
     modal.show();
 });
-</script>
-
+    </script>
 {% endblock %}

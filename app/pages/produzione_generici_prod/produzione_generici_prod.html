@@ -1,9 +1,7 @@
 {% extends "layout_fluid.html" %}
-
 {% block title %}Produzione{% endblock %}
-
 {% block content %}
-<style>
+    <style>
     .production-page {
         /* Rimosso max-width per consentire l'espansione della griglia a colonne */
         margin: 0 auto;
@@ -43,164 +41,158 @@
         max-height: 600px; /* Altezza aumentata per sfruttare lo spazio verticale nella colonna dedicata */
         overflow-y: auto;
     }
-</style>
-
-<div class="container-fluid py-4 production-page">
-    <div class="d-flex align-items-center mb-1">
-        <h1 class="h3 mb-0">Produzione</h1>
-    </div>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <div id="flashOverlay" 
-         class="position-fixed top-0 start-0 w-100 vh-100 d-flex align-items-center justify-content-center bg-white bg-opacity-75" 
-         style="z-index: 1050; backdrop-filter: blur(4px); cursor: pointer; animation: fadeIn 0.3s ease-out;" 
-         onclick="this.remove()">
-        <div class="text-center px-4">
-            {% for category, message in messages %}
-            {% if category == 'error' %}
-            <div class="mb-4 text-danger">
-                <i class="bi bi-exclamation-triangle-fill display-1 d-block mb-3"></i>
-                <div class="display-6 fw-bold">{{ message }}</div>
-            </div>
-            {% endif %}
-            {% endfor %}
-            <div class="text-muted fs-5 mt-4">Clicca ovunque per chiudere</div>
+    </style>
+    <div class="container-fluid py-4 production-page">
+        <div class="d-flex align-items-center mb-1">
+            <h1 class="h3 mb-0">Produzione</h1>
         </div>
-    </div>
-    {% endif %}
-    {% endwith %}
-
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="card production-card p-4 mb-2">
-                <label for="themeSelect" class="form-label">Tema</label>
-
-                {% if generici %}
-                    <select
-                        id="themeSelect"
-                        class="form-select theme-selector mb-1"
-                        aria-label="Seleziona tema"
-                    >
-                        <option value="">Seleziona un tema...</option>
-                        {% for generico in generici %}
-                            <option
-                                value="{{ generico.id }}"
-                                data-has-batch="{{ '1' if latest_batches.get(generico.id) else '0' }}"
-                                {{ 'selected' if selected_theme and selected_theme.id == generico.id }}
-                            >
-                                {{ generico.name }}
-                            </option>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div id="flashOverlay"
+                     class="position-fixed top-0 start-0 w-100 vh-100 d-flex align-items-center justify-content-center bg-white bg-opacity-75"
+                     style="z-index: 1050;
+                            backdrop-filter: blur(4px);
+                            cursor: pointer;
+                            animation: fadeIn 0.3s ease-out"
+                     onclick="this.remove()">
+                    <div class="text-center px-4">
+                        {% for category, message in messages %}
+                            {% if category == "error" %}
+                                <div class="mb-4 text-danger">
+                                    <i class="bi bi-exclamation-triangle-fill display-1 d-block mb-3"></i>
+                                    <div class="display-6 fw-bold">{{ message }}</div>
+                                </div>
+                            {% endif %}
                         {% endfor %}
-                    </select>
-
-                    <div id="noBatchMessage" class="small text-muted mt-2"
-                        {% if not (selected_theme and not selected_batch) %}style="display:none;"{% endif %}>
-                        Questo tema non ha ancora un lotto disponibile, contattare Denis per farlo generare.
-                    </div>
-                {% else %}
-                    <div class="text-muted">Nessun tema disponibile.</div>
-                {% endif %}
-            </div>
-
-            <div
-                id="productionFormCard"
-                class="card production-card p-4"
-                {% if not (selected_theme and selected_batch) %}style="display:none;"{% endif %}
-            >
-                <div class="mb-2 text-center">
-                    <div class="selected-theme fw-bold">
-                        {{ selected_theme.name if selected_theme else '' }}
-                        - Lotto nr. 
-                        {{ selected_batch.code if selected_batch else '' }}
+                        <div class="text-muted fs-5 mt-4">Clicca ovunque per chiudere</div>
                     </div>
                 </div>
-
-                <form
-                    method="POST"
-                    action="{{ url_for('produzione_generici_prod.crea_produzione_team') }}"
-                    class="production-form"
-                    id="productionForm"
-                >
-                    <input type="hidden" name="theme_id" value="{{ selected_theme.id if selected_theme else '' }}">
-
-                    <div class="mb-2">
-                        <label for="productionDate" class="form-label">Data</label>
-                        <input type="date" class="form-control" name="date" id="productionDate" value="{{ today }}" required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="reelBatch" class="form-label">Lotto Bobina</label>
-                        <input
-                            type="text"
-                            class="form-control"
-                            name="reel_batch"
-                            id="reelBatch"
-                            placeholder="6-2614"
-                            minlength="6"
-                            maxlength="6"
-                            pattern="\d-\d{4}"
-                            title="Inserire un lotto valido di 6 caratteri (es. 6-2614)"
-                            inputmode="numeric"
-                            autocomplete="off"
-                            required
-                        >
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="quantity" class="form-label">Quantità (Kg)</label>
-                        <input type="number" step="1" min="1" max="10000" class="form-control" name="quantity" id="quantity" inputmode="numeric" required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="operatorId" class="form-label">Operatore</label>
-                        <select class="form-select" name="operator_id" id="operatorId" required>
-                            <option value="" selected disabled>Seleziona operatore...</option>
-                            {% for employee in employees %}
-                            <option value="{{ employee.id }}">{{ employee.name }}</option>
+            {% endif %}
+        {% endwith %}
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card production-card p-4 mb-2">
+                    <label for="themeSelect" class="form-label">Tema</label>
+                    {% if generici %}
+                        <select id="themeSelect"
+                                class="form-select theme-selector mb-1"
+                                aria-label="Seleziona tema">
+                            <option value="">Seleziona un tema...</option>
+                            {% for generico in generici %}
+                                <option value="{{ generico.id }}"
+                                        data-has-batch="{{ '1' if latest_batches.get(generico.id) else '0' }}"
+                                        {{ 'selected' if selected_theme and selected_theme.id == generico.id }}>
+                                    {{ generico.name }}
+                                </option>
                             {% endfor %}
                         </select>
-                    </div>
-
-                    <button type="submit" class="btn btn-success w-100 production-start">
-                        <i class="bi bi-check2-circle me-1"></i>
-                        Registra produzione
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            {% if selected_theme and selected_batch %}
-            <div class="card production-card p-4 h-100">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2 class="h6 mb-0">Ultime produzioni</h2>
-                    <span class="badge text-bg-light">{{ productions|length }}</span>
-                </div>
-
-                <div class="last-productions">
-                    {% for production in productions|reverse %}
-                    <div class="border-bottom py-2">
-                        <div class="d-flex justify-content-between gap-3">
-                            <span>{{ production.reel_batch }}</span>
-                            <strong>{{ production.quantity }} Kg</strong>
+                        <div id="noBatchMessage"
+                             class="small text-muted mt-2"
+                             {% if not (selected_theme and not selected_batch) %}style="display:none;"{% endif %}>
+                            Questo tema non ha ancora un lotto disponibile, contattare Denis per farlo generare.
                         </div>
-                        <div class="small text-muted">
-                            {{ production.local_date.strftime("%d/%m/%Y") if production.local_date else "" }}
-                            · {{ production.operator.name if production.operator else "" }}
-                        </div>
-                    </div>
                     {% else %}
-                    <div class="text-muted">Nessuna produzione registrata per il tema.</div>
-                    {% endfor %}
+                        <div class="text-muted">Nessun tema disponibile.</div>
+                    {% endif %}
+                </div>
+                <div id="productionFormCard"
+                     class="card production-card p-4"
+                     {% if not (selected_theme and selected_batch) %}style="display:none;"{% endif %}>
+                    <div class="mb-2 text-center">
+                        <div class="selected-theme fw-bold">
+                            {{ selected_theme.name if selected_theme else '' }}
+                            - Lotto nr.
+                            {{ selected_batch.code if selected_batch else '' }}
+                        </div>
+                    </div>
+                    <form method="post"
+                          action="{{ url_for("produzione_generici_prod.crea_produzione_team") }}"
+                          class="production-form"
+                          id="productionForm">
+                        <input type="hidden"
+                               name="theme_id"
+                               value="{{ selected_theme.id if selected_theme else '' }}">
+                        <div class="mb-2">
+                            <label for="productionDate" class="form-label">Data</label>
+                            <input type="date"
+                                   class="form-control"
+                                   name="date"
+                                   id="productionDate"
+                                   value="{{ today }}"
+                                   required>
+                        </div>
+                        <div class="mb-2">
+                            <label for="reelBatch" class="form-label">Lotto Bobina</label>
+                            <input type="text"
+                                   class="form-control"
+                                   name="reel_batch"
+                                   id="reelBatch"
+                                   placeholder="6-2614"
+                                   minlength="6"
+                                   maxlength="6"
+                                   pattern="\d-\d{4}"
+                                   title="Inserire un lotto valido di 6 caratteri (es. 6-2614)"
+                                   inputmode="numeric"
+                                   autocomplete="off"
+                                   required>
+                        </div>
+                        <div class="mb-2">
+                            <label for="quantity" class="form-label">Quantità (Kg)</label>
+                            <input type="number"
+                                   step="1"
+                                   min="1"
+                                   max="10000"
+                                   class="form-control"
+                                   name="quantity"
+                                   id="quantity"
+                                   inputmode="numeric"
+                                   required>
+                        </div>
+                        <div class="mb-2">
+                            <label for="operatorId" class="form-label">Operatore</label>
+                            <select class="form-select" name="operator_id" id="operatorId" required>
+                                <option value="" selected disabled>Seleziona operatore...</option>
+                                {% for employee in employees %}
+                                    <option value="{{ employee.id }}">{{ employee.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 production-start">
+                            <i class="bi bi-check2-circle me-1"></i>
+                            Registra produzione
+                        </button>
+                    </form>
                 </div>
             </div>
-            {% endif %}
+            <div class="col-lg-4">
+                {% if selected_theme and selected_batch %}
+                    <div class="card production-card p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h2 class="h6 mb-0">Ultime produzioni</h2>
+                            <span class="badge text-bg-light">{{ productions|length }}</span>
+                        </div>
+                        <div class="last-productions">
+                            {% for production in productions|reverse %}
+                                <div class="border-bottom py-2">
+                                    <div class="d-flex justify-content-between gap-3">
+                                        <span>{{ production.reel_batch }}</span>
+                                        <strong>{{ production.quantity }} Kg</strong>
+                                    </div>
+                                    <div class="small text-muted">
+                                        {{ production.local_date.strftime("%d/%m/%Y") if production.local_date else "" }}
+                                        · {{ production.operator.name if production.operator else "" }}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="text-muted">Nessuna produzione registrata per il tema.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </div>
-</div>
-
-<script>
+    <script>
 document.addEventListener("DOMContentLoaded", function () {
     setTimeout(() => {
         const overlay = document.getElementById('flashOverlay');
@@ -251,5 +243,5 @@ document.addEventListener("DOMContentLoaded", function () {
 
     syncButtonState();
 });
-</script>
+    </script>
 {% endblock %}

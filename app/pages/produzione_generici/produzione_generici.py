@@ -6,7 +6,6 @@ from services.themes import ThemeService
 from services.batches import BatchService
 from services.productions import ProductionService
 
-template_dir = os.path.abspath(os.path.dirname(__file__))
 produzione_generici_bp = Blueprint(
     "produzione_generici",
     __name__,

@@ -13,24 +13,24 @@ from sqlite3 import Connection as SQLite3Connection
 from models.spedizioni import SpedizionePreliminare, SpedizioneIdentificativo
 from models.recensioni import Review
 from models.employees import Employee
-from models.sigep_tickets import Ticket, TicketAssignment
+from models.sigep_tickets import Ticket
 from models.themes import Theme
 from models.batches import Batch
 from models.productions import Production
 
 from config.links import get_links
 
-from routes import home_bp
-from routes.recensioni import recensioni_bp
-from routes.assegna_agente import assegna_agente_bp
-from routes.agents_map import agents_map_bp
-from routes.sigep_ticket import sigep_ticket_bp
-from routes.trattative_agenti import trattative_agenti_bp
-from pages.etichette_spedizioni.etichette_spedizioni import etichette_spedizioni_bp
-from pages.fercam.fercam import fercam_bp
-from pages.preliminari.preliminari import preliminari_bp
-from pages.produzione_generici.produzione_generici import produzione_generici_bp
-from pages.produzione_generici_prod.produzione_generici_prod import (
+from pages.home import home_bp
+from pages.recensioni import recensioni_bp
+from pages.assegna_agente import assegna_agente_bp
+from pages.agents_map import agents_map_bp
+from pages.sigep_ticket import sigep_ticket_bp
+from pages.trattative_agenti import trattative_agenti_bp
+from pages.etichette_spedizioni import etichette_spedizioni_bp
+from pages.fercam import fercam_bp
+from pages.preliminari import preliminari_bp
+from pages.produzione_generici import produzione_generici_bp
+from pages.produzione_generici_prod import (
     produzione_generici_prod_bp,
 )
 
@@ -40,7 +40,7 @@ from routes.amministrazione.visualizza_impianti import visualizza_impianti_bp
 from routes.amministrazione import amministrazione_bp
 from routes.amministrazione.backups import backups_bp
 from routes.amministrazione.gestione_lotti import gestione_lotti_bp
-from routes.amministrazione.sigep_ticket_management import sigep_ticket_management_bp
+from pages.sigep_ticket_management import sigep_ticket_management_bp
 
 
 # Forza l'attivazione del pragma foreign_keys ad ogni nuova connessione al database

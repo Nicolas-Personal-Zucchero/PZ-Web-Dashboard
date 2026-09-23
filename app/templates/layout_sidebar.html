@@ -1,7 +1,6 @@
 {% extends "base_root.html" %}
-
 {% block styles %}
-<style>
+    <style>
     /* Stili segregati per il layout con sidebar */
     :root {
         --sidebar-width: 230px;
@@ -40,35 +39,37 @@
         transition: margin-left 0.25s ease;
         padding: 20px;
     }
-</style>
-{{ super() }}
+    </style>
+    {{ super() }}
 {% endblock %}
-
 {% block layout %}
-<div class="sidebar d-flex flex-column" id="sidebar">
-    <a class="navbar-brand d-flex align-items-center px-3 mb-4" href="{{ home_link }}">
-        <img src="{{ url_for('static', filename='favicon.png') }}" alt="Logo" height="35" class="me-2">
-        <span>Personal Zucchero</span>
-    </a>
-
-    <ul class="nav nav-pills flex-column px-2 gap-1">
-        {% for group in linkGroups %}
-        <li class="nav-item mt-2">
-            <span class="text-muted small px-3">{{ group.title }}</span>
-        </li>
-        {% for link in group.links %}
-        <li class="nav-item">
-            <a class="nav-link {% if request.path == link.url %}active{% endif %}" href="{{ link.url }}">
-                <i class="{{ link.icon }}"></i>
-                <span>{{ link.name }}</span>
-            </a>
-        </li>
-        {% endfor %}
-        {% endfor %}
-    </ul>
-</div>
-
-<div class="content">
-    {% block content %}{% endblock %}
-</div>
+    <div class="sidebar d-flex flex-column" id="sidebar">
+        <a class="navbar-brand d-flex align-items-center px-3 mb-4"
+           href="{{ home_link }}">
+            <img src="{{ url_for('static', filename='favicon.png') }}"
+                 alt="Logo"
+                 height="35"
+                 class="me-2">
+            <span>Personal Zucchero</span>
+        </a>
+        <ul class="nav nav-pills flex-column px-2 gap-1">
+            {% for group in linkGroups %}
+                <li class="nav-item mt-2">
+                    <span class="text-muted small px-3">{{ group.title }}</span>
+                </li>
+                {% for link in group.links %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == link.url %}active{% endif %}"
+                           href="{{ link.url }}">
+                            <i class="{{ link.icon }}"></i>
+                            <span>{{ link.name }}</span>
+                        </a>
+                    </li>
+                {% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
 {% endblock %}

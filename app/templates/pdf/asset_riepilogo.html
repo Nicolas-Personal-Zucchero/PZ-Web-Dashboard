@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <style>
         @page {
             size: A4;
             margin: 20mm;
@@ -97,63 +97,59 @@
             color: #6c757d;
             font-style: italic;
         }
-    </style>
-</head>
-<body>
-
-    <h1>Riepilogo interventi {{ asset.nome }}</h1>
-    
-    <div class="info-card">
-        <table class="info-grid">
-            <tr>
-                <td><span class="info-label">Data Riepilogo:</span> {{ data_odierna }}</td>
-                <td><span class="info-label">Tipologia:</span> {{ asset.tipologia }}</td>
-            </tr>
-            <tr>
-                <td><span class="info-label">Sede:</span> {{ asset.sede }}</td>
-                <td><span class="info-label">Posizione:</span> {{ asset.posizione }}</td>
-            </tr>
-            <tr>
-                <td>
-                    <span class="info-label">Intervallo Manutenzione:</span>
-                    {{ asset.intervallo_controllo_periodico }} gg
-                </td>
-                <td>
-                    <span class="info-label">Intervallo Pulizia:</span>
-                    {% if asset.intervallo_pulizia is none %}
-                        Non definito
-                    {% else %}
-                        {{ asset.intervallo_pulizia }} gg
-                    {% endif %}
-                </td>
-            </tr>
+        </style>
+    </head>
+    <body>
+        <h1>Riepilogo interventi {{ asset.nome }}</h1>
+        <div class="info-card">
+            <table class="info-grid">
+                <tr>
+                    <td><span class="info-label">Data Riepilogo:</span> {{ data_odierna }}</td>
+                    <td><span class="info-label">Tipologia:</span> {{ asset.tipologia }}</td>
+                </tr>
+                <tr>
+                    <td><span class="info-label">Sede:</span> {{ asset.sede }}</td>
+                    <td><span class="info-label">Posizione:</span> {{ asset.posizione }}</td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="info-label">Intervallo Manutenzione:</span>
+                        {{ asset.intervallo_controllo_periodico }} gg
+                    </td>
+                    <td>
+                        <span class="info-label">Intervallo Pulizia:</span>
+                        {% if asset.intervallo_pulizia is none %}
+                            Non definito
+                        {% else %}
+                            {{ asset.intervallo_pulizia }} gg
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 12%;">Data</th>
+                    <th style="width: 20%;">Tipo</th>
+                    <th style="width: 18%;">Operatore</th>
+                    <th style="width: 50%;">Note</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in interventi %}
+                    <tr>
+                        <td>{{ i.data }}</td>
+                        <td class="text-capitalize">{{ i.tipo | capitalize | replace('_', ' ') }}</td>
+                        <td>{{ i.operatore }}</td>
+                        <td>{{ i.note }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="empty-state">Nessun intervento registrato per questo asset.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
         </table>
-    </div>
-
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th style="width: 12%;">Data</th>
-                <th style="width: 20%;">Tipo</th>
-                <th style="width: 18%;">Operatore</th>
-                <th style="width: 50%;">Note</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for i in interventi %}
-            <tr>
-                <td>{{ i.data }}</td>
-                <td class="text-capitalize">{{ i.tipo | capitalize | replace("_", " ") }}</td>
-                <td>{{ i.operatore }}</td>
-                <td>{{ i.note }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="4" class="empty-state">Nessun intervento registrato per questo asset.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-</body>
+    </body>
 </html>

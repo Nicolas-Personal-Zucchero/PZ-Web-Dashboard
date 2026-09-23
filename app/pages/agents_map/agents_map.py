@@ -1,6 +1,9 @@
+import os
 from flask import Blueprint, render_template
 
-agents_map_bp = Blueprint("agents_map", __name__, url_prefix="/agents_map")
+agents_map_bp = Blueprint(
+    "agents_map", __name__, url_prefix="/agents_map", template_folder=""
+)
 
 
 @agents_map_bp.route("/", methods=["GET"])

@@ -26,7 +26,6 @@ mexal_cache = RedisMexalCache()
 
 logger = logging.getLogger(__name__)
 
-template_dir = os.path.abspath(os.path.dirname(__file__))
 fercam_bp = Blueprint("fercam", __name__, url_prefix="/fercam", template_folder="")
 
 

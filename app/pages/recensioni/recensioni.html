@@ -1,0 +1,156 @@
+{% extends "layout_sidebar.html" %}
+{% block title %}Recensioni{% endblock %}
+{% block content %}
+    <div class="p-4">
+        <div class="d-flex align-items-center mb-3">
+            <a href="{{ home_link }}" class="btn btn-light">
+                <i class="bi bi-arrow-left"></i> Torna indietro
+            </a>
+            <h1 class="h3 mb-0 ms-3">Invia una mail automatica ai clienti richiedendo una recensione</h1>
+        </div>
+        <form method="post">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="email" class="form-label">Email cliente</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="nome_cliente" class="form-label">Nome cliente</label>
+                    <input type="text"
+                           class="form-control"
+                           id="nome_cliente"
+                           name="nome_cliente"
+                           required>
+                </div>
+                <div class="col-md-4">
+                    <label for="lingua_email" class="form-label">Lingua cliente</label>
+                    <select class="form-select"
+                            id="lingua_email"
+                            name="lingua_email"
+                            id="selectLingua"
+                            required>
+                        <option value="ITA" selected>Italiano</option>
+                        <option value="ENG">Inglese</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="sender" class="form-label">Mittente</label>
+                <select class="form-select" id="sender" name="sender" required>
+                    <option value="" disabled selected></option>
+                    {% for employee in employees %}
+                        <option value="{{ employee.id }}">{{ employee.name }} - {{ employee.department }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Richiedi recensione</button>
+        </form>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+        {% if reviews %}
+            <hr>
+            <h3>Clienti che hanno già ricevuto la richiesta:</h3>
+            <div class="mb-3 row g-2">
+                <div class="col-md-8">
+                    <input type="text"
+                           class="form-control"
+                           id="searchInput"
+                           placeholder="Cerca email o cliente">
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" id="mittenteFilter">
+                        <option value="">Tutti i mittenti</option>
+                        {% for s in reviews|map(attribute='sender')|unique %}
+                            <option value="{{ s.name }}">{{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div style="max-height: 500px; overflow-y: auto;">
+                <ul class="list-group styled-table" id="emailList">
+                    <li class="list-group-item static-header">
+                        <div class="row">
+                            <div class="col-md-2">Cliente</div>
+                            <div class="col-md-4">Email</div>
+                            <div class="col-md-2">Mittente</div>
+                            <div class="col-md-1">Lingua</div>
+                            <div class="col-md-2">Data Invio</div>
+                            <div class="col-md-1"></div>
+                            <!-- spazio per bottone elimina -->
+                        </div>
+                    </li>
+                    {% for r in reviews %}
+                        <li class="list-group-item">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <strong>{{ r.customer_name }}</strong>
+                                </div>
+                                <div class="col-md-4">{{ r.customer_email }}</div>
+                                <div class="col-md-2 js-mittente">{{ r.sender.name }}</div>
+                                <div class="col-md-1">{{ r.language }}</div>
+                                <div class="col-md-2">{{ r.local_creation_date.strftime("%d/%m/%Y %H:%M") if r.local_creation_date else 'N/A' }}</div>
+                                <div class="col-md-1 text-end">
+                                    <form method="post"
+                                          action="/recensioni/elimina"
+                                          onsubmit="return confirm('Sei sicuro di voler eliminare la registrazione dell\'invio da questo utente? Questa operazione permetterà di inviargli nuovamente la richiesta di recensione');">
+                                        <input type="hidden" name="id" value="{{ r.id }}">
+                                        <button type="submit" class="btn btn-danger btn-sm">Elimina</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // === Gestione LocalStorage Mittente ===
+        const selectMittente = document.getElementById("sender");
+        const savedMittente = localStorage.getItem("sender_id");
+
+        if (savedMittente && selectMittente) {
+            selectMittente.value = savedMittente;
+        }
+
+        if (selectMittente) {
+            selectMittente.addEventListener("change", function () {
+                localStorage.setItem("sender_id", selectMittente.value);
+            });
+        }
+
+        // === Logica Visualizzazione/Filtro Recensioni (Simile a gestione-lotti) ===
+        const searchInput = document.getElementById('searchInput');
+        const mittenteFilter = document.getElementById('mittenteFilter');
+        const items = document.querySelectorAll('#emailList .list-group-item');
+
+        function filterReviews() {
+            const searchText = searchInput ? searchInput.value.toLowerCase() : '';
+            const mittente = mittenteFilter ? mittenteFilter.value.toLowerCase() : '';
+
+            items.forEach(item => {
+                if (item.classList.contains('static-header')) return;
+
+                // Recupera i valori dal DOM
+                const cliente = item.querySelector('.col-md-2 strong')?.textContent.toLowerCase() || '';
+                const email = item.querySelector('.col-md-4')?.textContent.toLowerCase() || '';
+                const itemMittente = item.querySelector('.js-mittente')?.textContent.toLowerCase() || '';
+
+                const match =
+                    (cliente.includes(searchText) || email.includes(searchText)) &&
+                    (mittente === '' || itemMittente.includes(mittente));
+
+                item.style.display = match ? '' : 'none';
+                console.log({ cliente, email, itemMittente, match })
+            });
+        }
+
+        if (searchInput) searchInput.addEventListener('input', filterReviews);
+        if (mittenteFilter) mittenteFilter.addEventListener('change', filterReviews);
+    });
+    </script>
+{% endblock %}
