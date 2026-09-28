@@ -122,7 +122,7 @@ def crea_produzione_team():
         )
         if mailer:
             mailer.invia_email_singola(
-                recipients= ["nicolas@personalzucchero.com"],
+                recipients= ["denis@personalzucchero.com"],
                 subject=EMAIL_TEMPLATES["generic_production_ita"]["object"],
                 body=EMAIL_TEMPLATES["generic_production_ita"]["body"].format(
                     data=date.strftime("%d/%m/%Y"),
