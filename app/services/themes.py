@@ -1,11 +1,11 @@
 from typing import Optional
-from sqlalchemy.exc import IntegrityError
+
 from extensions import db
 from models.themes import Theme
+from sqlalchemy.exc import IntegrityError
 
 
 class ThemeService:
-
     @staticmethod
     def get_theme_by_id(theme_id: int) -> Theme | None:
         return db.session.get(Theme, theme_id)
@@ -14,7 +14,7 @@ class ThemeService:
     def get_all_themes(include_hidden: bool = False) -> list[Theme]:
         stmt = db.select(Theme)
         if not include_hidden:
-            stmt = stmt.where(Theme.hidden == False)
+            stmt = stmt.where(Theme.hidden.is_(False))
         return list(db.session.execute(stmt).scalars().all())
 
     @staticmethod

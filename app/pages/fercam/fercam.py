@@ -1,25 +1,33 @@
-import os
-import json
-from mexal_pz import MexalPZ
-from dachser_edi import SSCCGenerator
 import copy
+import json
 import logging
-from decimal import Decimal
-from flask import Blueprint, redirect, render_template, flash, request, url_for, jsonify
-from config.constants import ITALY_TZ, ZEBRA_IP
-from utils.utils import send_to_zebra, sanitize_phone_data
+import os
 from datetime import datetime, timedelta
-from utils.label_factory import generate_dachser_label
-from dachser_edi import CountryCode, Product, MeasurementName, UnitCode, MeasurementType
-from utils.xml_builder import create_xml, generate_doc_id
-from utils.RedisMexalCache import RedisMexalCache
+from decimal import Decimal
+
 from config.constants import (
-    PACKING_TYPE_MAP,
-    PACKING_TYPE_ICONS,
-    LABEL_TYPE_MAP,
     ID_PAGAMENTI_ALLA_CONSEGNA,
+    ITALY_TZ,
+    LABEL_TYPE_MAP,
+    PACKING_TYPE_ICONS,
+    PACKING_TYPE_MAP,
+    ZEBRA_IP,
 )
+from dachser_edi import (
+    CountryCode,
+    MeasurementName,
+    MeasurementType,
+    Product,
+    SSCCGenerator,
+    UnitCode,
+)
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
+from mexal_pz import MexalPZ
 from services.spedizioni import SpedizioniPreliminariService
+from utils.label_factory import generate_dachser_label
+from utils.RedisMexalCache import RedisMexalCache
+from utils.utils import sanitize_phone_data, send_to_zebra
+from utils.xml_builder import create_xml, generate_doc_id
 
 DEFAULT_DAYS_TO_FETCH = 5
 mexal_cache = RedisMexalCache()
@@ -229,14 +237,14 @@ def invia():
                 elaborati += 1
             except Exception as e:
                 logger.error(f"Errore : {e}")
-                errors.append((f"", str(e)))
+                errors.append(("", str(e)))
 
         for fattura_id, error_msg in errors:
             flash(f"Errore fattura {fattura_id}: {error_msg}", "danger")
 
         if not errors and elaborati:
             flash(
-                f"Fatture elaborate, etichette stampate e spedizioni preliminari create.",
+                "Fatture elaborate, etichette stampate e spedizioni preliminari create.",
                 "success",
             )
 
@@ -313,7 +321,7 @@ def print_label(ssccs, fattura):
 
     ragione_sociale = fattura["indirizzo_spedizione"]["descrizione"]
     via = fattura["indirizzo_spedizione"]["indirizzo"]
-    cap_citta_prov = f'{fattura["indirizzo_spedizione"]["cap"]} {fattura["indirizzo_spedizione"]["localita"]} {fattura["indirizzo_spedizione"]["provincia"]}'
+    cap_citta_prov = f"{fattura['indirizzo_spedizione']['cap']} {fattura['indirizzo_spedizione']['localita']} {fattura['indirizzo_spedizione']['provincia']}"
     stato = fattura["indirizzo_spedizione"]["cod_paese"]
     contrassegno = (
         f"Contrassegno {fattura['note']['incasso'][0]}"
@@ -406,12 +414,9 @@ def get_note(mexal, fattura: dict) -> dict | None:
     if not sorgente:
         return None
 
-    get_val = (
-        lambda key_indirizzo, key_cliente: sorgente.get(
-            key_indirizzo if is_indirizzo else key_cliente
-        )
-        or ""
-    )
+    def get_val(key_indirizzo, key_cliente):
+        return sorgente.get(key_indirizzo if is_indirizzo else key_cliente) or ""
+
     note = {
         "giorno_di_chiusura": get_val("7", "2"),
         "orario_di_consegna": get_val("2", "3"),

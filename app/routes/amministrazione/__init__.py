@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template
 from config.links import register_links
+from flask import Blueprint, render_template
 
 amministrazione_bp = Blueprint(
     "amministrazione", __name__, url_prefix="/amministrazione"

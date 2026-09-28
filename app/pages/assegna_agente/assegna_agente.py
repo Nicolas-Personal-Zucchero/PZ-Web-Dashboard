@@ -1,14 +1,13 @@
 import os
-from flask import Blueprint, render_template, request, redirect, flash, jsonify
 
-from config.mail_config import EMAIL_TEMPLATES
 from config.constants import ITALY_TZ
-
-from utils.firebase_client import db
-from utils.utils import extract_logo_id, download_file_stream
+from config.mail_config import EMAIL_TEMPLATES
 from firebase_admin import firestore
+from flask import Blueprint, flash, jsonify, redirect, render_template, request
 from hubspot_pz import HubspotPZ
 from mailer_pz import MailerPZ
+from utils.firebase_client import db
+from utils.utils import download_file_stream, extract_logo_id
 
 assegna_agente_bp = Blueprint(
     "assegna_agente", __name__, url_prefix="/assegna-agente", template_folder=""
@@ -151,7 +150,7 @@ def get_active_agents_by_id(hubspot):
         a
         for a in agents
         if a.get("escluso_da_assegnazione_clienti") == "false"
-        and a.get("data_fine_contratto") == None
+        and a.get("data_fine_contratto") is None
     ]
     sorted_agents = sorted(
         filtered_agents,
@@ -188,9 +187,9 @@ def get_active_agents_by_id(hubspot):
                             formatted_time = local_time.strftime("%d/%m/%Y, %H:%M:%S")
                         else:
                             formatted_time = "N/A"
-                        associated_contacts_by_id[contact_id][
-                            "assigned_at"
-                        ] = formatted_time
+                        associated_contacts_by_id[contact_id]["assigned_at"] = (
+                            formatted_time
+                        )
 
             agents_by_id[agent_id]["associated_contacts"] = [
                 associated_contacts_by_id[contact_id] for contact_id in contacts_ids
@@ -229,12 +228,12 @@ def get_first_company_id(contact):
         return None
 
     associations = contact.get("associations", {})
-    if associations == None:
+    if associations is None:
         return None
 
     companies = associations.get("companies", {})
 
-    if associations == None:
+    if associations is None:
         return None
 
     results = companies.get("results", [])

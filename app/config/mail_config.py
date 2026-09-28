@@ -278,5 +278,8 @@ EMAIL_TEMPLATES = {
         "object": TRACKING_BRT_OBJECT_ITA,
         "body": TRACKING_BRT_BODY_ITA,
     },
-    "generic_production_ita": {"object": GENERIC_PRODUCTION_OBJECT_ITA, "body": GENERIC_PRODUCTION_BODY_ITA}
+    "generic_production_ita": {
+        "object": GENERIC_PRODUCTION_OBJECT_ITA,
+        "body": GENERIC_PRODUCTION_BODY_ITA,
+    },
 }

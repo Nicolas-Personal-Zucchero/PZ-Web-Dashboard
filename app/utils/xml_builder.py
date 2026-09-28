@@ -1,7 +1,23 @@
+import logging
 from datetime import datetime
 from typing import Optional
-from dachser_edi import *
-import logging
+
+from dachser_edi import (
+    Address,
+    CodDetails,
+    Consignee,
+    Consignor,
+    Contact,
+    CountryCode,
+    Currency,
+    DachserContactType,
+    Division,
+    Forwarder,
+    Measurement,
+    Product,
+    ShipmentLine,
+    TransportOrder,
+)
 
 logger = logging.getLogger(__name__)
 

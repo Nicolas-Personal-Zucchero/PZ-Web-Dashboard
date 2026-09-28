@@ -1,24 +1,25 @@
-import os
+import base64
 import io
 import logging
+import os
+from datetime import datetime
+
+from config.constants import ZEBRA_IP
+from config.mail_config import EMAIL_TEMPLATES
 from flask import (
     Blueprint,
-    render_template,
-    request,
-    redirect,
+    current_app,
     flash,
     make_response,
-    current_app,
+    redirect,
+    render_template,
+    request,
 )
-from config.constants import ZEBRA_IP
-from utils.label_factory import generate_sugar_label
-from weasyprint import HTML
-from datetime import datetime
-import base64
-from config.mail_config import EMAIL_TEMPLATES
-from utils.utils import send_to_zebra
-from mexal_pz import MexalPZ
 from mailer_pz import MailerPZ
+from mexal_pz import MexalPZ
+from utils.label_factory import generate_sugar_label
+from utils.utils import send_to_zebra
+from weasyprint import HTML
 
 logger = logging.getLogger(__name__)
 

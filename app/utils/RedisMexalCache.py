@@ -1,8 +1,9 @@
-from datetime import timedelta
 import json
 import logging
-import redis
+from datetime import timedelta
 from typing import Optional
+
+import redis
 
 logger = logging.getLogger(__name__)
 

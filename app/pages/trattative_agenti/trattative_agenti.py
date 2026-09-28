@@ -1,7 +1,8 @@
 import os
-from flask import Blueprint, render_template
-from config.constants import ITALY_TZ
 from datetime import datetime
+
+from config.constants import ITALY_TZ
+from flask import Blueprint, render_template
 from hubspot_pz import HubspotPZ
 
 trattative_agenti_bp = Blueprint(

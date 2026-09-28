@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, flash
-from services.asset import AssetService
 from config.constants import SEDI, TIPOLOGIE_ASSET
+from flask import Blueprint, flash, redirect, render_template, request
+from services.asset import AssetService
 
 asset_bp = Blueprint("asset", __name__, url_prefix="/asset")
 

@@ -1,12 +1,13 @@
 import os
 from datetime import datetime
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+
 from config.mail_config import EMAIL_TEMPLATES
-from services.employees import EmployeeService
-from services.themes import ThemeService
-from services.batches import BatchService
-from services.productions import ProductionService
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from mailer_pz import MailerPZ
+from services.batches import BatchService
+from services.employees import EmployeeService
+from services.productions import ProductionService
+from services.themes import ThemeService
 
 produzione_generici_prod_bp = Blueprint(
     "produzione_generici_prod",
@@ -122,14 +123,14 @@ def crea_produzione_team():
         )
         if mailer:
             mailer.invia_email_singola(
-                recipients= ["denis@personalzucchero.com"],
+                recipients=["denis@personalzucchero.com"],
                 subject=EMAIL_TEMPLATES["generic_production_ita"]["object"],
                 body=EMAIL_TEMPLATES["generic_production_ita"]["body"].format(
                     data=date.strftime("%d/%m/%Y"),
                     lotto=batch.code,
                     quantita=quantity,
                     responsabile=operator,
-                )
+                ),
             )
     except ValueError as e:
         flash(str(e), "error")

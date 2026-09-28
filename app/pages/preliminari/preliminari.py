@@ -1,24 +1,23 @@
-import xmltodict
-import os
 import logging
+import os
+from datetime import datetime
 from io import BytesIO
+
+import xmltodict
+from config.constants import ITALY_TZ
+from dachser_edi import FercamSFTP
 from flask import (
     Blueprint,
+    flash,
     redirect,
     render_template,
-    flash,
     request,
-    url_for,
-    current_app,
     send_file,
+    url_for,
 )
-
-from datetime import datetime
-from models.spedizioni import StatoSpedizione
-from config.constants import ITALY_TZ
-from services.spedizioni import SpedizioniPreliminariService
-from dachser_edi import FercamSFTP
 from mailer_pz import MailerPZ
+from models.spedizioni import StatoSpedizione
+from services.spedizioni import SpedizioniPreliminariService
 
 logger = logging.getLogger(__name__)
 
@@ -190,7 +189,7 @@ def invia():
         with fercamSFTP as sftp:
             for spedizione in spedizioni_ready:
                 if not spedizione.xml:
-                    error_msg = f"Campo XML mancante."
+                    error_msg = "Campo XML mancante."
                     logger.warning(f"Spedizione {spedizione.id}: {error_msg}")
                     errori.append((spedizione.id, error_msg))
                     continue

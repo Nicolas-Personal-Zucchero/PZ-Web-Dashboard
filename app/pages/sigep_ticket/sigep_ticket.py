@@ -1,7 +1,7 @@
 import os
-from flask import Blueprint, flash, redirect, render_template, request
 
 from config.mail_config import EMAIL_TEMPLATES
+from flask import Blueprint, flash, redirect, render_template, request
 from mailer_pz import MailerPZ
 from services.sigep_tickets import SigepTicketService
 

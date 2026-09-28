@@ -1,9 +1,10 @@
 import os
-from flask import Blueprint, render_template, request, redirect, flash
+
 from config.mail_config import EMAIL_TEMPLATES
-from services.recensioni import ReviewService
-from services.employees import EmployeeService
+from flask import Blueprint, flash, redirect, render_template, request
 from mailer_pz import MailerPZ
+from services.employees import EmployeeService
+from services.recensioni import ReviewService
 
 recensioni_bp = Blueprint(
     "recensioni",
