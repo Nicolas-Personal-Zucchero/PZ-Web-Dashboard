@@ -9,25 +9,25 @@ services:
     environment:
       - LOG_LEVEL=INFO
       - REDIS_URL=redis://redis:6379/0
-      - SECRET_KEY=${SECRET_KEY}
-      - HUBSPOT_AGENT_ASSIGNMENT_TOKEN=${HUBSPOT_AGENT_ASSIGNMENT_TOKEN}
-      - SSCC_TOKEN=${SSCC_TOKEN}
-      - SFTP_USERNAME=${SFTP_USERNAME}
-      - SFTP_PASSWORD=${SFTP_PASSWORD}
-      - MEXAL_DOMAIN=${MEXAL_DOMAIN}
-      - MEXAL_USER=${MEXAL_USER}
-      - MEXAL_PASSWORD=${MEXAL_PASSWORD}
-      - MEXAL_COMPANY=${MEXAL_COMPANY}
-      - MEXAL_YEAR=${MEXAL_YEAR}
-      - INFO_EMAIL_NAME=${INFO_EMAIL_NAME}
-      - INFO_EMAIL_ADDRESS=${INFO_EMAIL_ADDRESS}
-      - INFO_EMAIL_PASSWORD=${INFO_EMAIL_PASSWORD}
-      - FIREBASE_SA_JSON=${FIREBASE_SA_JSON}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - SECRET_KEY
+      - HUBSPOT_AGENT_ASSIGNMENT_TOKEN
+      - SSCC_TOKEN
+      - SFTP_USERNAME
+      - SFTP_PASSWORD
+      - MEXAL_DOMAIN
+      - MEXAL_USER
+      - MEXAL_PASSWORD
+      - MEXAL_COMPANY
+      - MEXAL_YEAR
+      - INFO_EMAIL_NAME
+      - INFO_EMAIL_ADDRESS
+      - INFO_EMAIL_PASSWORD
+      - FIREBASE_SA_JSON
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_HOST
+      - POSTGRES_PORT
+      - POSTGRES_DB
     depends_on:
       - redis
     restart: unless-stopped
@@ -54,7 +54,7 @@ services:
       - ./data:/app/app/instance
     command: sqlite_web -H 0.0.0.0 /app/app/instance/database.db
     environment:
-      - SQLITE_WEB_PASSWORD=${SQLITE_WEB_PASSWORD}
+      - SQLITE_WEB_PASSWORD
     networks:
       - proxy_net
 
