@@ -1,15 +1,4 @@
 REVIEW_EMAIL_OBJECT_ITA = "Ci farebbe piacere la tua opinione! 🌟"
-REVIEW_EMAIL_OBJECT_ENG = "We’d love to hear your thoughts! 🌟"
-AGENT_EMAIL_OBJECT_ITA = "Nuovo contatto assegnato {info_cliente}"
-CONTACT_EMAIL_OBJECT_ITA = (
-    "Grazie per il Suo Interesse – Il Nostro Consulente Locale La Contatterà"
-)
-CONTACT_EMAIL_OBJECT_ENG = (
-    "Thank You for Your Interest – Our Local Consultant Will Contact You"
-)
-SIGEP_EMAIL_OBJECT_ITA = "Ecco i tuoi biglietti per il Sigep! 🎟️"
-SIGEP_EMAIL_OBJECT_ENG = "Here are your Sigep tickets! 🎟️"
-
 REVIEW_EMAIL_BODY_ITA = """
 Caro/a {customer},<br>
 <br>
@@ -51,6 +40,8 @@ A presto!<br>
 {sender}<br>
 """
 
+
+REVIEW_EMAIL_OBJECT_ENG = "We’d love to hear your thoughts! 🌟"
 REVIEW_EMAIL_BODY_ENG = """
 Dear {customer},<br>
 <br>
@@ -92,6 +83,8 @@ We hope to see you again soon!<br>
 {sender}<br>
 """
 
+
+AGENT_EMAIL_OBJECT_ITA = "Nuovo contatto assegnato {info_cliente}"
 AGENT_EMAIL_BODY_ITA = """
 Ciao <b>{nome_agente}</b>,<br>
 <br>
@@ -123,6 +116,10 @@ Cordiali saluti,<br>
 {mittente}
 """
 
+
+CONTACT_EMAIL_OBJECT_ITA = (
+    "Grazie per il Suo Interesse – Il Nostro Consulente Locale La Contatterà"
+)
 CONTACT_EMAIL_BODY_ITA = """
 Gentile <b>{nome_cliente}</b>,<br><br>
 
@@ -144,6 +141,10 @@ Cordiali saluti,<br>
 {mittente}
 """
 
+
+CONTACT_EMAIL_OBJECT_ENG = (
+    "Thank You for Your Interest – Our Local Consultant Will Contact You"
+)
 CONTACT_EMAIL_BODY_ENG = """
 Dear <b>{nome_cliente}</b>,<br><br>
 
@@ -165,6 +166,8 @@ Kind regards,<br>
 {mittente}
 """
 
+
+SIGEP_EMAIL_OBJECT_ITA = "Ecco i tuoi biglietti per il Sigep! 🎟️"
 SIGEP_EMAIL_BODY_ITA = """
 Gentile {nome_cliente},<br>
 <br>
@@ -195,6 +198,8 @@ Per qualsiasi dubbio sulla procedura, non esitare a contattarci.<br>
 Cordiali saluti,<br>
 <b>Personal Zucchero</b>"""
 
+
+SIGEP_EMAIL_OBJECT_ENG = "Here are your Sigep tickets! 🎟️"
 SIGEP_EMAIL_BODY_ENG = """
 Dear {nome_cliente},<br>
 <br>
@@ -225,8 +230,8 @@ Should you have any questions, please do not hesitate to contact us.<br>
 Best regards,<br>
 <b>Personal Zucchero</b>"""
 
-TRACKING_BRT_OBJECT_ITA = """La tua spedizione da Personal Zucchero è in arrivo!"""
 
+TRACKING_BRT_OBJECT_ITA = """La tua spedizione da Personal Zucchero è in arrivo!"""
 TRACKING_BRT_BODY_ITA = """
 <p>Gentile cliente,</p>
 
@@ -250,6 +255,17 @@ TRACKING_BRT_BODY_ITA = """
 <p><small>Questa è una email automatica, non è necessario rispondere.</small></p>
 """
 
+
+GENERIC_PRODUCTION_OBJECT_ITA = "Nuova produzione generica"
+GENERIC_PRODUCTION_BODY_ITA = """
+Avviso di nuova produzione generica da Personal Zucchero.<br>
+Data di produzione: <strong>{data}</strong><br>
+Lotto: <strong>{lotto}</strong><br>
+Quantità prodotta: <strong>{quantita} Kg</strong><br>
+Responsabile della produzione: <strong>{responsabile}</strong><br>
+"""
+
+
 EMAIL_TEMPLATES = {
     "review_ita": {"object": REVIEW_EMAIL_OBJECT_ITA, "body": REVIEW_EMAIL_BODY_ITA},
     "review_eng": {"object": REVIEW_EMAIL_OBJECT_ENG, "body": REVIEW_EMAIL_BODY_ENG},
@@ -262,4 +278,5 @@ EMAIL_TEMPLATES = {
         "object": TRACKING_BRT_OBJECT_ITA,
         "body": TRACKING_BRT_BODY_ITA,
     },
+    "generic_production_ita": {"object": GENERIC_PRODUCTION_OBJECT_ITA, "body": GENERIC_PRODUCTION_BODY_ITA}
 }
