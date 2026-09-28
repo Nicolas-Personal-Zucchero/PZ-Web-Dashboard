@@ -5,7 +5,6 @@ import os
 from datetime import datetime
 
 from config.constants import ZEBRA_IP
-from config.mail_config import EMAIL_TEMPLATES
 from flask import (
     Blueprint,
     current_app,
@@ -29,6 +28,8 @@ etichette_spedizioni_bp = Blueprint(
     url_prefix="/etichette_spedizioni",
     template_folder="",
 )
+
+EMAIL_SUBJECTS = {"ita": "La tua spedizione da Personal Zucchero è in arrivo!"}
 
 
 @etichette_spedizioni_bp.route("/", methods=["GET", "POST"])
@@ -219,10 +220,13 @@ def invia_tracking():
         os.getenv("INFO_EMAIL_PASSWORD"),
     )
     if mailer:
+        lang = "ita"
         mailer.invia_email_singola(
             recipients=[email],
-            subject=EMAIL_TEMPLATES["tracking_brt_ita"]["object"],
-            body=EMAIL_TEMPLATES["tracking_brt_ita"]["body"].format(tracking=tracking),
+            subject=EMAIL_SUBJECTS[lang],
+            body=render_template(
+                f"email_etichetta_spedizione_{lang}.html", tracking=tracking
+            ),
             hubspot_ccn=True,
         )
     else:

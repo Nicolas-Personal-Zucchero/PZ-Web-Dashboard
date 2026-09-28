@@ -1,6 +1,5 @@
 import os
 
-from config.mail_config import EMAIL_TEMPLATES
 from flask import Blueprint, flash, redirect, render_template, request
 from mailer_pz import MailerPZ
 from services.sigep_tickets import SigepTicketService
@@ -8,6 +7,11 @@ from services.sigep_tickets import SigepTicketService
 sigep_ticket_bp = Blueprint(
     "sigep_ticket", __name__, url_prefix="/sigep-ticket", template_folder=""
 )
+
+EMAIL_SUBJECTS = {
+    "ita": "Ecco i tuoi biglietti per il Sigep! 🎟️",
+    "eng": "Here are your Sigep tickets! 🎟️",
+}
 
 
 @sigep_ticket_bp.route("/", methods=["GET"])
@@ -48,17 +52,14 @@ def send_tickets():
             os.getenv("INFO_EMAIL_ADDRESS"),
             os.getenv("INFO_EMAIL_PASSWORD"),
         )
-        if mailer and assigned_codes:
-            codes_str = "<br>".join([f"<b>{code}</b>" for code in assigned_codes])
-            template_key = f"sigep_{language}"
-            if template_key not in EMAIL_TEMPLATES:
-                template_key = "sigep_ita"  # Fallback
-
+        if mailer and assigned_codes and language in EMAIL_SUBJECTS:
             mailer.invia_email_singola(
                 recipients=[email],
-                subject=EMAIL_TEMPLATES[template_key]["object"],
-                body=EMAIL_TEMPLATES[template_key]["body"].format(
-                    nome_cliente=name, codici_biglietti=codes_str
+                subject=EMAIL_SUBJECTS.get(language, EMAIL_SUBJECTS["ita"]),
+                body=render_template(
+                    f"email_sigep_tickets_{language}.html",
+                    nome_cliente=name,
+                    codici_biglietti=assigned_codes,
                 ),
                 hubspot_ccn=True,
             )

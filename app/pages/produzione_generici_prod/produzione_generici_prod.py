@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 
-from config.mail_config import EMAIL_TEMPLATES
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from mailer_pz import MailerPZ
 from services.batches import BatchService
@@ -15,6 +14,8 @@ produzione_generici_prod_bp = Blueprint(
     url_prefix="/produzione_generici_prod",
     template_folder="",
 )
+
+EMAIL_SUBJECTS = {"ita": "Nuova produzione generica"}
 
 
 @produzione_generici_prod_bp.route("/", methods=["GET"])
@@ -122,10 +123,12 @@ def crea_produzione_team():
             batch.id, date, reel_batch, quantity, operator_id
         )
         if mailer:
+            lang = "ita"
             mailer.invia_email_singola(
                 recipients=["denis@personalzucchero.com"],
-                subject=EMAIL_TEMPLATES["generic_production_ita"]["object"],
-                body=EMAIL_TEMPLATES["generic_production_ita"]["body"].format(
+                subject=EMAIL_SUBJECTS[lang],
+                body=render_template(
+                    f"email_produzione_generici_{lang}.html",
                     data=date.strftime("%d/%m/%Y"),
                     lotto=batch.code,
                     quantita=quantity,

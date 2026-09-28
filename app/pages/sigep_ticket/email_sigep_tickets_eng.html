@@ -1,0 +1,32 @@
+<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333333; line-height: 1.5; padding-bottom: 20px;">
+Dear {{ nome_cliente }},<br>
+<br>
+We are pleased to invite you to <b>Sigep 2026</b>! We have reserved special promotional codes for you, allowing you to purchase a daily entrance ticket for just <b>€10.00</b> (instead of €75.00).<br>
+<br>
+Here are your discount codes (each code is valid for one daily admission):<br>
+{% for codice in codici_biglietti %}
+    <b>{{ codice }}</b><br>
+{% endfor %}
+<br>
+<b>HOW TO REDEEM YOUR CODE:</b><br>
+<br>
+1. <b>Register:</b> First, enter your details and create a visitor account here:<br>
+<a href="https://www.sigep.it/en/reserved-area/user/registration">https://www.sigep.it/en/reserved-area/user/registration</a><br>
+(You will receive a confirmation email to finalize your registration).<br>
+<br>
+2. <b>Go to Tickets:</b> Once registered, access the Ticket section here:<br>
+<a href="https://www.sigep.it/en/reserved-area/tickets">https://www.sigep.it/en/reserved-area/tickets</a><br>
+<br>
+3. <b>Enter the Code:</b> Enter the code provided above, then click on <b>"Activate"</b>, then click on <b>"Manage"</b> and follow the instructions to complete the reduced payment.<br>
+<br>
+In the meantime, we invite you to discover our complete range of products by downloading our <b>2025 Catalogue</b>:<br>
+👉 <a href="https://personalzucchero.com/wp-content/uploads/2024/12/PZ_CAT_-2025-web.pdf">Click here to download the catalogue</a><br>
+<br>
+We look forward to seeing you there!<br>
+📍 <b>Hall A4 – Stand 029</b><br>
+<br>
+Should you have any questions, please do not hesitate to contact us.<br>
+<br>
+Best regards,<br>
+<b>Personal Zucchero</b>
+</div>
