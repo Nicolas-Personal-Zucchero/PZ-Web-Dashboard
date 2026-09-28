@@ -1,0 +1,12 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    target-branch: "develop"
+    schedule:
+      interval: "monthly"
+    
+    groups:
+      aggiornamenti-mensili-librerie:
+        patterns:
+          - "*"
