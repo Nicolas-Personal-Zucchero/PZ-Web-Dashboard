@@ -80,7 +80,7 @@ def create_app():
     postgres_host = os.getenv("POSTGRES_HOST")
     postgres_port = os.getenv("POSTGRES_PORT")
     postgres_db = os.getenv("POSTGRES_DB")
-    postgres_uri = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_db}"
+    postgres_uri = f"postgresql+psycopg://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_db}"
 
     # SQLite Database setup
     db_dir = os.path.join(app.instance_path)
