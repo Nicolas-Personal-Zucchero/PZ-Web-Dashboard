@@ -1,7 +1,7 @@
 import csv
 import io
-from flask import Blueprint, flash, redirect, render_template, request
 
+from flask import Blueprint, flash, redirect, render_template, request
 from services.sigep_tickets import SigepTicketService
 
 sigep_ticket_management_bp = Blueprint(

@@ -1,13 +1,13 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import Optional
-from sqlalchemy.exc import IntegrityError
+
 from extensions import db
 from models.productions import Production
+from sqlalchemy.exc import IntegrityError
 
 
 class ProductionService:
-
     @staticmethod
     def get_productions_by_batch(batch_id: int) -> list[Production]:
         stmt = (

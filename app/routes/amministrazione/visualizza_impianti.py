@@ -1,7 +1,8 @@
+from collections import defaultdict
+
+from config.constants import ITALY_TZ
 from flask import Blueprint, render_template, request
 from utils.firebase_client import db
-from config.constants import ITALY_TZ
-from collections import defaultdict
 
 visualizza_impianti_bp = Blueprint(
     "visualizza_impianti", __name__, url_prefix="/visualizza_impianti"

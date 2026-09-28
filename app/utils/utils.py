@@ -1,10 +1,11 @@
-from urllib.parse import urlparse
-import mimetypes
-import requests
 import io
-from typing import Dict, Any, Optional
-import socket
+import mimetypes
 import re
+import socket
+from typing import Any, Dict, Optional
+from urllib.parse import urlparse
+
+import requests
 from config.constants import ITALY_TZ
 
 

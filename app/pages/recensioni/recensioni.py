@@ -1,9 +1,9 @@
 import os
-from flask import Blueprint, render_template, request, redirect, flash
-from config.mail_config import EMAIL_TEMPLATES
-from services.recensioni import ReviewService
-from services.employees import EmployeeService
+
+from flask import Blueprint, flash, redirect, render_template, request
 from mailer_pz import MailerPZ
+from services.employees import EmployeeService
+from services.recensioni import ReviewService
 
 recensioni_bp = Blueprint(
     "recensioni",
@@ -11,6 +11,11 @@ recensioni_bp = Blueprint(
     url_prefix="/recensioni",
     template_folder="",
 )
+
+EMAIL_SUBJECTS = {
+    "ita": "Ci farebbe piacere la tua opinione! 🌟",
+    "eng": "We’d love to hear your thoughts! 🌟",
+}
 
 
 @recensioni_bp.route("/", methods=["GET", "POST"])
@@ -51,11 +56,19 @@ def recensioni():
             language=language,
             sender_id=sender_id,
         )
+        if language.lower() not in EMAIL_SUBJECTS:
+            flash(
+                "Lingua non supportata, verrà utilizzato l'italiano come predefinito.",
+                "warning",
+            )
+            return redirect("/recensioni")
         mailer.invia_email_singola(
             recipients=[email],
-            subject=EMAIL_TEMPLATES["review_" + language.lower()]["object"],
-            body=EMAIL_TEMPLATES["review_" + language.lower()]["body"].format(
-                customer=customer, sender=f"{sender.name} - {sender.department}"
+            subject=EMAIL_SUBJECTS.get(language.lower(), EMAIL_SUBJECTS["ita"]),
+            body=render_template(
+                f"email_review_{language.lower()}.html",
+                customer=customer,
+                sender=f"{sender.name} - {sender.department}",
             ),
             hubspot_ccn=True,
         )

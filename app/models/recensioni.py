@@ -1,5 +1,6 @@
-from zoneinfo import ZoneInfo
 from datetime import datetime
+from zoneinfo import ZoneInfo
+
 from extensions import db
 
 

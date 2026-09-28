@@ -1,0 +1,22 @@
+[tool.ruff]
+line-length = 88
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "migrations",
+]
+
+[tool.ruff.lint]
+# Regole da controllare: E (errori standard), F (variabili non usate/import non usati), I (ordinamento import)
+select = ["E", "F", "I"]
+# Regole da ignorare (se necessario)
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+# Regole specifiche per file particolari
+[tool.ruff.lint.per-file-ignores]
+# Negli __init__.py è normale importare moduli senza usarli direttamente
+"__init__.py" = ["F401"]

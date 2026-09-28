@@ -1,4 +1,5 @@
 from config.links import register_links
+
 from .home import home_bp
 
 register_links(

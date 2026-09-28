@@ -1,8 +1,9 @@
 from io import BytesIO
-from reportlab.pdfgen import canvas
-from reportlab.lib.units import mm
+
 import qrcode
+from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
+from reportlab.pdfgen import canvas
 
 
 def generate_pdf(

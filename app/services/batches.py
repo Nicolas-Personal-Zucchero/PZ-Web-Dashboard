@@ -1,11 +1,11 @@
 from typing import Optional
-from sqlalchemy.exc import IntegrityError
+
 from extensions import db
 from models.batches import Batch
+from sqlalchemy.exc import IntegrityError
 
 
 class BatchService:
-
     @staticmethod
     def get_batches_by_theme(theme_id: int) -> list[Batch]:
         stmt = db.select(Batch).where(Batch.theme_id == theme_id)

@@ -1,13 +1,12 @@
 from datetime import datetime, timezone
-from sqlalchemy import update, func, select
-from sqlalchemy.exc import IntegrityError
 
 from extensions import db
 from models.sigep_tickets import Ticket
+from sqlalchemy import func, select, update
+from sqlalchemy.exc import IntegrityError
 
 
 class SigepTicketService:
-
     @staticmethod
     def create_ticket(code: str) -> Ticket:
         try:

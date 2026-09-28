@@ -1,24 +1,31 @@
+import io
 import os
+from datetime import datetime
 from pathlib import Path
+
+import ulid
+from config.constants import (
+    ITALY_TZ,
+    OPERATORI_INTERVENTI,
+    SEDI,
+    TIPOLOGIE_ASSET,
+    TIPOLOGIE_INTERVENTI,
+    ZEBRA_IP,
+)
 from flask import (
     Blueprint,
+    abort,
+    flash,
+    make_response,
+    redirect,
     render_template,
     request,
-    redirect,
-    flash,
     send_from_directory,
-    abort,
-    make_response,
 )
-from datetime import datetime
-from config.constants import ITALY_TZ, TIPOLOGIE_ASSET
-import ulid
-import io
-from weasyprint import HTML
 from services.asset import AssetService
-from utils.utils import send_to_zebra
-from config.constants import ZEBRA_IP, OPERATORI_INTERVENTI, TIPOLOGIE_INTERVENTI, SEDI
 from utils.label_factory import generate_asset_qrcode_label
+from utils.utils import send_to_zebra
+from weasyprint import HTML
 
 asset_dettaglio_bp = Blueprint("asset_dettaglio", __name__, url_prefix="/asset")
 

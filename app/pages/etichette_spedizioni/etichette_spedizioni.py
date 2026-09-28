@@ -1,24 +1,24 @@
-import os
+import base64
 import io
 import logging
+import os
+from datetime import datetime
+
+from config.constants import ZEBRA_IP
 from flask import (
     Blueprint,
-    render_template,
-    request,
-    redirect,
+    current_app,
     flash,
     make_response,
-    current_app,
+    redirect,
+    render_template,
+    request,
 )
-from config.constants import ZEBRA_IP
-from utils.label_factory import generate_sugar_label
-from weasyprint import HTML
-from datetime import datetime
-import base64
-from config.mail_config import EMAIL_TEMPLATES
-from utils.utils import send_to_zebra
-from mexal_pz import MexalPZ
 from mailer_pz import MailerPZ
+from mexal_pz import MexalPZ
+from utils.label_factory import generate_sugar_label
+from utils.utils import send_to_zebra
+from weasyprint import HTML
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +28,8 @@ etichette_spedizioni_bp = Blueprint(
     url_prefix="/etichette_spedizioni",
     template_folder="",
 )
+
+EMAIL_SUBJECTS = {"ita": "La tua spedizione da Personal Zucchero è in arrivo!"}
 
 
 @etichette_spedizioni_bp.route("/", methods=["GET", "POST"])
@@ -218,10 +220,13 @@ def invia_tracking():
         os.getenv("INFO_EMAIL_PASSWORD"),
     )
     if mailer:
+        lang = "ita"
         mailer.invia_email_singola(
             recipients=[email],
-            subject=EMAIL_TEMPLATES["tracking_brt_ita"]["object"],
-            body=EMAIL_TEMPLATES["tracking_brt_ita"]["body"].format(tracking=tracking),
+            subject=EMAIL_SUBJECTS[lang],
+            body=render_template(
+                f"email_etichetta_spedizione_{lang}.html", tracking=tracking
+            ),
             hubspot_ccn=True,
         )
     else:

@@ -2,17 +2,16 @@ from datetime import date, datetime
 from typing import List, Optional
 
 from config.constants import ITALY_TZ
-from utils.utils import convert_datetime_to_italy_tz
-from sqlalchemy import select, or_, func, update
-from sqlalchemy.orm import joinedload
-from sqlalchemy.exc import SQLAlchemyError
-
 from extensions import db
 from models.spedizioni import (
-    SpedizionePreliminare,
     SpedizioneIdentificativo,
+    SpedizionePreliminare,
     StatoSpedizione,
 )
+from sqlalchemy import func, or_, select, update
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import joinedload
+from utils.utils import convert_datetime_to_italy_tz
 
 
 class SpedizioniPreliminariService:

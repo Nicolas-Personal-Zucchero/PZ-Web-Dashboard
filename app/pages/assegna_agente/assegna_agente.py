@@ -1,20 +1,24 @@
 import os
-from flask import Blueprint, render_template, request, redirect, flash, jsonify
 
-from config.mail_config import EMAIL_TEMPLATES
 from config.constants import ITALY_TZ
-
-from utils.firebase_client import db
-from utils.utils import extract_logo_id, download_file_stream
 from firebase_admin import firestore
+from flask import Blueprint, flash, jsonify, redirect, render_template, request
 from hubspot_pz import HubspotPZ
 from mailer_pz import MailerPZ
+from utils.firebase_client import db
+from utils.utils import download_file_stream, extract_logo_id
 
 assegna_agente_bp = Blueprint(
     "assegna_agente", __name__, url_prefix="/assegna-agente", template_folder=""
 )
 
 assegnazione_contatti_agenti_collection = db.collection("assegnazione_contatti_agenti")
+
+AGENT_EMAIL_SUBJECTS = {"ita": "Nuovo contatto assegnato {info_cliente}"}
+CONTACT_EMAIL_SUBJECTS = {
+    "ita": "Grazie per il Suo Interesse – Il Nostro Consulente Locale La Contatterà",
+    "eng": "Thank You for Your Interest – Our Local Consultant Will Contact You",
+}
 
 
 @assegna_agente_bp.route("/get_contact")
@@ -151,7 +155,7 @@ def get_active_agents_by_id(hubspot):
         a
         for a in agents
         if a.get("escluso_da_assegnazione_clienti") == "false"
-        and a.get("data_fine_contratto") == None
+        and a.get("data_fine_contratto") is None
     ]
     sorted_agents = sorted(
         filtered_agents,
@@ -188,9 +192,9 @@ def get_active_agents_by_id(hubspot):
                             formatted_time = local_time.strftime("%d/%m/%Y, %H:%M:%S")
                         else:
                             formatted_time = "N/A"
-                        associated_contacts_by_id[contact_id][
-                            "assigned_at"
-                        ] = formatted_time
+                        associated_contacts_by_id[contact_id]["assigned_at"] = (
+                            formatted_time
+                        )
 
             agents_by_id[agent_id]["associated_contacts"] = [
                 associated_contacts_by_id[contact_id] for contact_id in contacts_ids
@@ -229,12 +233,12 @@ def get_first_company_id(contact):
         return None
 
     associations = contact.get("associations", {})
-    if associations == None:
+    if associations is None:
         return None
 
     companies = associations.get("companies", {})
 
-    if associations == None:
+    if associations is None:
         return None
 
     results = companies.get("results", [])
@@ -277,7 +281,8 @@ def upsert_contact_and_company(hubspot, form_contact, form_company):
 def send_agent_email(
     mailer: MailerPZ, sender, agent, contact, company, note, logo_streams=[]
 ):
-    body = EMAIL_TEMPLATES["agent_ita"]["body"].format(
+    body = render_template(
+        "email_agent_ita.html",
         nome_agente=agent.get("firstname") or "",
         nome_cliente=contact.get("firstname") or "",
         cognome_cliente=contact.get("lastname") or "",
@@ -291,21 +296,14 @@ def send_agent_email(
         prodotto_di_interesse_azienda=company.get("prodotto_di_interesse") or "",
         fonte_contatto=contact.get("fonte") or "",
         note_interne=note or "",
-        informazioni_logo=(
-            "<br>"
-            if not company.get("logo")
-            else (
-                "<br>Trovi allegato il logo aziendale fornito dal cliente con le seguenti informazioni:<br>"
-                + (company.get("informazioni_logo", "") or "")
-                + "<br><br>"
-            )
-        ),
+        ha_logo=bool(company.get("logo")),
+        info_logo=company.get("informazioni_logo", ""),
         mittente=sender,
     )
-
+    lang = "ita"
     mailer.invia_email_singola(
         recipients=[agent["email"]],
-        subject=EMAIL_TEMPLATES["agent_ita"]["object"].format(
+        subject=AGENT_EMAIL_SUBJECTS[lang].format(
             info_cliente=f"({company.get('name') or ''} - {contact.get('lastname') or ''} {contact.get('firstname') or ''})"
         ),
         body=body,
@@ -325,8 +323,11 @@ def send_agent_email(
 def send_contact_email(mailer, sender, language, contact, agent):
     mailer.invia_email_singola(
         recipients=[contact["email"]],
-        subject=EMAIL_TEMPLATES["contact_" + language.lower()]["object"],
-        body=EMAIL_TEMPLATES["contact_" + language.lower()]["body"].format(
+        subject=CONTACT_EMAIL_SUBJECTS.get(
+            language.lower(), CONTACT_EMAIL_SUBJECTS["ita"]
+        ),
+        body=render_template(
+            f"email_contact_{language.lower()}.html",
             nome_cliente=contact.get("firstname") or "",
             nome_agente=f"{agent.get('lastname') or ''} {agent.get('firstname') or ''}",
             email_agente=agent.get("email") or "",

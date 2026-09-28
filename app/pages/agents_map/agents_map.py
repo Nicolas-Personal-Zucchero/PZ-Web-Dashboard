@@ -1,4 +1,3 @@
-import os
 from flask import Blueprint, render_template
 
 agents_map_bp = Blueprint(

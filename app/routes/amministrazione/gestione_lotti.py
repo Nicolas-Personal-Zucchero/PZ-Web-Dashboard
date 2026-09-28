@@ -1,18 +1,19 @@
+from datetime import datetime
+
+import pytz
+from config.constants import ITALY_TZ
+from firebase_admin import firestore
 from flask import (
     Blueprint,
+    flash,
+    redirect,
     render_template,
     request,
     send_file,
-    flash,
-    redirect,
     url_for,
 )
 from utils.firebase_client import db
-from firebase_admin import firestore
-from config.constants import ITALY_TZ
-import pytz
 from utils.pdf import generate_pdf
-from datetime import datetime
 
 # --- Parte di Visualizzazione (Da visualizza_lotti.py) ---
 
