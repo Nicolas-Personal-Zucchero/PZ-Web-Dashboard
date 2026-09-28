@@ -1,10 +1,12 @@
 import os
 from datetime import datetime
 from flask import Blueprint, flash, redirect, render_template, request, url_for
+from config.mail_config import EMAIL_TEMPLATES
 from services.employees import EmployeeService
 from services.themes import ThemeService
 from services.batches import BatchService
 from services.productions import ProductionService
+from mailer_pz import MailerPZ
 
 produzione_generici_prod_bp = Blueprint(
     "produzione_generici_prod",
@@ -98,6 +100,8 @@ def crea_produzione_team():
             url_for("produzione_generici_prod.team_produzione", theme_id=theme.id)
         )
 
+    operator = EmployeeService.get_employee(operator_id).name or operator_id
+
     try:
         date = datetime.strptime(date_str, "%Y-%m-%d")
         quantity = int(quantity_str)
@@ -107,10 +111,26 @@ def crea_produzione_team():
             url_for("produzione_generici_prod.team_produzione", theme_id=theme.id)
         )
 
+    mailer = MailerPZ(
+        os.getenv("INFO_EMAIL_NAME"),
+        os.getenv("INFO_EMAIL_ADDRESS"),
+        os.getenv("INFO_EMAIL_PASSWORD"),
+    )
     try:
         ProductionService.create_production(
             batch.id, date, reel_batch, quantity, operator_id
         )
+        if mailer:
+            mailer.invia_email_singola(
+                recipients= ["nicolas@personalzucchero.com"],
+                subject=EMAIL_TEMPLATES["generic_production_ita"]["object"],
+                body=EMAIL_TEMPLATES["generic_production_ita"]["body"].format(
+                    data=date.strftime("%d/%m/%Y"),
+                    lotto=batch.code,
+                    quantita=quantity,
+                    responsabile=operator,
+                )
+            )
     except ValueError as e:
         flash(str(e), "error")
         return redirect(
